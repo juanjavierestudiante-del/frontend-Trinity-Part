@@ -1,0 +1,95 @@
+export const products = [
+  {
+    id: 1,
+    name: "Pack de Globos Metalizados",
+    price: 12.99,
+    category: "Globos",
+    image: "https://via.placeholder.com/300x300?text=Globos+Metalizados",
+    description: "Pack de 20 globos metalizados en colores variados",
+    rating: 4.5,
+  },
+  {
+    id: 2,
+    name: "Cotillón Completo XL",
+    price: 24.99,
+    category: "Cotillón",
+    image: "https://via.placeholder.com/300x300?text=Cotillon+XL",
+    description: "Cotillón completo con sombreros, cornetas y más",
+    rating: 5,
+  },
+  {
+    id: 3,
+    name: "Regalos Sorpresa Premium",
+    price: 18.50,
+    category: "Regalos",
+    image: "https://via.placeholder.com/300x300?text=Regalos+Premium",
+    description: "Pack de 10 regalos sorpresa para fiestas",
+    rating: 4.8,
+  },
+  {
+    id: 4,
+    name: "Globos de Látex Pastel",
+    price: 8.99,
+    category: "Globos",
+    image: "https://via.placeholder.com/300x300?text=Globos+Pastel",
+    description: "50 globos de látex en colores pastel",
+    rating: 4.3,
+  },
+  {
+    id: 5,
+    name: "Confeti Premium",
+    price: 5.99,
+    category: "Cotillón",
+    image: "https://via.placeholder.com/300x300?text=Confeti+Premium",
+    description: "Confeti metalizado de alta calidad",
+    rating: 4.7,
+  },
+  {
+    id: 6,
+    name: "Bolsa de Regalos Escolar",
+    price: 15.99,
+    category: "Regalos",
+    image: "https://via.placeholder.com/300x300?text=Regalos+Escolar",
+    description: "Bolsa con 15 regalos para escolares",
+    rating: 4.6,
+  },
+  {
+    id: 7,
+    name: "Globos Grandes Helio",
+    price: 22.99,
+    category: "Globos",
+    image: "https://via.placeholder.com/300x300?text=Globos+Helio",
+    description: "3 globos grandes preparados con helio",
+    rating: 5,
+  },
+  {
+    id: 8,
+    name: "Kit Decoración Fiesta",
+    price: 19.99,
+    category: "Cotillón",
+    image: "https://via.placeholder.com/300x300?text=Kit+Decoracion",
+    description: "Kit completo con guirnaldas y decoraciones",
+    rating: 4.4,
+  },
+];
+
+export const categories = [
+  { id: 1, name: "Globos", icon: "🎈" },
+  { id: 2, name: "Cotillón", icon: "🎉" },
+  { id: 3, name: "Regalos", icon: "🎁" },
+];
+
+export const promotions = [
+  {
+    id: 1,
+    title: "20% OFF en Globos",
+    description: "En todos nuestros packs de globos",
+    discount: 20,
+  },
+  {
+    id: 2,
+    title: "Compra 2 lleva 3",
+    description: "En cotillones seleccionados",
+    discount: 33,
+  },
+];
