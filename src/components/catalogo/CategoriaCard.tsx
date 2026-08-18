@@ -3,19 +3,26 @@ import type { Categoria } from '../../types/catalogo.types';
 
 interface Props {
   categoria: Categoria;
-  icon?: string;
 }
 
-export default function CategoriaCard({ categoria, icon = '🎉' }: Props) {
+export default function CategoriaCard({ categoria }: Props) {
   return (
     <Link
       to={`/categoria/${categoria.slug}`}
       className="group block bg-surface rounded-card shadow-brand overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:shadow-brand-lg"
     >
       <div className="aspect-[16/9] bg-gradient-to-br from-primary to-secondary flex items-center justify-center overflow-hidden">
-        <span className="text-6xl transition-transform duration-200 group-hover:scale-110">
-          {icon}
-        </span>
+        {categoria.imagenUrl ? (
+          <img
+            src={categoria.imagenUrl}
+            alt={categoria.nombre}
+            className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-110"
+          />
+        ) : (
+          <span className="text-6xl transition-transform duration-200 group-hover:scale-110">
+            🎉
+          </span>
+        )}
       </div>
       <div className="p-4 text-center">
         <h3 className="text-lg font-bold text-ink font-display">

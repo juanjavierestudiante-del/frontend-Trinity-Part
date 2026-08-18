@@ -10,7 +10,7 @@ import Footer from "./components/layout/Footer";
 // ====================
 
 import Home from "./pages/Home/Home";
-import Home2 from "./pages/Home/Home2";
+
 import Carrito from "./pages/Carrito/Carrito";
 import Contacto from "./pages/Contacto/Contacto";
 import Nosotros from "./pages/Nosotros/Nosotros";
@@ -56,7 +56,7 @@ export default function App() {
         <Routes>
           {/* Home */}
           <Route path="/" element={<Home />} />
-          <Route path="/home2" element={<Home2 />} />
+          
 
           {/* Catálogo */}
           <Route path="/catalogo" element={<Catalogo />} />
