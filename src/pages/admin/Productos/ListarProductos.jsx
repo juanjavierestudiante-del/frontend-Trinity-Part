@@ -59,10 +59,10 @@ export default function ListaProductos() {
   };
 
   return (
-    <div className="p-6 lg:p-8 min-h-screen bg-background font-body">
+    <div className="p-4 sm:p-6 lg:p-8 min-h-screen bg-background font-body">
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-7 flex-wrap gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-7 gap-4">
         <div>
           <h1 className="text-2xl font-bold text-ink tracking-tight">
             Productos
@@ -77,16 +77,16 @@ export default function ListaProductos() {
             placeholder="Buscar producto, descripción o categoría..."
             value={busqueda}
             onChange={e => setBusqueda(e.target.value)}
-            className="w-56"
+            className="w-full sm:w-56"
           />
-          <Button onClick={() => navigate("/admin/agregar-producto")} className="!px-4 !py-2">
+          <Button onClick={() => navigate("/admin/agregar-producto")} className="!px-4 !py-2 whitespace-nowrap">
             Nuevo producto
           </Button>
         </div>
       </div>
 
       {/* Tabla */}
-      <div className="bg-ink rounded-card border border-primary/20 shadow-lg overflow-hidden">
+      <div className="overflow-x-auto bg-ink rounded-card border border-primary/20 shadow-lg">
 
         {/* Encabezado */}
         <div className="grid grid-cols-[60px_1fr_2fr_120px_80px_70px_70px_90px_120px] gap-x-2 px-5 py-3 bg-primary-dark/30 border-b border-primary/20">

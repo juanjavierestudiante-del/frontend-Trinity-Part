@@ -14,7 +14,7 @@ export default function Tabs(props) {
   return (
     <div>
       <div
-        className={`flex gap-1 border-b ${
+        className={`flex gap-1 border-b overflow-x-auto ${
           dark ? 'border-gray-700' : 'border-gray-200'
         }`}
       >

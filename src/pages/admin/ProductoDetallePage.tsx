@@ -21,8 +21,8 @@ export default function ProductoDetallePage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-100 mb-1">{producto.nombre}</h1>
-      <p className="text-sm text-gray-400 mb-6">ID: {producto.idProducto} · {producto.slug}</p>
+      <h1 className="text-xl sm:text-2xl font-bold text-gray-100 mb-1">{producto.nombre}</h1>
+      <p className="text-xs sm:text-sm text-gray-400 mb-4 sm:mb-6">ID: {producto.idProducto} · {producto.slug}</p>
 
       <Tabs>
         <TabItem title="Información" icon={HiInformationCircle}>

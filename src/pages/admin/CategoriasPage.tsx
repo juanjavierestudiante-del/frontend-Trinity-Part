@@ -73,7 +73,7 @@ function FilaCategoria({
           <span className="text-sm font-medium text-gray-100 truncate block">
             {categoria.nombre}
           </span>
-          <span className="text-xs text-gray-500">{categoria.slug}</span>
+          <span className="hidden sm:inline text-xs text-gray-500">{categoria.slug}</span>
         </div>
 
         {/* Badge de estado */}
@@ -83,7 +83,7 @@ function FilaCategoria({
 
         {/* Subcategorías count */}
         {tieneHijos && (
-          <span className="text-xs text-gray-500 whitespace-nowrap">
+          <span className="hidden sm:inline text-xs text-gray-500 whitespace-nowrap">
             {categoria.subcategorias.length} sub
           </span>
         )}
@@ -234,11 +234,12 @@ export default function CategoriasPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <h1 className="text-2xl font-bold text-gray-100">Categorías</h1>
         <div className="flex gap-2">
           <Button variant="gray" size="sm" onClick={expandirTodo}>
-            Expandir todo
+            <span className="hidden sm:inline">Expandir todo</span>
+            <span className="sm:hidden">Expandir</span>
           </Button>
           <Button onClick={() => navigate('/admin/categorias/nueva')}>
             <HiPlus className="w-4 h-4 mr-2" />
