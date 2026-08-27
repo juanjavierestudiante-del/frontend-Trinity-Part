@@ -45,13 +45,13 @@ export default function VarianteForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-3 p-4 border border-gray-700 rounded-lg bg-gray-800">
+    <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-3 p-4 bg-gray-800 border border-gray-700 rounded-lg">
       <div>
         <Label className="block mb-1 text-base !text-primary-light" dark>SKU</Label>
         <Input
           sizing="sm"
           value={form.sku}
-          onChange={(e) => set('sku', e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => set('sku', e.target.value )}
           placeholder="GLB-LAT-ROJ-50"
           required
           dark
@@ -63,7 +63,7 @@ export default function VarianteForm({
         <Input
           sizing="sm"
           value={form.codigoBarras || ''}
-          onChange={(e) => set('codigoBarras', e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => set('codigoBarras', e.target.value)}
           placeholder="Opcional"
           dark
         />
@@ -76,7 +76,7 @@ export default function VarianteForm({
           type="number"
           step="0.01"
           value={form.precioVenta}
-          onChange={(e) => set('precioVenta', Number(e.target.value))}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => set('precioVenta', Number(e.target.value))}
           required
           dark
         />
@@ -89,7 +89,7 @@ export default function VarianteForm({
           type="number"
           step="0.01"
           value={form.precioOferta || ''}
-          onChange={(e) => set('precioOferta', e.target.value ? Number(e.target.value) : undefined)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => set('precioOferta', e.target.value ? Number(e.target.value) : undefined)}
           placeholder="Opcional"
           dark
         />
@@ -100,7 +100,7 @@ export default function VarianteForm({
         <Select
           sizing="sm"
           value={form.idMarca || ''}
-          onChange={(e) => set('idMarca', e.target.value ? Number(e.target.value) : undefined)}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => set('idMarca', e.target.value ? Number(e.target.value) : undefined)}
           dark
         >
           <option value="">Sin marca</option>
@@ -115,7 +115,7 @@ export default function VarianteForm({
         <Select
           sizing="sm"
           value={form.idUnidad || ''}
-          onChange={(e) => set('idUnidad', e.target.value ? Number(e.target.value) : undefined)}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => set('idUnidad', e.target.value ? Number(e.target.value) : undefined)}
           dark
         >
           <option value="">Sin unidad</option>
@@ -133,7 +133,7 @@ export default function VarianteForm({
           sizing="sm"
           type="number"
           value={form.cantidadContenido}
-          onChange={(e) => set('cantidadContenido', Number(e.target.value))}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => set('cantidadContenido', Number(e.target.value))}
           placeholder="ej: 50"
           dark
         />
@@ -144,7 +144,7 @@ export default function VarianteForm({
         <Select
           sizing="sm"
           value={form.estado}
-          onChange={(e) => set('estado', e.target.value as 'Activo' | 'Inactivo')}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => set('estado', e.target.value as 'Activo' | 'Inactivo')}
           dark
         >
           <option value="Activo">Activo</option>

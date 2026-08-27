@@ -5,7 +5,7 @@ export default function Categories() {
   const { data: categorias = [], isLoading } = useCategorias();
 
   if (isLoading) return null;
-Na
+
   return (
     <section className="px-4 py-16 mx-auto max-w-7xl">
       <h2 className="mb-12 text-3xl font-black text-center text-ink font-display">
