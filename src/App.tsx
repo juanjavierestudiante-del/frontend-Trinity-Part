@@ -38,6 +38,7 @@ import ProductosPage from "./pages/admin/ProductosPage";
 import ProductoDetallePage from "./pages/admin/ProductoDetallePage";
 import CategoriasPage from "./pages/admin/CategoriasPage";
 import CategoriaFormPage from "./pages/admin/CategoriaFormPage";
+import InventarioPage from "./pages/admin/InventarioPage";
 
 // ====================
 // Admin (legacy - mantener temporalmente)
@@ -92,6 +93,7 @@ export default function App() {
             <Route path="categorias" element={<CategoriasPage />} />
             <Route path="categorias/nueva" element={<CategoriaFormPage />} />
             <Route path="categorias/:id/editar" element={<CategoriaFormPage />} />
+            <Route path="inventario" element={<InventarioPage />} />
           </Route>
 
           {/* Admin: Rutas legacy (temporal) */}

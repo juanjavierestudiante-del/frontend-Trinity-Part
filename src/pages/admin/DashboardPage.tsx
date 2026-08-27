@@ -1,9 +1,18 @@
 import { HiShoppingBag, HiCube, HiExclamation } from 'react-icons/hi'
 import { useAuthStore } from '../../store/auth.store'
+import { useProductosAdmin } from '../../hooks/admin/useProductosAdmin'
+import { useInventario, useAlertasInventario } from '../../hooks/admin/useInventario'
 import Card from '../../components/ui/Card/Card'
 
 export default function DashboardPage() {
   const usuario = useAuthStore((state) => state.usuario)
+  const { data: productos } = useProductosAdmin()
+  const { data: inventario } = useInventario()
+  const { data: alertas } = useAlertasInventario()
+
+  const productosActivos = productos?.filter((p: any) => p.estado === 'Activo').length ?? null
+  const variantesEnStock = inventario?.filter((f) => f.stockActual > 0).length ?? null
+  const bajoStock = alertas?.length ?? null
 
   return (
     <div>
@@ -18,7 +27,7 @@ export default function DashboardPage() {
             </div>
             <div>
               <p className="text-sm text-gray-400">Productos activos</p>
-              <p className="text-2xl font-bold text-gray-100">—</p>
+              <p className="text-2xl font-bold text-gray-100">{productosActivos ?? '—'}</p>
             </div>
           </div>
         </Card>
@@ -30,7 +39,7 @@ export default function DashboardPage() {
             </div>
             <div>
               <p className="text-sm text-gray-400">Variantes en stock</p>
-              <p className="text-2xl font-bold text-gray-100">—</p>
+              <p className="text-2xl font-bold text-gray-100">{variantesEnStock ?? '—'}</p>
             </div>
           </div>
         </Card>
@@ -42,7 +51,9 @@ export default function DashboardPage() {
             </div>
             <div>
               <p className="text-sm text-gray-400">Bajo stock</p>
-              <p className="text-2xl font-bold text-gray-100">—</p>
+              <p className={`text-2xl font-bold ${bajoStock && bajoStock > 0 ? 'text-red-400' : 'text-gray-100'}`}>
+                {bajoStock ?? '—'}
+              </p>
             </div>
           </div>
         </Card>
