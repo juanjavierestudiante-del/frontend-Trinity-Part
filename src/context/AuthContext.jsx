@@ -1,55 +1,27 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState } from "react";
 import { loginPublico, registrarUsuario } from "../services/public/auth.api";
+import {
+  syncAdminAuth,
+  clearAdminAuth,
+  syncPublicAuth,
+  clearPublicAuth,
+  loadPublicUser,
+} from "../services/auth.sync";
 
-const AuthContext = createContext(null);
-const CURRENT_USER_KEY = "party-store-current-user";
-
-function loadCurrentUser() {
-  const raw = localStorage.getItem(CURRENT_USER_KEY);
-  if (!raw) return null;
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return null;
-  }
-}
-
-function syncAdminAuth(usuario, token) {
-  if (usuario.rol === "ADMIN") {
-    localStorage.setItem("admin_token", token);
-    localStorage.setItem(
-      "admin_usuario",
-      JSON.stringify({
-        idUsuario: usuario.id_usuario,
-        nombre: usuario.nombre,
-        email: usuario.email,
-        rol: usuario.rol,
-      })
-    );
-  }
-}
-
-function clearAdminAuth() {
-  localStorage.removeItem("admin_token");
-  localStorage.removeItem("admin_usuario");
-}
+// Tipado como `any` para que los consumidores .tsx (p. ej. el panel admin) puedan
+// usar useAuth() sin luchar contra la inferencia de un contexto no tipado.
+/** @type {import("react").Context<any>} */
+const AuthContext = createContext(undefined);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => loadCurrentUser());
+  const [user, setUser] = useState(() => loadPublicUser());
 
   const login = async (email, password) => {
     try {
       const { usuario, token } = await loginPublico(email, password);
-      const normalized = {
-        id: usuario.id_usuario,
-        name: usuario.nombre,
-        email: usuario.email,
-        role: usuario.rol,
-        token,
-      };
+      const normalized = syncPublicAuth(usuario, token);
       setUser(normalized);
-      localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(normalized));
       syncAdminAuth(usuario, token);
       return true;
     } catch {
@@ -64,15 +36,8 @@ export function AuthProvider({ children }) {
         email,
         password,
       });
-      const normalized = {
-        id: usuario.id_usuario,
-        name: usuario.nombre,
-        email: usuario.email,
-        role: usuario.rol,
-        token,
-      };
+      const normalized = syncPublicAuth(usuario, token);
       setUser(normalized);
-      localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(normalized));
       syncAdminAuth(usuario, token);
       return { ok: true };
     } catch (err) {
@@ -89,12 +54,28 @@ export function AuthProvider({ children }) {
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem(CURRENT_USER_KEY);
+    clearPublicAuth();
     clearAdminAuth();
   };
 
+  // Admin -> Público: hace visible la sesión en la tienda (Navbar/carrito) al loguearse
+  // desde el panel de administración, sin volver a llamar a la API.
+  const applyPublicSession = (usuario, token) => {
+    const normalized = syncPublicAuth(usuario, token);
+    setUser(normalized);
+    return normalized;
+  };
+
+  // Admin -> Público: cierra sesión pública cuando se cierra desde el panel.
+  const clearPublicSession = () => {
+    setUser(null);
+    clearPublicAuth();
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, register, logout }}>
+    <AuthContext.Provider
+      value={{ user, login, register, logout, applyPublicSession, clearPublicSession }}
+    >
       {children}
     </AuthContext.Provider>
   );

@@ -32,11 +32,11 @@ src/
 │   └── admin/                   # Hooks admin (CRUD productos, categorías, variantes, imágenes, inventario)
 ├── pages/             # Páginas/rutas
 ├── services/
-│   ├── api.js         # LEGACY — hardcoded localhost:4000, en uso por AuthContext
-│   ├── axios.ts       # Instancia pública (VITE_API_URL)
-│   ├── axios.admin.ts # Instancia admin (VITE_API_URL + Bearer token)
+│   ├── axios.ts       # Instancia pública (VITE_API_URL + token de la sesión pública)
+│   ├── axios.admin.ts # Instancia admin (VITE_API_URL + Bearer token admin)
+│   ├── auth.sync.ts   # Sync bidireccional de sesión público <-> admin (localStorage)
 │   ├── admin/         # Servicios admin (auth, productos, categorías, variantes, imágenes, inventario)
-│   └── public/        # Servicios públicos (catálogo)
+│   └── public/        # Servicios públicos (catálogo, carrito, auth)
 ├── store/             # Zustand auth store (admin)
 └── types/             # catalogo.types.ts
 ```
@@ -51,17 +51,25 @@ No existe `.env.example` para el frontend.
 
 ## Autenticación
 
+La sesión es **única y bidireccional** (Opción A): el mismo usuario se persiste tanto en el storage público como en el admin, sin importar por qué login entró. Toda la lógica vive en `services/auth.sync.ts`.
+
 ### Usuarios públicos (AuthContext)
-- `AuthContext.jsx` usa `api.js` legacy (localhost:4000 hardcodeado).
-- Persiste en localStorage key: `party-store-current-user`.
+- `AuthContext.jsx` usa `loginPublico`/`registrarUsuario` (`services/public/auth.api.ts`).
+- Persiste en localStorage key: `party-store-current-user` (shape `{ id, name, email, role, token }`, camelCase).
+- Al login/register llama `syncPublicAuth` (escribe storage público) + `syncAdminAuth` (escribe storage admin si `rol === 'ADMIN'`).
+- Expone `applyPublicSession` / `clearPublicSession` para que el panel admin sincronice la sesión pública (login/logout admin → web).
 
 ### Admin (Zustand + Axios interceptor)
 - `auth.store.ts` gestiona estado (usuario, token, isAuthenticated).
 - Persiste en localStorage: `admin_token`, `admin_usuario`.
 - `axios.admin.ts` inyecta Bearer token automáticamente.
 - En 401 (excepto login): limpia storage y redirige a `/admin/login`.
+- `LoginPage` (admin) llama `applyPublicSession` tras `setAuth`; `AdminLayout.handleLogout` llama `clearPublicSession` para cerrar también la sesión pública.
 
-**Nota:** Son dos sistemas de autenticación separados. Esto parece deuda técnica/migración incompleta, no una decisión intencional.
+### Instancias Axios
+- `publicApi` (`axios.ts`) inyecta el token de `party-store-current-user` si existe (permite carrito/pedidos del storefront sin instancia aparte).
+- `adminApi` (`axios.admin.ts`) inyecta el token admin.
+- No hay más instancias (se eliminó `axios.cart.ts`).
 
 ## Rutas principales
 
@@ -100,15 +108,14 @@ npm run type-check   # tsc --noEmit
 
 ## Restricciones
 
-1. No importar axios directamente — usar `publicApi` o `adminApi` de `services/`.
+1. No importar axios directamente — usar `publicApi` o `adminApi` de `services/` (o crear instancias en `axios.ts`/`axios.admin.ts`).
 2. No agregar comentarios al código a menos que se pida explícitamente.
-3. No usar `api.js` legacy para nuevo código — crear nuevos servicios en `services/admin/` o `services/public/`.
+3. Usar la sincronización de sesión vía `services/auth.sync.ts` para flows de login/logout que toquen la sesión activa.
 4. Las rutas admin deben estar dentro del `<Route>` de `AdminLayout` y ser envueltas por `ProtectedRoute`.
 5. No inventar componentes o funcionalidades que no existan actualmente.
 
 ## Inconsistencias conocidas
 
-- `api.js` (legacy) con localhost hardcodeado aún en uso por `AuthContext.jsx`.
 - Rutas legacy de admin sin layout ni protección consistente.
 - Código mixto JS/TS — la migración no está completa.
 - `App.css` está vacío — todo el styling es vía Tailwind.

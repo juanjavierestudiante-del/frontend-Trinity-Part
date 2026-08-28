@@ -17,7 +17,7 @@ export default function PaginaProducto() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background px-4 py-16">
+      <div className="min-h-screen px-4 py-16">
         <StatusMessage status="loading" message="Cargando producto..." className="max-w-3xl mx-auto" />
       </div>
     );
@@ -25,7 +25,7 @@ export default function PaginaProducto() {
 
   if (isError || !producto) {
     return (
-      <div className="min-h-screen bg-background px-4 py-16">
+      <div className="min-h-screen px-4 py-16">
         <StatusMessage status="error" message="Producto no encontrado." className="max-w-3xl mx-auto" />
       </div>
     );
@@ -55,7 +55,7 @@ export default function PaginaProducto() {
   };
 
   return (
-    <main className="min-h-screen bg-background px-4 py-10">
+    <main className="min-h-screen px-4 py-10">
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-10 lg:grid-cols-[1.4fr_0.9fr]">
           <div className="rounded-card bg-white p-6 shadow-sm">

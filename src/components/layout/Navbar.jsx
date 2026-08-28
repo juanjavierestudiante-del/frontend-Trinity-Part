@@ -150,9 +150,9 @@ export default function Nav() {
                 <Button
                   as={Link}
                   to="/login"
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
-                  className="rounded-full text-white hover:bg-white/20"
+                  className="rounded-full border-white/40 text-p hover:bg-white/15"
                 >
                   Iniciar sesión
                 </Button>
@@ -161,7 +161,7 @@ export default function Nav() {
                   to="/registro"
                   variant="primary"
                   size="sm"
-                  className="rounded-full"
+                  className="rounded-full first-line: text-white hover:bg-primary-light"
                 >
                   Registrarse
                 </Button>
@@ -213,9 +213,9 @@ export default function Nav() {
                   <Button
                     as={Link}
                     to="/login"
-                    variant="ghost"
+                    variant="outline"
                     size="md"
-                    className="w-full justify-start rounded-md text-white hover:bg-white/10"
+                    className="w-full justify-start rounded-md border-white/40 text-white hover:bg-white/15"
                     onClick={() => setOpen(false)}
                   >
                     Iniciar sesión
@@ -225,7 +225,7 @@ export default function Nav() {
                     to="/registro"
                     variant="primary"
                     size="md"
-                    className="w-full rounded-md"
+                    className="w-full rounded-md bg-white text-primary hover:bg-primary-light"
                     onClick={() => setOpen(false)}
                   >
                     Registrarse
@@ -234,12 +234,14 @@ export default function Nav() {
               )}
 
               {user && (
-                <button
+                <Button
                   onClick={() => { logout(); setOpen(false); }}
-                  className="block px-4 py-3 font-medium text-left text-red-300 transition-colors rounded-md hover:bg-white/10"
+                  variant="ghost"
+                  size="md"
+                  className="w-full justify-start rounded-md text-left text-red-300 hover:bg-white/10"
                 >
                   Cerrar sesión
-                </button>
+                </Button>
               )}
             </div>
           </div>

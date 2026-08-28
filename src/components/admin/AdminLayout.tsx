@@ -14,17 +14,20 @@ import {
   HiMenu,
 } from 'react-icons/hi'
 import { useAuthStore } from '../../store/auth.store'
+import { useAuth } from '../../context/AuthContext'
 
 export default function AdminLayout() {
   const navigate = useNavigate()
   const location = useLocation()
   const { usuario, logout } = useAuthStore()
+  const { clearPublicSession } = useAuth()
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const isActive = (path: string) => location.pathname.startsWith(path)
 
   const handleLogout = () => {
     logout()
+    clearPublicSession()
     navigate('/admin/login')
   }
 
