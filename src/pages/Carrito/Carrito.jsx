@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import CartItem from "../../components/tienda/CartItem";
 import CartSummary from "../../components/tienda/CartSummary";
 import { useAuth } from "../../context/AuthContext";
-import * as api from "../../services/api";
+import { getCarrito, eliminarDelCarrito, actualizarCantidad } from "../../services/public/carrito.api";
 import Card from "../../components/ui/Card/Card";
 import StatusMessage from "../../components/ui/StatusMessage/StatusMessage";
 import Alert from "../../components/ui/Alert/Alert";
@@ -19,13 +19,17 @@ export default function Carrito() {
       if (!user) return;
       setLoading(true);
       try {
-        const data = await api.obtenerCarritoPorUsuario(user.id);
-        const items = (data.detalles || []).map((d) => ({
-          id: d.id_detalle || d.id || d.id_detalle,
-          nombre: d.producto?.nombre || "Producto",
+        const data = await getCarrito();
+        const items = (data.items || []).map((d) => ({
+          id: d.idDetalle,
+          idVariante: d.variante?.idVariante || d.idVariante,
+          nombre: d.variante?.producto?.nombre || d.variante?.sku || 'Producto',
           cantidad: d.cantidad || 1,
-          precio: Number(d.producto?.precio) || 0,
-          imagen: d.imagenes && d.imagenes.length > 0 ? d.imagenes[0].url : undefined,
+          precio: Number(d.variante?.precioOferta || d.variante?.precioVenta) || 0,
+          imagen: d.variante?.imagenes?.find(i => i.principal)?.url
+                 ?? d.variante?.imagenes?.[0]?.url
+                 ?? d.variante?.producto?.imagenes?.find(i => i.principal)?.url,
+          sku: d.variante?.sku,
           raw: d,
         }));
         setItemsCarrito(items);
@@ -40,7 +44,7 @@ export default function Carrito() {
 
   const eliminarDetalle = async (id_detalle) => {
     try {
-      await api.eliminaDetalleCarrito(id_detalle);
+      await eliminarDelCarrito(id_detalle);
       setItemsCarrito(itemsCarrito.filter((item) => item.id !== id_detalle));
       window.dispatchEvent(new CustomEvent('cart-updated'));
     } catch (err) {
@@ -57,7 +61,7 @@ export default function Carrito() {
     const prev = itemsCarrito;
     setItemsCarrito((prevItems) => prevItems.map((item) => (item.id === id ? { ...item, cantidad: nuevaCantidad } : item)));
     try {
-      await api.actualizarDetalleCarrito(id, nuevaCantidad);
+      await actualizarCantidad(id, nuevaCantidad);
       window.dispatchEvent(new CustomEvent('cart-updated'));
     } catch (err) {
       console.error(err);
@@ -125,7 +129,7 @@ export default function Carrito() {
               </div>
             </div>
 
-            <CartSummary items={itemsCarrito} total={total} />
+            <CartSummary total={total} />
           </div>
         )}
       </div>

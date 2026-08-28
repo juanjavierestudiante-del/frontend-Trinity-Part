@@ -7,6 +7,7 @@ import {
   useEliminarImagenProducto,
   useMarcarImagenPrincipalProducto,
 } from "../../hooks/admin/useImagenes"
+import { useAuthStore } from "../../store/auth.store"
 import ZonaSubidaImagenes from "./ZonaSubidaImagenes"
 
 interface ImagenProducto {
@@ -21,6 +22,8 @@ interface Props {
 }
 
 export default function ImagenEditor({ idProducto, imagenes }: Props) {
+  const usuario = useAuthStore((state) => state.usuario)
+  const isAdmin = usuario?.rol === 'ADMIN'
   const { mutate: subirMultiples } = useSubirMultiplesImagenesProducto(idProducto)
   const { mutate: eliminar } = useEliminarImagenProducto(idProducto)
   const { mutate: marcarPrincipal } = useMarcarImagenPrincipalProducto(idProducto)
@@ -38,7 +41,7 @@ export default function ImagenEditor({ idProducto, imagenes }: Props) {
           url: img.url,
           principal: img.principal,
         }))}
-        onRemoveExisting={(id) => eliminar(id)}
+        onRemoveExisting={isAdmin ? (id) => eliminar(id) : undefined}
         onMarkPrincipal={(id) => marcarPrincipal(id)}
         showPrincipalBadge
         emptyMessage="Sin imágenes todavía"

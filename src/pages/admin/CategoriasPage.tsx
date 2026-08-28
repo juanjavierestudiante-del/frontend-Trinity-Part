@@ -7,6 +7,7 @@ import {
   useCategoriasAdmin,
   useCambiarEstadoCategoria,
 } from '../../hooks/admin/useCategoriasAdmin';
+import { useAuthStore } from '../../store/auth.store';
 import Button from '../../components/ui/Button/Button';
 import Badge from '../../components/ui/Badge/Badge';
 import Loader from '../../components/ui/Loader/Loader';
@@ -22,6 +23,7 @@ function FilaCategoria({
   onToggle,
   onInactivar,
   onReactivar,
+  isAdmin,
 }: {
   categoria: Categoria;
   nivel: number;
@@ -29,6 +31,7 @@ function FilaCategoria({
   onToggle: (id: number) => void;
   onInactivar: (cat: Categoria, numHijos: number) => void;
   onReactivar: (cat: Categoria) => void;
+  isAdmin: boolean;
 }) {
   const navigate = useNavigate();
   const tieneHijos = categoria.subcategorias && categoria.subcategorias.length > 0;
@@ -90,16 +93,18 @@ function FilaCategoria({
 
         {/* Acciones */}
         <div className="flex gap-1 shrink-0">
-          <Button
-            size="xs"
-            variant="light"
-            onClick={() => navigate(`/admin/categorias/${categoria.idCategoria}/editar`)}
-            title="Editar"
-          >
-            <HiPencil className="w-3 h-3" />
-          </Button>
+          {isAdmin && (
+            <Button
+              size="xs"
+              variant="light"
+              onClick={() => navigate(`/admin/categorias/${categoria.idCategoria}/editar`)}
+              title="Editar"
+            >
+              <HiPencil className="w-3 h-3" />
+            </Button>
+          )}
 
-          {esInactivo ? (
+          {isAdmin && (esInactivo ? (
             <Button
               size="xs"
               variant="success"
@@ -117,23 +122,24 @@ function FilaCategoria({
             >
               <HiEyeOff className="w-3 h-3" />
             </Button>
-          )}
+          ))}
         </div>
       </div>
 
       {/* Hijos expandibles */}
       {tieneHijos && estaExpandido && (
         <div>
-          {categoria.subcategorias.map((hija) => (
-            <FilaCategoria
-              key={hija.idCategoria}
-              categoria={hija}
-              nivel={nivel + 1}
-              expanded={expanded}
-              onToggle={onToggle}
-              onInactivar={onInactivar}
-              onReactivar={onReactivar}
-            />
+              {categoria.subcategorias.map((hija) => (
+                <FilaCategoria
+                  key={hija.idCategoria}
+                  categoria={hija}
+                  nivel={nivel + 1}
+                  expanded={expanded}
+                  onToggle={onToggle}
+                  onInactivar={onInactivar}
+                  onReactivar={onReactivar}
+                  isAdmin={isAdmin}
+                />
           ))}
         </div>
       )}
@@ -145,6 +151,8 @@ function FilaCategoria({
 
 export default function CategoriasPage() {
   const navigate = useNavigate();
+  const usuario = useAuthStore((state) => state.usuario);
+  const isAdmin = usuario?.rol === 'ADMIN';
   const { data: categorias, isLoading, isError } = useCategoriasAdmin();
   const { mutate: cambiarEstado, isPending } = useCambiarEstadoCategoria();
 
@@ -241,10 +249,12 @@ export default function CategoriasPage() {
             <span className="hidden sm:inline">Expandir todo</span>
             <span className="sm:hidden">Expandir</span>
           </Button>
-          <Button onClick={() => navigate('/admin/categorias/nueva')}>
-            <HiPlus className="w-4 h-4 mr-2" />
-            Nueva categoría
-          </Button>
+          {isAdmin && (
+            <Button onClick={() => navigate('/admin/categorias/nueva')}>
+              <HiPlus className="w-4 h-4 mr-2" />
+              Nueva categoría
+            </Button>
+          )}
         </div>
       </div>
 
@@ -259,6 +269,7 @@ export default function CategoriasPage() {
             onToggle={toggleExpand}
             onInactivar={handleInactivar}
             onReactivar={handleReactivar}
+            isAdmin={isAdmin}
           />
         ))}
       </div>

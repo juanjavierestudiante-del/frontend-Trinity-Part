@@ -1,13 +1,11 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import * as api from "../../services/api";
+import { crearPedido } from "../../services/public/carrito.api";
 import Button from "../ui/Button/Button";
 import Card from "../ui/Card/Card";
 
-export default function CartSummary({ items, total }) {
+export default function CartSummary({ total }) {
   const subtotal = total;
-  const tax = subtotal * 0.1;
-  const finalTotal = subtotal + tax;
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -17,16 +15,11 @@ export default function CartSummary({ items, total }) {
       return;
     }
     try {
-      const pedido = await api.crearPedido({ total: finalTotal, id_usuario: user.id, estado: 'pendiente' });
-      const id_pedido = pedido.id_pedido || pedido.id;
-      for (const it of items) {
-        await api.agregaDetallePedido({ cantidad: it.quantity, precio_unitario: it.price, id_pedido, id_producto: it.raw?.producto?.id || it.raw?.id_producto || it.id });
-      }
+      await crearPedido();
       window.dispatchEvent(new CustomEvent('cart-updated'));
       navigate('/perfil');
     } catch (err) {
-      console.error(err);
-      alert('Error al crear el pedido');
+      alert(err?.response?.data?.error || 'Error al crear el pedido');
     }
   };
 
@@ -36,20 +29,16 @@ export default function CartSummary({ items, total }) {
       <div className="space-y-4 mb-6 pb-6 border-b">
         <div className="flex justify-between text-gray-700">
           <span>Subtotal:</span>
-          <span>${subtotal.toFixed(2)}</span>
+          <span>Bs. {subtotal.toFixed(2)}</span>
         </div>
         <div className="flex justify-between text-gray-700">
           <span>Envío:</span>
-          <span>$0.00</span>
-        </div>
-        <div className="flex justify-between text-gray-700">
-          <span>Impuestos (10%):</span>
-          <span>${tax.toFixed(2)}</span>
+          <span>Bs. 0.00</span>
         </div>
       </div>
       <div className="flex justify-between text-2xl font-black mb-6">
         <span>TOTAL:</span>
-        <span className="text-primary">${finalTotal.toFixed(2)}</span>
+        <span className="text-primary">Bs. {subtotal.toFixed(2)}</span>
       </div>
       <Button onClick={handleCheckout} className="w-full mb-3" variant="primary" size="lg">
         Proceder al pago

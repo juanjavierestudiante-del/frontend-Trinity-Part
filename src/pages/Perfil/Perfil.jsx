@@ -2,7 +2,7 @@ import { Navigate, Link } from "react-router-dom";
 import { User, Mail, Phone, MapPin, LogOut } from "lucide-react";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useEffect, useState } from "react";
-import * as api from "../../services/api";
+import { obtenerPedidos } from "../../services/public/carrito.api";
 import Button from "../../components/ui/Button/Button";
 import Card from "../../components/ui/Card/Card";
 
@@ -15,7 +15,7 @@ export default function Perfil() {
     const load = async () => {
       setLoading(true);
       try {
-        const data = await api.obtenerPedidosPorUsuario(user.id);
+        const data = await obtenerPedidos();
         setOrders(data || []);
       } catch {
         setOrders([]);
@@ -98,17 +98,33 @@ export default function Perfil() {
                 ) : (
                   <div className="space-y-4">
                     {orders.map((p) => (
-                      <Card key={p.id_pedido || p.id} className="p-4">
-                        <div className="flex justify-between">
+                      <Card key={p.idPedido} className="p-4">
+                        <div className="flex justify-between mb-2">
                           <div>
-                            <p className="font-bold">Pedido #{p.id_pedido || p.id}</p>
+                            <p className="font-bold">Pedido #{p.idPedido}</p>
                             <p className="text-sm text-gray-500">Estado: {p.estado}</p>
                           </div>
                           <div className="text-right">
-                            <p className="font-bold">{p.total ? `$${p.total}` : ""}</p>
-                            <p className="text-sm text-gray-500">{p.fecha_creacion}</p>
+                            <p className="font-bold">Bs. {Number(p.total).toFixed(2)}</p>
+                            <p className="text-sm text-gray-500">
+                              {new Date(p.fechaCreacion).toLocaleDateString('es-BO')}
+                            </p>
                           </div>
                         </div>
+                        {p.items?.length > 0 && (
+                          <div className="mt-2 pt-2 border-t space-y-1">
+                            {p.items.map((det) => (
+                              <div key={det.idDetalle} className="flex justify-between text-sm">
+                                <span className="text-gray-600">
+                                  {det.variante?.producto?.nombre || det.variante?.sku} x{det.cantidad}
+                                </span>
+                                <span className="font-medium">
+                                  Bs. {(Number(det.precioUnitario) * det.cantidad).toFixed(2)}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </Card>
                     ))}
                   </div>

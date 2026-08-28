@@ -6,6 +6,7 @@ import {
   useActualizarVariante,
   useEliminarVariante,
 } from "../../hooks/admin/useVariantes"
+import { useAuthStore } from "../../store/auth.store"
 import VarianteForm from "./VarianteForm"
 import VarianteImagenes from "./VarianteImagenes"
 import AtributoSelector from "./AtributoSelector"
@@ -18,6 +19,8 @@ interface Props {
 }
 
 export default function VarianteEditor({ idProducto }: Props) {
+  const usuario = useAuthStore((state) => state.usuario)
+  const isAdmin = usuario?.rol === 'ADMIN'
   const { data: variantes, isLoading } = useVariantesPorProducto(idProducto)
   const { mutate: crear, isPending: creando } = useCrearVariante()
   const { mutate: actualizar, isPending: actualizando } =
@@ -34,15 +37,17 @@ export default function VarianteEditor({ idProducto }: Props) {
         <p className="text-sm font-medium text-gray-300">
           Variantes ({variantes?.length || 0})
         </p>
-        <Button
-          size="xs"
-          onClick={() =>
-            setFormAbierto(formAbierto === "nuevo" ? null : "nuevo")
-          }
-        >
-          <HiPlus className="w-3 h-3 mr-1" />
-          Nueva variante
-        </Button>
+        {isAdmin && (
+          <Button
+            size="xs"
+            onClick={() =>
+              setFormAbierto(formAbierto === "nuevo" ? null : "nuevo")
+            }
+          >
+            <HiPlus className="w-3 h-3 mr-1" />
+            Nueva variante
+          </Button>
+        )}
       </div>
 
       {formAbierto === "nuevo" && (
@@ -119,17 +124,19 @@ export default function VarianteEditor({ idProducto }: Props) {
                   <HiPencil className="w-3 h-3" />
                 </Button>
 
-                <Button
-                  size="xs"
-                  variant="danger"
-                  onClick={() => {
-                    if (confirm(`¿Eliminar variante ${variante.sku}?`))
-                      eliminar(variante.idVariante)
-                  }}
-                  title="Eliminar"
-                >
-                  <HiTrash className="w-3 h-3" />
-                </Button>
+                {isAdmin && (
+                  <Button
+                    size="xs"
+                    variant="danger"
+                    onClick={() => {
+                      if (confirm(`¿Eliminar variante ${variante.sku}?`))
+                        eliminar(variante.idVariante)
+                    }}
+                    title="Eliminar"
+                  >
+                    <HiTrash className="w-3 h-3" />
+                  </Button>
+                )}
               </div>
             </div>
 

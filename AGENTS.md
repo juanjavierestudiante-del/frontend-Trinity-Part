@@ -1,0 +1,114 @@
+# AGENTS.md — Frontend (Trinity Party)
+
+## Propósito
+
+SPA pública + panel de administración para la tienda Trinity Party. Sirve catálogo, producto individual, carrito y admin de productos/categorías/inventario.
+
+## Stack
+
+- React 19 + TypeScript (migración en progreso: componentes públicos en `.jsx`, admin en `.tsx`)
+- Vite 8 (config minimal, sin proxy ni path aliases)
+- Tailwind CSS 3 (colores custom: primary purple, secondary pink)
+- TanStack React Query 5 (retry: 1, refetchOnWindowFocus: false)
+- Zustand (solo auth admin)
+- React Router DOM v7 (BrowserRouter)
+- Axios (dos instancias separadas)
+
+## Estructura
+
+```
+src/
+├── components/
+│   ├── admin/         # Componentes panel admin (.tsx)
+│   ├── catalogo/      # Catálogo público (.tsx)
+│   ├── home/          # Secciones homepage (.jsx)
+│   ├── layout/        # Navbar, Footer, Container (.jsx)
+│   ├── producto/      # Detalle producto (.jsx/.tsx)
+│   ├── tienda/        # Carrito (.jsx)
+│   └── ui/            # Componentes reutilizables (Alert, Button, Card, Modal, Table, etc.)
+├── context/           # AuthContext (usuarios públicos)
+├── hooks/
+│   ├── useCatalogo.ts           # Queries catálogo público
+│   └── admin/                   # Hooks admin (CRUD productos, categorías, variantes, imágenes, inventario)
+├── pages/             # Páginas/rutas
+├── services/
+│   ├── api.js         # LEGACY — hardcoded localhost:4000, en uso por AuthContext
+│   ├── axios.ts       # Instancia pública (VITE_API_URL)
+│   ├── axios.admin.ts # Instancia admin (VITE_API_URL + Bearer token)
+│   ├── admin/         # Servicios admin (auth, productos, categorías, variantes, imágenes, inventario)
+│   └── public/        # Servicios públicos (catálogo)
+├── store/             # Zustand auth store (admin)
+└── types/             # catalogo.types.ts
+```
+
+## Variables de entorno
+
+| Variable | Uso | Descripción |
+|----------|-----|-------------|
+| `VITE_API_URL` | `services/axios.ts`, `services/axios.admin.ts` | URL base del backend API |
+
+No existe `.env.example` para el frontend.
+
+## Autenticación
+
+### Usuarios públicos (AuthContext)
+- `AuthContext.jsx` usa `api.js` legacy (localhost:4000 hardcodeado).
+- Persiste en localStorage key: `party-store-current-user`.
+
+### Admin (Zustand + Axios interceptor)
+- `auth.store.ts` gestiona estado (usuario, token, isAuthenticated).
+- Persiste en localStorage: `admin_token`, `admin_usuario`.
+- `axios.admin.ts` inyecta Bearer token automáticamente.
+- En 401 (excepto login): limpia storage y redirige a `/admin/login`.
+
+**Nota:** Son dos sistemas de autenticación separados. Esto parece deuda técnica/migración incompleta, no una decisión intencional.
+
+## Rutas principales
+
+| Ruta | Componente | Notas |
+|------|-----------|-------|
+| `/` | Home | |
+| `/catalogo` | PaginaCatalogo | Catálogo público |
+| `/categoria/:slug` | PaginaCatalogo | Filtrado por categoría |
+| `/productos/:slug` | PaginaProducto | Detalle producto |
+| `/carrito` | Carrito | |
+| `/admin/login` | LoginPage | Fuera de ProtectedRoute |
+| `/admin/dashboard` | DashboardPage | Protegido |
+| `/admin/productos` | ProductosPage | Protegido |
+| `/admin/categorias` | CategoriasPage | Protegido |
+| `/admin/inventario` | InventarioPage | Protegido |
+
+**Rutas legacy** (sin AdminLayout): `/admin/agregar-producto`, `/admin/mostrar-productos`, `/admin/productos/:id/imagenes`.
+
+## Convenciones
+
+- **Components:** Un componente por archivo. Admin en `.tsx`, públicos pueden ser `.jsx`.
+- **Services:** Una instancia Axios por contexto (`publicApi`, `adminApi`). No importar axios directamente.
+- **Hooks:** Separados por dominio (`useCatalogo.ts`, `admin/useProductosAdmin.ts`, etc.).
+- **Query keys:** Prefijo `['admin', ...]` para admin, sin prefijo para público.
+- **Mutations:** Siempre invalidar queries relacionadas con `invalidateQueries()` en `onSuccess`.
+- **Tailwind:** Usar clases del theme custom (colors: primary, secondary, background, surface, ink, muted).
+
+## Comandos
+
+```bash
+npm run dev          # Desarrollo (puerto 5173)
+npm run build        # tsc --noEmit && vite build
+npm run lint         # ESLint
+npm run type-check   # tsc --noEmit
+```
+
+## Restricciones
+
+1. No importar axios directamente — usar `publicApi` o `adminApi` de `services/`.
+2. No agregar comentarios al código a menos que se pida explícitamente.
+3. No usar `api.js` legacy para nuevo código — crear nuevos servicios en `services/admin/` o `services/public/`.
+4. Las rutas admin deben estar dentro del `<Route>` de `AdminLayout` y ser envueltas por `ProtectedRoute`.
+5. No inventar componentes o funcionalidades que no existan actualmente.
+
+## Inconsistencias conocidas
+
+- `api.js` (legacy) con localhost hardcodeado aún en uso por `AuthContext.jsx`.
+- Rutas legacy de admin sin layout ni protección consistente.
+- Código mixto JS/TS — la migración no está completa.
+- `App.css` está vacío — todo el styling es vía Tailwind.

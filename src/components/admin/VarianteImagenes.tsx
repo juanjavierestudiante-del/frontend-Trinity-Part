@@ -7,6 +7,7 @@ import {
   useMarcarImagenPrincipal,
   useSubirMultiplesImagenesVariante,
 } from "../../hooks/admin/useImagenes"
+import { useAuthStore } from "../../store/auth.store"
 import ZonaSubidaImagenes from "./ZonaSubidaImagenes"
 import type { ImagenVariante } from "../../types/catalogo.types"
 
@@ -17,6 +18,8 @@ interface Props {
 }
 
 export default function VarianteImagenes({ idVariante, idProducto, imagenes }: Props) {
+  const usuario = useAuthStore((state) => state.usuario)
+  const isAdmin = usuario?.rol === 'ADMIN'
   const { mutate: subirMultiples } = useSubirMultiplesImagenesVariante(idProducto)
   const { mutate: eliminar } = useEliminarImagenVariante(idProducto)
   const { mutate: marcarPrincipal } = useMarcarImagenPrincipal(idProducto)
@@ -30,7 +33,7 @@ export default function VarianteImagenes({ idVariante, idProducto, imagenes }: P
           url: img.url,
           principal: img.principal,
         }))}
-        onRemoveExisting={(id) => eliminar(id)}
+        onRemoveExisting={isAdmin ? (id) => eliminar(id) : undefined}
         onMarkPrincipal={(id) => marcarPrincipal(id)}
         showPrincipalBadge
         emptyMessage="Sin imágenes"

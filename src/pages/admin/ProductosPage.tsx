@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { HiPlus, HiPencil, HiTrash } from 'react-icons/hi'
 import { useProductosAdmin, useEliminarProducto } from '../../hooks/admin/useProductosAdmin'
+import { useAuthStore } from '../../store/auth.store'
 import Table from '../../components/ui/Table/Table'
 import TableHead from '../../components/ui/Table/TableHead'
 import TableBody from '../../components/ui/Table/TableBody'
@@ -20,6 +21,8 @@ const colorEstado: Record<string, string> = {
 
 export default function ProductosPage() {
   const navigate = useNavigate()
+  const usuario = useAuthStore((state) => state.usuario)
+  const isAdmin = usuario?.rol === 'ADMIN'
   const { data: productos, isLoading, isError } = useProductosAdmin()
   const { mutate: eliminar } = useEliminarProducto()
 
@@ -39,10 +42,12 @@ export default function ProductosPage() {
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <h1 className="text-2xl font-bold text-gray-100">Productos</h1>
-        <Button onClick={() => navigate('/admin/productos/nuevo')}>
-          <HiPlus className="w-4 h-4 mr-2" />
-          Nuevo producto
-        </Button>
+        {isAdmin && (
+          <Button onClick={() => navigate('/admin/productos/nuevo')}>
+            <HiPlus className="w-4 h-4 mr-2" />
+            Nuevo producto
+          </Button>
+        )}
       </div>
 
       <Table dark>
@@ -85,15 +90,17 @@ export default function ProductosPage() {
                     <HiPencil className="w-3 h-3 sm:mr-1" />
                     <span className="hidden sm:inline">Editar</span>
                   </Button>
-                  <Button
-                    size="xs"
-                    variant="danger"
-                    onClick={() => handleEliminar(producto.idProducto, producto.nombre)}
-                    title="Eliminar"
-                  >
-                    <HiTrash className="w-3 h-3 sm:mr-1" />
-                    <span className="hidden sm:inline">Eliminar</span>
-                  </Button>
+                  {isAdmin && (
+                    <Button
+                      size="xs"
+                      variant="danger"
+                      onClick={() => handleEliminar(producto.idProducto, producto.nombre)}
+                      title="Eliminar"
+                    >
+                      <HiTrash className="w-3 h-3 sm:mr-1" />
+                      <span className="hidden sm:inline">Eliminar</span>
+                    </Button>
+                  )}
                 </div>
               </TableCell>
             </TableRow>

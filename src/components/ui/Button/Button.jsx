@@ -20,6 +20,7 @@ const SIZE_CLASSES = {
 
 export default function Button(props) {
   const {
+    as: Component = 'button',
     variant = 'primary',
     size = 'md',
     disabled = false,
@@ -38,8 +39,8 @@ export default function Button(props) {
   const base = `inline-flex items-center justify-center rounded-md font-semibold transition-shadow transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed ${sizeClass}`
 
   return (
-    <button
-      type={type}
+    <Component
+      {...(Component === 'button' ? { type } : {})}
       onClick={onClick}
       disabled={disabled || loading}
       aria-disabled={disabled || loading}
@@ -52,6 +53,6 @@ export default function Button(props) {
         <Icon className={`h-4 w-4 ${children ? 'mr-2' : ''}`} />
       ) : null}
       {children && <span>{children}</span>}
-    </button>
+    </Component>
   )
 }

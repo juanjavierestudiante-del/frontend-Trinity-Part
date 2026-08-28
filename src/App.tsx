@@ -30,6 +30,7 @@ import PaginaProducto from "./pages/Producto/PaginaProducto";
 // ====================
 
 import LoginPage from "./pages/admin/LoginPage";
+import UnauthorizedPage from "./pages/admin/UnauthorizedPage";
 import DashboardPage from "./pages/admin/DashboardPage";
 import ProtectedRoute from "./components/admin/ProtectedRoute";
 import AdminLayout from "./components/admin/AdminLayout";
@@ -39,14 +40,6 @@ import ProductoDetallePage from "./pages/admin/ProductoDetallePage";
 import CategoriasPage from "./pages/admin/CategoriasPage";
 import CategoriaFormPage from "./pages/admin/CategoriaFormPage";
 import InventarioPage from "./pages/admin/InventarioPage";
-
-// ====================
-// Admin (legacy - mantener temporalmente)
-// ====================
-
-import AgregarProducto from "./pages/admin/Productos/AgregarProducto";
-import ListarProductos from "./pages/admin/Productos/ListarProductos";
-import AdminImagenes from "./pages/admin/Productos/AdminImagenes";
 
 export default function App() {
   return (
@@ -74,6 +67,7 @@ export default function App() {
 
           {/* Admin: Login */}
           <Route path="/admin/login" element={<LoginPage />} />
+          <Route path="/admin/unauthorized" element={<UnauthorizedPage />} />
 
           {/* Admin: Rutas protegidas con layout */}
           <Route
@@ -95,11 +89,6 @@ export default function App() {
             <Route path="categorias/:id/editar" element={<CategoriaFormPage />} />
             <Route path="inventario" element={<InventarioPage />} />
           </Route>
-
-          {/* Admin: Rutas legacy (temporal) */}
-          <Route path="/admin/agregar-producto" element={<AgregarProducto />} />
-          <Route path="/admin/mostrar-productos" element={<ListarProductos />} />
-          <Route path="/admin/productos/:id/imagenes" element={<AdminImagenes />} />
         </Routes>
 
         <Footer />
