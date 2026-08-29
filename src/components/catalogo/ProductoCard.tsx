@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { ShoppingCart } from 'lucide-react';
 import type { Producto } from '../../types/catalogo.types';
 import Button from '../ui/Button/Button';
+import Card from '../ui/Card/Card';
 
 interface Props {
   producto: Producto;
@@ -51,7 +52,7 @@ export default function ProductoCard({ producto, featured = false, badge: extern
   };
 
   return (
-    <div className="group relative bg-surface rounded-card shadow-brand overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:shadow-brand-lg">
+    <Card padding={false} className="group relative overflow-hidden hover:-translate-y-1">
       {/* Badge */}
       {badgeLabel && (
         <span className={`absolute top-3 left-3 z-10 px-2.5 py-1 text-xs font-bold rounded-md backdrop-blur-sm ${BADGE_STYLES[badgeVariant] || BADGE_STYLES.primary}`}>
@@ -111,6 +112,6 @@ export default function ProductoCard({ producto, featured = false, badge: extern
           )}
         </div>
       </div>
-    </div>
+    </Card>
   );
 }

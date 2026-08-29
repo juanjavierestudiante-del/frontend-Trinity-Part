@@ -19,7 +19,7 @@ function NodoCategoria({ categoria, slug, abiertas, toggle, nivel }: NodoCategor
   const esActiva = categoria.slug === slug;
 
   return (
-    <div className={esRaiz ? 'border-b border-gray-100 last:border-b-0' : ''}>
+    <div className={esRaiz ? 'border-b border-white/40 last:border-b-0' : ''}>
       <div className="flex items-center justify-between">
         <Link
           to={`/categoria/${categoria.slug}`}
@@ -27,22 +27,20 @@ function NodoCategoria({ categoria, slug, abiertas, toggle, nivel }: NodoCategor
             esRaiz ? 'px-3 font-semibold' : 'pl-2'
           } ${
             esActiva
-              ? esRaiz
-                ? 'bg-primary-light text-primary-dark'
-                : 'bg-gray-100 text-gray-900'
+              ? 'bg-white/70 text-primary-dark'
               : esRaiz
-                ? 'text-gray-800 hover:bg-primary-light/50 hover:text-primary-dark'
-                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                ? 'text-primary-dark/90 hover:bg-white/30 hover:text-primary-dark'
+                : 'text-primary-dark/80 hover:bg-white/20 hover:text-primary-dark'
           }`}
         >
-          {!esRaiz && <span className="mr-1 text-gray-300">—</span>}
+          {!esRaiz && <span className="mr-1 text-primary/40">—</span>}
           {categoria.nombre}
         </Link>
 
         {tieneSub && (
           <button
             onClick={() => toggle(categoria.idCategoria)}
-            className="p-2 text-gray-400 transition-all duration-200 rounded-full hover:bg-primary-light/50 hover:text-primary-dark"
+            className="p-2 text-primary-dark/60 transition-all duration-200 rounded-full hover:bg-white/30 hover:text-primary-dark"
             aria-label="Expandir subcategorías"
           >
             <ChevronDown
@@ -86,19 +84,19 @@ export default function MenuCategorias() {
     setAbiertas((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  if (isLoading) return <p className="p-4 text-sm text-gray-500">Cargando menú...</p>;
+  if (isLoading) return <p className="p-4 text-sm text-primary-dark/70">Cargando menú...</p>;
 
   return (
-    <nav className="w-full max-w-xs p-4 space-y-2 bg-white border border-gray-200 shadow-sm rounded-card">
+    <nav className="w-full max-w-xs p-4 space-y-2 bg-gradient-to-br from-white/30 via-white/15 to-white/10 border border-white/30 shadow-brand backdrop-blur-xl rounded-card">
       <div className="flex items-center justify-between px-3 mb-2">
-        <h2 className="text-xs font-bold tracking-wider text-gray-400 uppercase">
+        <h2 className="text-xs font-bold tracking-wider text-primary-dark/70 uppercase">
           Categorías
         </h2>
 
         {slug && (
           <Link
             to="/catalogo"
-            className="flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary-dark transition-colors"
+            className="flex items-center gap-1 text-xs font-semibold text-primary-dark hover:text-primary transition-colors"
           >
             <X size={12} />
             Quitar filtro

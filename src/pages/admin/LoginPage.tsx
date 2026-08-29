@@ -50,6 +50,7 @@ export default function LoginPage() {
 
       <Card
         className="relative z-10 w-full max-w-md rounded-card border border-white/15 bg-white/[0.06] backdrop-blur-2xl shadow-[0_0_60px_-15px_rgba(134,59,255,0.45)]"
+        variant="solid"
         hover={false}
       >
         <div className="flex flex-col items-center mb-8 text-center">

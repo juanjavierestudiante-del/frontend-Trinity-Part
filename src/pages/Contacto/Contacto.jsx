@@ -8,7 +8,7 @@ export default function Contacto() {
   return (
     <div className="min-h-screen">
       <div className="max-w-4xl mx-auto px-4 py-12">
-        <h1 className="text-4xl font-black text-center mb-12 text-gray-800 font-display">
+        <h1 className="text-4xl font-black text-center mb-12 text-ink font-display">
           CONTACTO
         </h1>
 
@@ -18,8 +18,8 @@ export default function Contacto() {
               <div className="flex items-center gap-4 mb-4">
                 <Mail className="text-primary" size={32} />
                 <div>
-                  <h3 className="font-bold text-gray-800">Email</h3>
-                  <p className="text-gray-600">info@trinity.com</p>
+                  <h3 className="font-bold text-ink">Email</h3>
+                  <p className="text-muted">info@trinity.com</p>
                 </div>
               </div>
             </Card>
@@ -28,8 +28,8 @@ export default function Contacto() {
               <div className="flex items-center gap-4 mb-4">
                 <Phone className="text-primary" size={32} />
                 <div>
-                  <h3 className="font-bold text-gray-800">Teléfono</h3>
-                  <p className="text-gray-600">+34 123 456 789</p>
+                  <h3 className="font-bold text-ink">Teléfono</h3>
+                  <p className="text-muted">+34 123 456 789</p>
                 </div>
               </div>
             </Card>
@@ -38,15 +38,15 @@ export default function Contacto() {
               <div className="flex items-center gap-4 mb-4">
                 <MapPin className="text-primary" size={32} />
                 <div>
-                  <h3 className="font-bold text-gray-800">Ubicación</h3>
-                  <p className="text-gray-600">Calle Principal 123, Madrid</p>
+                  <h3 className="font-bold text-ink">Ubicación</h3>
+                  <p className="text-muted">Calle Principal 123, Madrid</p>
                 </div>
               </div>
             </Card>
           </div>
 
           <Card hover={false}>
-            <h2 className="text-2xl font-bold mb-6 text-gray-800 font-display">
+            <h2 className="text-2xl font-bold mb-6 text-ink font-display">
               Envíanos un mensaje
             </h2>
             <form className="space-y-4">
