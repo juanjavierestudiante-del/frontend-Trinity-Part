@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, Image as ImageIcon } from 'lucide-react';
 import type { Producto } from '../../types/catalogo.types';
 import Button from '../ui/Button/Button';
 import Card from '../ui/Card/Card';
+import { cloudinaryUrl } from '../../utils/cloudinary';
 
 interface Props {
   producto: Producto;
@@ -65,13 +66,16 @@ export default function ProductoCard({ producto, featured = false, badge: extern
         <div className="aspect-[4/5] overflow-hidden">
           {imagen ? (
             <img
-              src={imagen.url}
+              src={cloudinaryUrl(imagen.url, 'w_500,q_auto,f_auto')}
               alt={producto.nombre}
+              loading="lazy"
+              decoding="async"
               className="object-cover w-full h-full transition-transform duration-200 group-hover:scale-105"
             />
           ) : (
-            <div className="w-full h-full bg-primary-light/30 flex items-center justify-center text-5xl">
-              🎈
+            <div className="w-full h-full bg-primary-light/30 flex items-center justify-center text-5xl text-primary-dark/40" role="img" aria-label={producto.nombre}>
+              <ImageIcon className="w-16 h-16" aria-hidden="true" />
+              <span className="sr-only">{producto.nombre}</span>
             </div>
           )}
         </div>
@@ -105,6 +109,7 @@ export default function ProductoCard({ producto, featured = false, badge: extern
               size="sm"
               icon={ShoppingCart}
               onClick={handleAddToCart}
+              aria-label={`Agregar ${producto.nombre} al carrito`}
               className="shrink-0"
             >
               Agregar

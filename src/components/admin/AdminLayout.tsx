@@ -10,6 +10,7 @@ import {
   HiShoppingBag,
   HiTag,
   HiCube,
+  HiClipboardList,
   HiLogout,
   HiMenu,
 } from 'react-icons/hi'
@@ -83,6 +84,15 @@ export default function AdminLayout() {
               className="cursor-pointer"
             >
               Inventario
+            </SidebarItem>
+
+            <SidebarItem
+              icon={HiClipboardList}
+              active={isActive('/admin/pedidos')}
+              onClick={() => handleNav('/admin/pedidos')}
+              className="cursor-pointer"
+            >
+              Pedidos
             </SidebarItem>
           </SidebarItemGroup>
 

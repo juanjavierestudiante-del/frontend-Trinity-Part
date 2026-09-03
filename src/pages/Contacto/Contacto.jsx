@@ -3,10 +3,15 @@ import Input from "../../components/ui/Input/Input";
 import Button from "../../components/ui/Button/Button";
 import Textarea from "../../components/ui/Textarea/Textarea";
 import Card from "../../components/ui/Card/Card";
+import Seo from "../../components/seo/Seo";
 
 export default function Contacto() {
   return (
     <div className="min-h-screen">
+      <Seo
+        title="Contacto | Trinity Party & Events"
+        description="Contacta con Trinity Party & Events para consultas, pedidos y colaboraciones. Estamos en Madrid para ayudarte con tus fiestas y celebraciones."
+      />
       <div className="max-w-4xl mx-auto px-4 py-12">
         <h1 className="text-4xl font-black text-center mb-12 text-ink font-display">
           CONTACTO

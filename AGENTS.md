@@ -24,9 +24,11 @@ src/
 │   ├── home/          # Secciones homepage (.jsx)
 │   ├── layout/        # Navbar, Footer, Container (.jsx)
 │   ├── producto/      # Detalle producto (.jsx/.tsx)
+│   ├── seo/           # Seo.tsx (title/meta/JSON-LD por ruta)
 │   ├── tienda/        # Carrito (.jsx)
 │   └── ui/            # Componentes reutilizables (Alert, Button, Card, Modal, Table, etc.)
 ├── context/           # AuthContext (usuarios públicos)
+├── data/              # products.js (LEGACY/NO USADO — dataset hardcodeado sin importar)
 ├── hooks/
 │   ├── useCatalogo.ts           # Queries catálogo público
 │   └── admin/                   # Hooks admin (CRUD productos, categorías, variantes, imágenes, inventario)
@@ -86,7 +88,21 @@ La sesión es **única y bidireccional** (Opción A): el mismo usuario se persis
 | `/admin/categorias` | CategoriasPage | Protegido |
 | `/admin/inventario` | InventarioPage | Protegido |
 
-**Rutas legacy** (sin AdminLayout): `/admin/agregar-producto`, `/admin/mostrar-productos`, `/admin/productos/:id/imagenes`.
+**Rutas legacy** (sin AdminLayout) — **YA NO EXISTEN** en `App.tsx`. Todas las rutas admin
+están dentro de `AdminLayout` + `ProtectedRoute` (ver `App.tsx`).
+
+## SEO y Accesibilidad (tienda pública)
+
+- **SEO:** `index.html` (meta/OG/Twitter/canonical), `public/robots.txt`, `public/sitemap.xml`
+  y el componente `components/seo/Seo.tsx` (title/meta description/JSON-LD por ruta).
+  - `Product` en `PaginaProducto.tsx`, `ItemList` en `PaginaCatalogo.tsx`.
+  - **Limitación:** SPA sin SSR → SEO dinámico no garantizado para crawlers estáticos
+    (ver `docs/seo.md`).
+- **Accesibilidad (WCAG 2.2):** mejoras aplicadas en `Navbar`, `Footer`, `ProductoCard`,
+  `BuscadorProductos`, `Carousel` (aria-live manual, roles de carrusel), `focus-visible`
+  global y `prefers-reduced-motion` (ver `docs/accessibility.md`).
+- **Diseño:** estética "glass lilac"; tipografía Bricolage Grotesque (display) + DM Sans (body)
+  (ver `docs/ui-guide.md`).
 
 ## Convenciones
 
@@ -116,6 +132,6 @@ npm run type-check   # tsc --noEmit
 
 ## Inconsistencias conocidas
 
-- Rutas legacy de admin sin layout ni protección consistente.
+- `data/products.js` es código muerto (dataset legacy, no se importa en ningún lugar).
 - Código mixto JS/TS — la migración no está completa.
 - `App.css` está vacío — todo el styling es vía Tailwind.

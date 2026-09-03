@@ -5,6 +5,7 @@ import ProductoCard from "../../components/catalogo/ProductoCard";
 import MenuCategorias from "../../components/catalogo/MenuCategorias";
 import BuscadorProductos from "../../components/catalogo/BuscadorProductos";
 import StatusMessage from "../../components/ui/StatusMessage/StatusMessage";
+import Seo from "../../components/seo/Seo";
 
 export default function Catalogo() {
   const { slug } = useParams<{ slug: string }>();
@@ -21,6 +22,25 @@ export default function Catalogo() {
 
   return (
     <main className="min-h-screen px-4 py-10">
+      <Seo
+        title={`Catálogo | Trinity Party & Events`}
+        description="Descubre todos nuestros productos: decoraciones, regalos, cotillones y artículos para fiestas y celebraciones."
+        jsonLd={
+          productos && productos.length > 0
+            ? {
+                '@context': 'https://schema.org',
+                '@type': 'ItemList',
+                name: 'Catálogo de productos Trinity Party',
+                itemListElement: productos.slice(0, 50).map((p, index) => ({
+                  '@type': 'ListItem',
+                  position: index + 1,
+                  url: `https://www.trinitypartyevent.com/productos/${p.slug}`,
+                  name: p.nombre,
+                })),
+              }
+            : undefined
+        }
+      />
       <div className="mx-auto max-w-7xl">
         <header className="mb-10 space-y-3">
           <p className="text-sm font-semibold uppercase tracking-[0.3em] text-primary">

@@ -1,8 +1,13 @@
 import Card from "../../components/ui/Card/Card";
+import Seo from "../../components/seo/Seo";
 
 export default function Nosotros() {
   return (
     <div className="min-h-screen">
+      <Seo
+        title="Nosotros | Trinity Party & Events"
+        description="Somos Trinity, tu tienda especializada en artículos para fiestas: decoración, cotillones y regalos para celebraciones inolvidables."
+      />
       <div className="max-w-4xl mx-auto px-4 py-12">
         <h1 className="text-4xl font-black text-center mb-12 text-gray-800 font-display">
           NOSOTROS

@@ -35,6 +35,7 @@ export default function BuscadorProductos({ onBuscar, placeholder = 'Buscar prod
           onChange={(e) => setTexto(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
+          aria-label="Buscar productos"
           className="w-full py-2 pl-10 pr-10 text-sm text-ink placeholder:text-primary-dark/40 transition bg-white/20 border border-white/30 backdrop-blur-md rounded-md focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-white/50"
         />
         {texto && (

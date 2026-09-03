@@ -4,12 +4,30 @@
 
 @layer base {
   body {
-    @apply min-h-screen bg-fixed font-body;
+    @apply min-h-screen bg-fixed font-body text-ink antialiased;
     background-image: url("https://res.cloudinary.com/dslh6rwix/image/upload/q_auto/f_auto/v1781310826/fondo_erliih.eps");
+  }
+
+  /* Capa de atmósfera lilac para dar profundidad sobre el fondo fijo */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background:
+      radial-gradient(60rem 40rem at 85% -10%, rgba(255, 95, 163, 0.18), transparent 60%),
+      radial-gradient(50rem 35rem at 5% 110%, rgba(134, 59, 255, 0.16), transparent 60%);
+    pointer-events: none;
   }
 
   h1, h2, h3 {
     @apply font-display;
+  }
+
+  a:focus-visible,
+  button:focus-visible,
+  [tabindex]:focus-visible {
+    @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-background rounded;
   }
 }
 
@@ -36,6 +54,15 @@
   .animate-fade-in-up {
     animation: fade-in-up 0.3s ease-out both;
   }
+
+  @keyframes float-soft {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  .animate-float-soft {
+    animation: float-soft 6s ease-in-out infinite;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -43,5 +70,6 @@
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

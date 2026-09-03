@@ -27,8 +27,8 @@ export default {
         'brand-lg': '0 8px 32px -4px rgba(134, 59, 255, 0.18)',
       },
       fontFamily: {
-        display: ['Sora', 'sans-serif'],
-        body: ['Inter', 'sans-serif'],
+        display: ['"Bricolage Grotesque"', 'sans-serif'],
+        body: ['"DM Sans"', 'sans-serif'],
       },
     },
   },

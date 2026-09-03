@@ -13,7 +13,7 @@ export default function CartItem({ item, onRemove, onQuantityChange }) {
           />
           <div>
             <h4 className="font-semibold text-gray-800">{item.name}</h4>
-            <p className="text-sm text-gray-600">${item.price}</p>
+            <p className="text-sm text-gray-600">Bs. {item.price}</p>
           </div>
         </div>
       </td>
@@ -29,7 +29,7 @@ export default function CartItem({ item, onRemove, onQuantityChange }) {
         </div>
       </td>
       <td className="px-6 py-4 font-bold text-right text-primary">
-        ${(item.quantity * item.price).toFixed(2)}
+        Bs. {(item.quantity * item.price).toFixed(2)}
       </td>
       <td className="px-6 py-4 text-center">
         <Button onClick={() => onRemove(item.id)} variant="ghost" size="sm" className="text-red-500">

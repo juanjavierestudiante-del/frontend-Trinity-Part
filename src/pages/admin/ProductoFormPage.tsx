@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
+import type { Categoria } from "../../types/catalogo.types"
 import {
   useProductoAdmin,
   useCrearProducto,
@@ -13,6 +14,20 @@ import Select from "../../components/ui/Select/Select"
 import Label from "../../components/ui/Label/Label"
 import ToggleSwitch from "../../components/ui/ToggleSwitch/ToggleSwitch"
 import Loader from "../../components/ui/Loader/Loader"
+
+const aplanarCategorias = (
+  categorias: Categoria[],
+  nivel = 0,
+): { categoria: Categoria; nivel: number }[] => {
+  const resultado: { categoria: Categoria; nivel: number }[] = []
+  for (const cat of categorias) {
+    resultado.push({ categoria: cat, nivel })
+    if (cat.subcategorias?.length) {
+      resultado.push(...aplanarCategorias(cat.subcategorias, nivel + 1))
+    }
+  }
+  return resultado
+}
 
 export default function ProductoFormPage() {
   const navigate = useNavigate()
@@ -110,11 +125,12 @@ export default function ProductoFormPage() {
               dark
             >
               <option value={0} disabled>Seleccioná una categoría</option>
-              {categorias?.map((cat) => (
-                <option key={cat.idCategoria} value={cat.idCategoria}>
-                  {cat.nombre}
-                </option>
-              ))}
+              {categorias &&
+                aplanarCategorias(categorias).map(({ categoria, nivel }) => (
+                  <option key={categoria.idCategoria} value={categoria.idCategoria}>
+                    {nivel > 0 ? `${"".padStart(nivel * 2)}— ${categoria.nombre}` : categoria.nombre}
+                  </option>
+                ))}
             </Select>
           </div>
 

@@ -19,8 +19,13 @@ export const eliminarDelCarrito = async (idDetalle: number) => {
   await publicApi.delete(`/carrito/items/${idDetalle}`);
 };
 
-export const crearPedido = async () => {
-  const { data } = await publicApi.post('/pedidos');
+export const crearPedido = async (body: {
+  nombreContacto: string;
+  telefonoContacto: string;
+  direccionEntrega?: string | null;
+  notas?: string | null;
+}) => {
+  const { data } = await publicApi.post('/pedidos', body);
   return data;
 };
 

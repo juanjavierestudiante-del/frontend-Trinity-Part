@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import { Menu, X, Search, ShoppingCart, User, LogOut, Settings } from "lucide-react";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { getCarrito } from "../../services/public/carrito.api";
 import Button from "../ui/Button/Button";
-import Input from "../ui/Input/Input";
 
 export default function Nav() {
   const [open, setOpen] = useState(false);
@@ -15,6 +14,7 @@ export default function Nav() {
 
   useEffect(() => {
     let mounted = true;
+    let debounceTimer = null;
     const load = async () => {
       if (!user) {
         setCartCount(0);
@@ -31,12 +31,18 @@ export default function Nav() {
     };
     load();
 
+    // Debounce: si el usuario dispara cart-updated varias veces seguidas
+    // (clicks rápidos), solo hacemos un GET /carrito al final de la ráfaga.
     const handler = () => {
-      load();
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        load();
+      }, 300);
     };
     window.addEventListener("cart-updated", handler);
     return () => {
       mounted = false;
+      if (debounceTimer) clearTimeout(debounceTimer);
       window.removeEventListener("cart-updated", handler);
     };
   }, [user]);
@@ -61,7 +67,7 @@ export default function Nav() {
                 <img
                   src={logo}
                   className="w-44"
-                  alt="Logo"
+                  alt="Trinity Party & Events"
                 />
               </div>
               <div className="flex-col hidden sm:flex">
@@ -76,25 +82,40 @@ export default function Nav() {
           {/* Enlaces Desktop */}
           <div className="items-center justify-center hidden gap-2 lg:flex">
             {navLinks.map((link) => (
-              <Link
+              <NavLink
                 key={link.to}
                 to={link.to}
-                className="relative px-4 py-2 text-sm font-semibold text-white transition-all duration-300 group hover:text-primary-light"
+                className={({ isActive }) =>
+                  `relative px-4 py-2 text-sm font-semibold text-white transition-all duration-300 group hover:text-primary-light ${
+                    isActive ? "text-primary-light" : ""
+                  }`
+                }
               >
                 {link.label}
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-secondary to-primary-light group-hover:w-full transition-all duration-300"></span>
-              </Link>
+              </NavLink>
             ))}
           </div>
 
           {/* Acciones */}
           <div className="flex items-center justify-end gap-2 sm:gap-3">
             {/* Búsqueda desktop */}
-            <div className="relative hidden md:block">
-              <Input placeholder="Buscar..." className="w-40 xl:w-48" icon={<Search className="w-4 h-4 text-white/60" />} />
+            <div className="relative hidden md:block group">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/60 transition-colors group-focus-within:text-white" />
+              <input
+                type="search"
+                placeholder="Buscar..."
+                aria-label="Buscar productos"
+                className="w-40 xl:w-48 pl-9 pr-3 py-2 text-sm text-white placeholder-white/60 rounded-full bg-white/15 border border-white/20 backdrop-blur-md transition-all duration-300 focus:bg-white/20 focus:border-white/40 focus:outline-none focus:ring-2 focus:ring-white/30 focus:w-56"
+              />
             </div>
 
-            <Button className="p-2.5 rounded-full md:hidden" variant="ghost" size="sm">
+            <Button
+              className="p-2.5 rounded-full text-white hover:bg-white/15 md:hidden"
+              variant="ghost"
+              size="sm"
+              aria-label="Buscar productos"
+            >
               <Search className="w-5 h-5" />
             </Button>
 
@@ -117,6 +138,7 @@ export default function Nav() {
               <Link
                 to="/carrito"
                 className="relative p-2.5 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300"
+                aria-label={`Carrito de compras (${cartCount} artículos)`}
               >
                 <ShoppingCart className="w-5 h-5" />
                 <span className="absolute -top-1 -right-1 bg-secondary text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-primary">
@@ -141,6 +163,7 @@ export default function Nav() {
                   variant="ghost"
                   size="sm"
                   title="Cerrar sesión"
+                  aria-label="Cerrar sesión"
                 >
                   <LogOut className="w-5 h-5 text-white" />
                 </Button>
@@ -150,9 +173,9 @@ export default function Nav() {
                 <Button
                   as={Link}
                   to="/login"
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
-                  className="rounded-full border-white/40 text-p hover:bg-white/15"
+                  className="rounded-full text-white hover:bg-white/15 border border-white/25"
                 >
                   Iniciar sesión
                 </Button>
@@ -161,7 +184,7 @@ export default function Nav() {
                   to="/registro"
                   variant="primary"
                   size="sm"
-                  className="rounded-full first-line: text-white hover:bg-primary-light"
+                  className="rounded-full bg-secondary text-white hover:bg-secondary/90 border-2 border-white/30 font-bold shadow-[0_4px_16px_rgba(255,95,163,0.5)]"
                 >
                   Registrarse
                 </Button>
@@ -170,7 +193,15 @@ export default function Nav() {
 
             {/* Menú móvil toggle */}
             <div className="ml-1 lg:hidden">
-              <Button onClick={() => setOpen(!open)} className="p-2.5 rounded-md" variant="ghost" size="sm">
+              <Button
+                onClick={() => setOpen(!open)}
+                className="p-2.5 rounded-md"
+                variant="ghost"
+                size="sm"
+                aria-expanded={open}
+                aria-controls="menu-movil"
+                aria-label={open ? "Cerrar menú" : "Abrir menú"}
+              >
                 {!open ? <Menu className="w-5 h-5 text-white" /> : <X className="w-5 h-5 text-white" />}
               </Button>
             </div>
@@ -180,17 +211,21 @@ export default function Nav() {
 
         {/* Menú Móvil */}
         {open && (
-          <div className="pb-6 border-t lg:hidden border-white/10">
+          <div id="menu-movil" className="pb-6 border-t lg:hidden border-white/10">
             <div className="flex flex-col gap-1 mt-3">
               {navLinks.map((link) => (
-                <Link
+                <NavLink
                   key={link.to}
                   to={link.to}
-                  className="block px-4 py-3 font-medium text-white transition-colors rounded-md hover:bg-white/10"
+                  className={({ isActive }) =>
+                    `block px-4 py-3 font-medium text-white transition-colors rounded-md hover:bg-white/10 ${
+                      isActive ? "bg-white/10" : ""
+                    }`
+                  }
                   onClick={() => setOpen(false)}
                 >
                   {link.label}
-                </Link>
+                </NavLink>
               ))}
 
               {/* Panel Admin en móvil */}
@@ -213,9 +248,9 @@ export default function Nav() {
                   <Button
                     as={Link}
                     to="/login"
-                    variant="outline"
+                    variant="ghost"
                     size="md"
-                    className="w-full justify-start rounded-md border-white/40 text-white hover:bg-white/15"
+                    className="w-full justify-start rounded-md border border-white/25 text-white hover:bg-white/15"
                     onClick={() => setOpen(false)}
                   >
                     Iniciar sesión
@@ -225,7 +260,7 @@ export default function Nav() {
                     to="/registro"
                     variant="primary"
                     size="md"
-                    className="w-full rounded-md bg-white text-primary hover:bg-primary-light"
+                    className="w-full rounded-md bg-secondary text-white hover:bg-secondary/90 border-2 border-white/30 font-bold"
                     onClick={() => setOpen(false)}
                   >
                     Registrarse

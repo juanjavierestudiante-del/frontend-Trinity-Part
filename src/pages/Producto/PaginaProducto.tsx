@@ -5,6 +5,7 @@ import SelectorVariante from '../../components/producto/SelectorVariante';
 import type { Variante } from '../../types/catalogo.types';
 import StatusMessage from '../../components/ui/StatusMessage/StatusMessage';
 import Button from '../../components/ui/Button/Button';
+import Seo from '../../components/seo/Seo';
 import { useAuth } from '../../context/AuthContext';
 import { agregarAlCarrito } from '../../services/public/carrito.api';
 
@@ -41,6 +42,30 @@ export default function PaginaProducto() {
 
   const stock = varianteActual?.inventario?.stockActual ?? 0;
 
+  const jsonLdProduct = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: producto.nombre,
+    description: producto.descripcion ?? producto.descripcionCorta ?? undefined,
+    image: imagen,
+    sku: varianteActual?.sku,
+    brand: varianteActual?.marca?.nombre
+      ? { '@type': 'Brand', name: varianteActual.marca.nombre }
+      : undefined,
+    ...(varianteActual
+      ? {
+          offers: {
+            '@type': 'Offer',
+            price: Number(varianteActual.precioOferta ?? varianteActual.precioVenta).toFixed(2),
+            priceCurrency: 'BOB',
+            availability: stock > 0
+              ? 'https://schema.org/InStock'
+              : 'https://schema.org/OutOfStock',
+          },
+        }
+      : {}),
+  };
+
   const handleAgregarAlCarrito = async () => {
     if (!varianteActual || !user) return;
     setAgregando(true);
@@ -56,6 +81,11 @@ export default function PaginaProducto() {
 
   return (
     <main className="min-h-screen px-4 py-10">
+      <Seo
+        title={`${producto.nombre} | Trinity Party & Events`}
+        description={producto.descripcionCorta ?? producto.descripcion ?? undefined}
+        jsonLd={jsonLdProduct}
+      />
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-10 lg:grid-cols-[1.4fr_0.9fr]">
           <div className="rounded-card bg-white p-6 shadow-sm">

@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# Bloquear áreas privadas
+Disallow: /admin/
+Disallow: /api/
+
+# Mapa del sitio
+Sitemap: https://www.trinitypartyevent.com/sitemap.xml

@@ -1,6 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { crearPedido } from "../../services/public/carrito.api";
 import Button from "../ui/Button/Button";
 import Card from "../ui/Card/Card";
 
@@ -9,18 +8,12 @@ export default function CartSummary({ total }) {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const handleCheckout = async () => {
+  const handleCheckout = () => {
     if (!user) {
       navigate('/login');
       return;
     }
-    try {
-      await crearPedido();
-      window.dispatchEvent(new CustomEvent('cart-updated'));
-      navigate('/perfil');
-    } catch (err) {
-      alert(err?.response?.data?.error || 'Error al crear el pedido');
-    }
+    navigate('/checkout');
   };
 
   return (

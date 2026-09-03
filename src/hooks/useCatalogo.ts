@@ -29,6 +29,9 @@ export const useProductos = (filtros?: FiltrosProductos) => {
     queryKey: ['productos', filtros],
     queryFn: () => getProductos(filtros),
 
+    // Considera los datos frescos por 5 minutos (el catálogo cambia poco)
+    staleTime: 1000 * 60 * 5,
+
     // Solo hace la petición si la búsqueda tiene al menos 2 caracteres
     // (evita peticiones innecesarias mientras el usuario escribe)
     enabled: !filtros?.q || filtros.q.length >= 2,
@@ -42,5 +45,6 @@ export const useProducto = (slug: string) => {
     queryKey: ['producto', slug],   // caché por slug — cada producto tiene su propia entrada
     queryFn: () => getProductoPorSlug(slug),
     enabled: !!slug,                // solo hace la petición si hay slug
+    staleTime: 1000 * 60 * 5,     // frescos por 5 minutos (el detalle cambia poco)
   });
 };

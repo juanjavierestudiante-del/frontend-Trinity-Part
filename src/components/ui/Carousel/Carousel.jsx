@@ -14,8 +14,13 @@ export default function Carousel({ children, className = '' }) {
   if (items.length === 0) return null
 
   return (
-    <div className={`relative group ${className}`}>
-      <div className="overflow-hidden rounded-card">
+    <div
+      className={`relative group ${className}`}
+      role="region"
+      aria-roledescription="carrusel"
+      aria-label="Galería de imágenes"
+    >
+      <div className="overflow-hidden rounded-card" aria-live="polite">
         {items[currentIndex]}
       </div>
 
@@ -24,16 +29,16 @@ export default function Carousel({ children, className = '' }) {
           <button
             onClick={() => goTo(currentIndex - 1)}
             className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity"
-            aria-label="Anterior"
+            aria-label="Imagen anterior"
           >
-            <HiChevronLeft className="h-5 w-5" />
+            <HiChevronLeft className="h-5 w-5" aria-hidden="true" />
           </button>
           <button
             onClick={() => goTo(currentIndex + 1)}
             className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity"
-            aria-label="Siguiente"
+            aria-label="Imagen siguiente"
           >
-            <HiChevronRight className="h-5 w-5" />
+            <HiChevronRight className="h-5 w-5" aria-hidden="true" />
           </button>
         </>
       )}
@@ -49,7 +54,8 @@ export default function Carousel({ children, className = '' }) {
                   ? 'bg-primary'
                   : 'bg-white/50 hover:bg-white/80'
               }`}
-              aria-label={`Slide ${index + 1}`}
+              aria-label={`Ir a la imagen ${index + 1} de ${items.length}`}
+              aria-current={index === currentIndex ? 'true' : undefined}
             />
           ))}
         </div>
