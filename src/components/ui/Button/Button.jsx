@@ -7,15 +7,19 @@ const VARIANT_CLASSES = {
   danger: 'bg-red-600 text-white hover:bg-red-700',
   outline: 'bg-transparent border border-gray-300 text-gray-800 hover:bg-gray-50',
   ghost: 'bg-transparent text-gray-800 hover:bg-gray-100',
+  glass: 'border border-white/35 bg-white/20 text-primary-dark hover:bg-white/30 backdrop-blur-md',
   light: 'bg-gray-100 text-gray-800 hover:bg-gray-200',
   gray: 'bg-gray-500 text-white hover:bg-gray-600',
 }
 
 const SIZE_CLASSES = {
-  xs: 'px-2.5 py-1 text-xs',
-  sm: 'px-3 py-1.5 text-sm',
-  md: 'px-4 py-2 text-base',
-  lg: 'px-5 py-3 text-lg',
+  xs: 'h-7 px-2.5 text-xs',
+  sm: 'h-9 px-3 text-sm',
+  md: 'h-10 px-4 text-sm',
+  lg: 'h-12 px-5 text-base',
+  'icon-sm': 'h-9 w-9 p-0',
+  icon: 'h-10 w-10 p-0',
+  'icon-lg': 'h-11 w-11 p-0',
 }
 
 export default function Button(props) {
@@ -25,6 +29,7 @@ export default function Button(props) {
     size = 'md',
     disabled = false,
     loading = false,
+    pill = false,
     type = 'button',
     onClick,
     className = '',
@@ -35,22 +40,26 @@ export default function Button(props) {
 
   const variantClass = VARIANT_CLASSES[variant] || VARIANT_CLASSES.primary
   const sizeClass = SIZE_CLASSES[size] || SIZE_CLASSES.md
+  const radiusClass = pill ? 'rounded-full' : 'rounded-md'
 
-  const base = `inline-flex items-center justify-center rounded-md font-semibold transition-shadow transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed ${sizeClass}`
+  const isNativeButton = Component === 'button'
+  const isDisabled = disabled || loading
+  const base = `inline-flex shrink-0 items-center justify-center gap-2 border border-transparent text-center font-semibold leading-none whitespace-nowrap transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${radiusClass} ${sizeClass}`
 
   return (
     <Component
-      {...(Component === 'button' ? { type } : {})}
+      {...(isNativeButton ? { type } : {})}
       onClick={onClick}
-      disabled={disabled || loading}
-      aria-disabled={disabled || loading}
+      {...(isNativeButton ? { disabled: isDisabled } : {})}
+      aria-disabled={isDisabled || undefined}
+      aria-busy={loading || undefined}
       className={`${base} ${variantClass} ${className}`}
       {...rest}
     >
       {loading ? (
-        <Loader size={size === 'xs' || size === 'sm' ? 'sm' : 'md'} className="mr-2" />
+        <Loader size={size === 'xs' || size === 'sm' ? 'sm' : 'md'} className="shrink-0" aria-hidden="true" />
       ) : Icon ? (
-        <Icon className={`h-4 w-4 ${children ? 'mr-2' : ''}`} />
+        <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
       ) : null}
       {children && <span>{children}</span>}
     </Component>

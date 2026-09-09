@@ -1,11 +1,8 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { MapPin, Phone, User } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
-import {
-  crearPedido,
-  getCarrito,
-} from "../../services/public/carrito.api";
+import { useCarrito, useCrearPedido } from "../../hooks/useCarrito";
 import Input from "../../components/ui/Input/Input";
 import Textarea from "../../components/ui/Textarea/Textarea";
 import ToggleSwitch from "../../components/ui/ToggleSwitch/ToggleSwitch";
@@ -20,9 +17,20 @@ export default function Checkout() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [errorCarrito, setErrorCarrito] = useState("");
+  const { data, isLoading, isError } = useCarrito();
+  const crearPedidoMutation = useCrearPedido();
+
+  const items = (data?.items || []).map((d) => ({
+    id: d.idDetalle,
+    idVariante: d.variante?.idVariante || d.idVariante,
+    nombre: d.variante?.producto?.nombre || d.variante?.sku || 'Producto',
+    cantidad: d.cantidad || 1,
+    precio: Number(d.variante?.precioOferta || d.variante?.precioVenta) || 0,
+    imagen: d.variante?.imagenes?.find(i => i.principal)?.url
+           ?? d.variante?.imagenes?.[0]?.url
+           ?? d.variante?.producto?.imagenes?.find(i => i.principal)?.url,
+    sku: d.variante?.sku,
+  }));
 
   const [retiroEnTienda, setRetiroEnTienda] = useState(false);
   const [form, setForm] = useState({
@@ -33,40 +41,12 @@ export default function Checkout() {
   });
   const [errores, setErrores] = useState({});
   const [errorSubmit, setErrorSubmit] = useState("");
-  const [enviando, setEnviando] = useState(false);
 
-  useEffect(() => {
-    if (!user) return;
-    const load = async () => {
-      setLoading(true);
-      try {
-        const data = await getCarrito();
-        const itemsCarrito = (data.items || []).map((d) => ({
-          id: d.idDetalle,
-          idVariante: d.variante?.idVariante || d.idVariante,
-          nombre: d.variante?.producto?.nombre || d.variante?.sku || 'Producto',
-          cantidad: d.cantidad || 1,
-          precio: Number(d.variante?.precioOferta || d.variante?.precioVenta) || 0,
-          imagen: d.variante?.imagenes?.find(i => i.principal)?.url
-                 ?? d.variante?.imagenes?.[0]?.url
-                 ?? d.variante?.producto?.imagenes?.find(i => i.principal)?.url,
-          sku: d.variante?.sku,
-        }));
-        setItems(itemsCarrito);
-      } catch {
-        setErrorCarrito("No se pudo cargar el carrito");
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
-  }, [user]);
+  const total = items.reduce((sum, item) => sum + item.cantidad * item.precio, 0);
 
   if (!user) {
     return <Navigate to="/login" replace />;
   }
-
-  const total = items.reduce((sum, item) => sum + item.cantidad * item.precio, 0);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -102,7 +82,7 @@ export default function Checkout() {
     return Object.keys(nuevosErrores).every((key) => !nuevosErrores[key]);
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     setErrorSubmit("");
     if (!validar()) return;
@@ -114,33 +94,31 @@ export default function Checkout() {
       notas: form.notas.trim() || null,
     };
 
-    setEnviando(true);
-    try {
-      const pedido = await crearPedido(body);
-      window.dispatchEvent(new CustomEvent('cart-updated'));
-      navigate('/checkout/confirmacion', {
-        state: {
-          idPedido: pedido.idPedido,
-          total: Number(pedido.total) || total,
-          estado: pedido.estado,
-          items: items.map((item) => ({
-            idVariante: item.idVariante,
-            nombre: item.nombre,
-            cantidad: item.cantidad,
-            precioUnitario: item.precio,
-          })),
-        },
-      });
-    } catch (err) {
-      const data = err?.response?.data;
-      if (Array.isArray(data?.detalles) && data.detalles.length > 0) {
-        setErrorSubmit(data.detalles.map((d) => d.mensaje).join(', '));
-      } else {
-        setErrorSubmit(data?.error || 'No se pudo crear el pedido');
-      }
-    } finally {
-      setEnviando(false);
-    }
+    crearPedidoMutation.mutate(body, {
+      onSuccess: (pedido) => {
+        navigate('/checkout/confirmacion', {
+          state: {
+            idPedido: pedido.idPedido,
+            total: Number(pedido.total) || total,
+            estado: pedido.estado,
+            items: items.map((item) => ({
+              idVariante: item.idVariante,
+              nombre: item.nombre,
+              cantidad: item.cantidad,
+              precioUnitario: item.precio,
+            })),
+          },
+        });
+      },
+      onError: (err) => {
+        const data = err?.response?.data;
+        if (Array.isArray(data?.detalles) && data.detalles.length > 0) {
+          setErrorSubmit(data.detalles.map((d) => d.mensaje).join(', '));
+        } else {
+          setErrorSubmit(data?.error || 'No se pudo crear el pedido');
+        }
+      },
+    });
   };
 
   return (
@@ -149,12 +127,12 @@ export default function Checkout() {
         <h1 className="mb-2 text-4xl font-black text-ink font-display">CHECKOUT</h1>
         <p className="mb-8 text-muted">Completá tus datos para confirmar el pedido</p>
 
-        {loading ? (
+        {isLoading ? (
           <StatusMessage status="loading" message="Cargando pedido..." />
-        ) : errorCarrito ? (
-          <Alert type="danger">{errorCarrito}</Alert>
+        ) : isError ? (
+          <Alert type="danger">No se pudo cargar el carrito</Alert>
         ) : items.length === 0 ? (
-          <Card hover={false} className="p-12 text-center">
+          <Card variant="default" padding={false} className="p-6 text-center sm:p-12">
             <p className="mb-4 text-2xl text-ink">Tu carrito está vacío</p>
             <Link to="/catalogo" className="text-lg font-bold text-primary-dark hover:underline">
               Continuar comprando
@@ -162,7 +140,7 @@ export default function Checkout() {
           </Card>
         ) : (
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-            <Card hover={false} className="p-6 lg:col-span-2">
+            <Card variant="default" padding="lg" className="lg:col-span-2">
               <h2 className="mb-6 text-2xl font-bold text-ink font-display">
                 Datos de contacto
               </h2>
@@ -232,14 +210,14 @@ export default function Checkout() {
                   variant="primary"
                   size="lg"
                   className="w-full"
-                  loading={enviando}
+                  loading={crearPedidoMutation.isPending}
                 >
                   Confirmar pedido
                 </Button>
               </form>
             </Card>
 
-            <Card hover={false} className="p-6 h-fit sticky top-24">
+            <Card variant="highlight" padding="lg" className="h-fit sticky top-24">
               <h3 className="mb-6 text-2xl font-bold text-ink font-display">
                 RESUMEN
               </h3>
@@ -269,12 +247,15 @@ export default function Checkout() {
                 <span className="text-primary-dark">Bs. {total.toFixed(2)}</span>
               </div>
 
-              <Link
+              <Button
+                as={Link}
                 to="/catalogo"
-                className="block w-full mt-6 text-center border-2 border-primary text-primary py-3 rounded-md font-bold hover:bg-primary-light transition-all duration-200"
+                variant="outline"
+                size="lg"
+                className="mt-6 w-full border-2 border-primary text-primary hover:bg-primary-light"
               >
                 Seguir comprando
-              </Link>
+              </Button>
             </Card>
           </div>
         )}

@@ -52,8 +52,16 @@ export interface AjustarStockBody {
   motivo?: string;
 }
 
+export interface ResultadoInventario {
+  items: FilaInventario[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 // GET /api/admin/inventario — listado global de variantes con su stock
-export const getInventario = async (): Promise<FilaInventario[]> => {
+export const getInventario = async (): Promise<ResultadoInventario> => {
   const { data } = await adminApi.get('/admin/inventario');
   return data;
 };

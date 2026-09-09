@@ -1,26 +1,28 @@
 import { Link } from 'react-router-dom';
+import { Image as ImageIcon } from 'lucide-react';
 import type { Categoria } from '../../types/catalogo.types';
 import Card from '../ui/Card/Card';
 
 interface Props {
   categoria: Categoria;
+  fallbackImage?: string | null;
 }
 
-export default function CategoriaCard({ categoria }: Props) {
+export default function CategoriaCard({ categoria, fallbackImage }: Props) {
+  const imageUrl = categoria.imagenUrl || fallbackImage;
+
   return (
     <Link to={`/categoria/${categoria.slug}`} className="group block">
-      <Card padding={false} className="overflow-hidden hover:-translate-y-1">
-        <div className="flex items-center justify-center overflow-hidden bg-gradient-to-br from-primary to-secondary aspect-[16/9]">
-          {categoria.imagenUrl ? (
+      <Card variant="interactive" padding="none" className="overflow-hidden">
+        <div className="flex items-center justify-center overflow-hidden bg-gradient-to-br from-primary-light via-primary-light/70 to-secondary/30 aspect-[16/9]">
+          {imageUrl ? (
             <img
-              src={categoria.imagenUrl}
+              src={imageUrl}
               alt={categoria.nombre}
-              className="object-cover w-full h-full transition-transform duration-200 group-hover:scale-110"
+              className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
             />
           ) : (
-            <span className="text-6xl transition-transform duration-200 group-hover:scale-110">
-              🎉
-            </span>
+            <ImageIcon className="h-14 w-14 text-primary/45" aria-hidden="true" />
           )}
         </div>
         <div className="p-4 text-center">

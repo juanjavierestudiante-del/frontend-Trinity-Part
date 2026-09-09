@@ -13,6 +13,7 @@ import Badge from '../../components/ui/Badge/Badge';
 import Loader from '../../components/ui/Loader/Loader';
 import ConfirmDialog from '../../components/ui/ConfirmDialog/ConfirmDialog';
 import type { Categoria } from '../../types/catalogo.types';
+import Card from '../../components/ui/Card/Card';
 
 // ── Fila de categoría en el árbol ──────────────────────────────────
 
@@ -49,8 +50,9 @@ function FilaCategoria({
         {/* Toggle expand/collapse */}
         {tieneHijos ? (
           <button
+            type="button"
             onClick={() => onToggle(categoria.idCategoria)}
-            className="w-5 h-5 flex items-center justify-center text-gray-400 hover:text-gray-200 shrink-0"
+            className="flex h-8 w-8 shrink-0 items-center justify-center text-gray-400 hover:text-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             {estaExpandido ? '▾' : '▸'}
           </button>
@@ -95,7 +97,7 @@ function FilaCategoria({
         <div className="flex gap-1 shrink-0">
           {isAdmin && (
             <Button
-              size="xs"
+              size="icon-sm"
               variant="light"
               onClick={() => navigate(`/admin/categorias/${categoria.idCategoria}/editar`)}
               title="Editar"
@@ -106,7 +108,7 @@ function FilaCategoria({
 
           {isAdmin && (esInactivo ? (
             <Button
-              size="xs"
+              size="icon-sm"
               variant="success"
               onClick={() => onReactivar(categoria)}
               title="Reactivar"
@@ -115,7 +117,7 @@ function FilaCategoria({
             </Button>
           ) : (
             <Button
-              size="xs"
+              size="icon-sm"
               variant="danger"
               onClick={() => onInactivar(categoria, categoria.subcategorias?.length || 0)}
               title="Inactivar"
@@ -259,7 +261,7 @@ export default function CategoriasPage() {
       </div>
 
       {/* Árbol de categorías */}
-      <div className="bg-gray-800 rounded-lg border border-gray-700">
+      <Card variant="admin" padding="none" className="overflow-hidden">
         {categorias?.map((cat) => (
           <FilaCategoria
             key={cat.idCategoria}
@@ -272,7 +274,7 @@ export default function CategoriasPage() {
             isAdmin={isAdmin}
           />
         ))}
-      </div>
+      </Card>
 
       {categorias?.length === 0 && (
         <p className="py-12 text-center text-gray-500">No hay categorías todavía.</p>

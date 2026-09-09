@@ -5,6 +5,7 @@ import Button from '../ui/Button/Button'
 import Input from '../ui/Input/Input'
 import Select from '../ui/Select/Select'
 import Label from '../ui/Label/Label'
+import Card from '../ui/Card/Card'
 
 interface Props {
   idProducto: number
@@ -45,7 +46,7 @@ export default function VarianteForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-3 p-4 bg-gray-800 border border-gray-700 rounded-lg">
+    <Card as="form" onSubmit={handleSubmit} variant="admin" padding="md" className="grid grid-cols-2 gap-3">
       <div>
         <Label className="block mb-1 text-base !text-primary-light" dark>SKU</Label>
         <Input
@@ -160,6 +161,6 @@ export default function VarianteForm({
           {guardando ? 'Guardando...' : 'Guardar variante'}
         </Button>
       </div>
-    </form>
+    </Card>
   )
 }

@@ -17,7 +17,7 @@ export default function CartSummary({ total }) {
   };
 
   return (
-    <Card hover={false} className="p-6 h-fit sticky top-24">
+    <Card variant="highlight" padding="lg" className="h-fit sticky top-24">
       <h3 className="text-2xl font-bold mb-6 font-display">RESUMEN</h3>
       <div className="space-y-4 mb-6 pb-6 border-b">
         <div className="flex justify-between text-gray-700">
@@ -36,12 +36,15 @@ export default function CartSummary({ total }) {
       <Button onClick={handleCheckout} className="w-full mb-3" variant="primary" size="lg">
         Proceder al pago
       </Button>
-      <Link
+      <Button
+        as={Link}
         to="/catalogo"
-        className="block w-full text-center border-2 border-primary text-primary py-3 rounded-md font-bold hover:bg-primary-light transition-all duration-200"
+        variant="outline"
+        size="lg"
+        className="w-full border-2 border-primary text-primary hover:bg-primary-light"
       >
         Continuar comprando
-      </Link>
+      </Button>
     </Card>
   );
 }

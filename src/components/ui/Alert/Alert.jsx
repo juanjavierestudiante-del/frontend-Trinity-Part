@@ -1,5 +1,3 @@
-import { Loader } from 'lucide-react'
-
 const VARIANTS = {
   success: {
     bg: 'bg-green-50',
@@ -53,7 +51,7 @@ export default function Alert(props) {
   return (
     <div
       role="alert"
-      className={`flex items-start gap-3 rounded-lg border p-4 ${config.bg} ${config.text} ${config.border} ${className}`}
+      className={`flex items-start gap-3 rounded-card border p-4 shadow-sm ${config.bg} ${config.text} ${config.border} ${className}`}
     >
       {CustomIcon ? (
         <span className={`mt-0.5 h-5 w-5 shrink-0 ${config.iconColor}`}>{CustomIcon}</span>
@@ -61,8 +59,9 @@ export default function Alert(props) {
       <div className="flex-1 text-sm">{children}</div>
       {onDismiss && (
         <button
+          type="button"
           onClick={onDismiss}
-          className={`ml-auto shrink-0 rounded-lg p-1 opacity-70 hover:opacity-100 ${config.text}`}
+          className={`ml-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-lg leading-none opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-current ${config.text}`}
           aria-label="Cerrar"
         >
           ✕

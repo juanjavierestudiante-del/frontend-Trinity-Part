@@ -3,7 +3,7 @@
 // TanStack Query llama a estas funciones — no las usás directo en los componentes.
 
 import publicApi from '../axios';
-import type { Categoria, Producto } from '../../types/catalogo.types';
+import type { Categoria, Producto, ResultadoPaginado } from '../../types/catalogo.types';
 
 // GET /api/categorias  
 // Trae el árbol completo de categorías para el menú de navegación
@@ -17,7 +17,7 @@ export const getCategorias = async (): Promise<Categoria[]> => {
 export const getProductos = async (params?: {
   categoria?: string; // slug de la categoría (ej: "globos")
   q?: string;         // texto de búsqueda (ej: "globo rojo")
-}): Promise<Producto[]> => {
+}): Promise<ResultadoPaginado<Producto>> => {
   const { data } = await publicApi.get('/productos', { params });
   return data;
 };

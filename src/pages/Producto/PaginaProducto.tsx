@@ -5,15 +5,16 @@ import SelectorVariante from '../../components/producto/SelectorVariante';
 import type { Variante } from '../../types/catalogo.types';
 import StatusMessage from '../../components/ui/StatusMessage/StatusMessage';
 import Button from '../../components/ui/Button/Button';
+import Card from '../../components/ui/Card/Card';
 import Seo from '../../components/seo/Seo';
 import { useAuth } from '../../context/AuthContext';
-import { agregarAlCarrito } from '../../services/public/carrito.api';
+import { useAgregarAlCarrito } from '../../hooks/useCarrito';
 
 export default function PaginaProducto() {
   const { slug } = useParams<{ slug: string }>();
   const { data: producto, isLoading, isError } = useProducto(slug!);
   const [varianteSeleccionada, setVarianteSeleccionada] = useState<Variante | null>(null);
-  const [agregando, setAgregando] = useState(false);
+  const { mutate: agregarAlCarrito, isPending: agregando } = useAgregarAlCarrito();
   const { user } = useAuth();
 
   if (isLoading) {
@@ -66,17 +67,16 @@ export default function PaginaProducto() {
       : {}),
   };
 
-  const handleAgregarAlCarrito = async () => {
+  const handleAgregarAlCarrito = () => {
     if (!varianteActual || !user) return;
-    setAgregando(true);
-    try {
-      await agregarAlCarrito(varianteActual.idVariante);
-      window.dispatchEvent(new CustomEvent('cart-updated'));
-    } catch (err: any) {
-      alert(err?.response?.data?.error || 'Error al agregar al carrito');
-    } finally {
-      setAgregando(false);
-    }
+    agregarAlCarrito(
+      { idVariante: varianteActual.idVariante },
+      {
+        onError: (err: any) => {
+          alert(err?.response?.data?.error || 'Error al agregar al carrito');
+        },
+      }
+    );
   };
 
   return (
@@ -88,7 +88,7 @@ export default function PaginaProducto() {
       />
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-10 lg:grid-cols-[1.4fr_0.9fr]">
-          <div className="rounded-card bg-white p-6 shadow-sm">
+          <Card variant="elevated" padding="lg">
             <div className="space-y-6">
               <div className="space-y-4">
                 <p className="text-sm font-semibold uppercase tracking-[0.3em] text-primary">Producto</p>
@@ -100,29 +100,29 @@ export default function PaginaProducto() {
                 <img
                   src={imagen}
                   alt={producto.nombre}
-                  className="w-full rounded-card object-cover shadow-lg"
+                  className="w-full rounded-card object-cover shadow-brand"
                 />
               )}
 
-              <div className="rounded-card bg-white p-6 shadow-sm">
+              <Card variant="subtle" padding="lg">
                 <h2 className="mb-4 text-xl font-bold text-gray-900 font-display">Elegir variante</h2>
                 <SelectorVariante
                   variantes={producto.variantes}
                   seleccionada={varianteActual}
                   onSeleccionar={setVarianteSeleccionada}
                 />
-              </div>
+              </Card>
 
-              <div className="rounded-card bg-white p-6 shadow-sm">
+              <Card variant="subtle" padding="lg">
                 <h2 className="mb-3 text-lg font-bold text-gray-900 font-display">Descripción completa</h2>
                 <p className="text-gray-600 leading-relaxed">{producto.descripcion}</p>
-              </div>
+              </Card>
             </div>
-          </div>
+          </Card>
 
           <div className="lg:col-span-1">
             <div className="sticky top-24 space-y-4">
-              <div className="rounded-card bg-white p-6 shadow-sm">
+              <Card variant="highlight" padding="lg">
                 {varianteActual ? (
                   <div className="space-y-4">
                     <div className="flex flex-wrap items-center gap-4">
@@ -145,7 +145,7 @@ export default function PaginaProducto() {
                 ) : (
                   <p className="text-gray-600">Seleccioná una variante para ver el precio.</p>
                 )}
-              </div>
+              </Card>
 
               <Button
                 onClick={handleAgregarAlCarrito}

@@ -22,9 +22,10 @@ export default function SelectorVariante({ variantes, seleccionada, onSelecciona
           return (
             <button
               key={variante.idVariante}
+              type="button"
               onClick={() => onSeleccionar(variante)}
               disabled={sinStock}
-              className={`rounded-md border px-4 py-3 text-left text-sm transition duration-200 ${
+              className={`min-w-0 rounded-md border px-4 py-3 text-left text-sm leading-5 transition duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                 sinStock
                   ? 'cursor-not-allowed border-gray-200 bg-gray-100 text-gray-500'
                   : estaSeleccionada
@@ -32,7 +33,7 @@ export default function SelectorVariante({ variantes, seleccionada, onSelecciona
                   : 'border-gray-200 bg-white text-gray-700 hover:border-primary hover:bg-primary-light/50'
               }`}
             >
-              <span className="block font-semibold">{label}</span>
+              <span className="block break-words font-semibold">{label}</span>
               <span className="mt-1 block text-xs text-gray-500">
                 {sinStock ? 'Agotado' : 'Disponible'}
               </span>

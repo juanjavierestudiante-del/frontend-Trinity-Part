@@ -116,8 +116,10 @@ export default function AdminLayout() {
         {/* Top bar mobile */}
         <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-700 lg:hidden">
           <button
+            type="button"
+            aria-label="Abrir menú de administración"
             onClick={() => setSidebarOpen(true)}
-            className="p-2 rounded-md text-gray-400 hover:text-gray-200 hover:bg-gray-700/50"
+            className="flex h-10 w-10 items-center justify-center rounded-md text-gray-400 hover:bg-gray-700/50 hover:text-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <HiMenu className="w-5 h-5" />
           </button>

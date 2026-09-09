@@ -27,15 +27,17 @@ export default function Carousel({ children, className = '' }) {
       {items.length > 1 && (
         <>
           <button
+            type="button"
             onClick={() => goTo(currentIndex - 1)}
-            className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity"
+            className="absolute left-2 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 p-2 text-white opacity-100 transition-opacity hover:bg-black/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-white sm:opacity-0 sm:group-hover:opacity-100"
             aria-label="Imagen anterior"
           >
             <HiChevronLeft className="h-5 w-5" aria-hidden="true" />
           </button>
           <button
+            type="button"
             onClick={() => goTo(currentIndex + 1)}
-            className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity"
+            className="absolute right-2 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 p-2 text-white opacity-100 transition-opacity hover:bg-black/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-white sm:opacity-0 sm:group-hover:opacity-100"
             aria-label="Imagen siguiente"
           >
             <HiChevronRight className="h-5 w-5" aria-hidden="true" />
@@ -48,8 +50,9 @@ export default function Carousel({ children, className = '' }) {
           {items.map((_, index) => (
             <button
               key={index}
+              type="button"
               onClick={() => setCurrentIndex(index)}
-              className={`w-2.5 h-2.5 rounded-full transition-colors ${
+              className={`h-9 w-9 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white ${
                 index === currentIndex
                   ? 'bg-primary'
                   : 'bg-white/50 hover:bg-white/80'

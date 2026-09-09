@@ -1,51 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { Menu, X, Search, ShoppingCart, User, LogOut, Settings } from "lucide-react";
 import { useAuth } from "../../context/AuthContext.jsx";
-import { getCarrito } from "../../services/public/carrito.api";
+import { useContadorCarrito } from "../../hooks/useCarrito";
 import Button from "../ui/Button/Button";
 
 export default function Nav() {
   const [open, setOpen] = useState(false);
   const { user, logout } = useAuth();
   const logo = "https://res.cloudinary.com/dslh6rwix/image/upload/q_auto/f_auto/v1780528934/logo_eolnrp.png";
-  const [cartCount, setCartCount] = useState(0);
+  const { data: contador } = useContadorCarrito();
+  const cartCount = contador?.items ?? 0;
   const isAdmin = user?.role === "ADMIN";
-
-  useEffect(() => {
-    let mounted = true;
-    let debounceTimer = null;
-    const load = async () => {
-      if (!user) {
-        setCartCount(0);
-        return;
-      }
-      try {
-        const data = await getCarrito();
-        const items = data?.items || [];
-        const total = items.reduce((s, d) => s + (d.cantidad || 0), 0);
-        if (mounted) setCartCount(total);
-      } catch {
-        if (mounted) setCartCount(0);
-      }
-    };
-    load();
-
-    // Debounce: si el usuario dispara cart-updated varias veces seguidas
-    // (clicks rápidos), solo hacemos un GET /carrito al final de la ráfaga.
-    const handler = () => {
-      if (debounceTimer) clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => {
-        load();
-      }, 300);
-    };
-    window.addEventListener("cart-updated", handler);
-    return () => {
-      mounted = false;
-      if (debounceTimer) clearTimeout(debounceTimer);
-      window.removeEventListener("cart-updated", handler);
-    };
-  }, [user]);
 
   const navLinks = [
     { to: "/", label: "Inicio" },
@@ -111,9 +77,10 @@ export default function Nav() {
             </div>
 
             <Button
-              className="p-2.5 rounded-full text-white hover:bg-white/15 md:hidden"
+              className="text-white hover:bg-white/15 md:hidden"
               variant="ghost"
-              size="sm"
+              size="icon-lg"
+              pill
               aria-label="Buscar productos"
             >
               <Search className="w-5 h-5" />
@@ -175,7 +142,8 @@ export default function Nav() {
                   to="/login"
                   variant="ghost"
                   size="sm"
-                  className="rounded-full text-white hover:bg-white/15 border border-white/25"
+                  pill
+                  className="border-white/25 text-white hover:bg-white/15"
                 >
                   Iniciar sesión
                 </Button>
@@ -184,7 +152,8 @@ export default function Nav() {
                   to="/registro"
                   variant="primary"
                   size="sm"
-                  className="rounded-full bg-secondary text-white hover:bg-secondary/90 border-2 border-white/30 font-bold shadow-[0_4px_16px_rgba(255,95,163,0.5)]"
+                  pill
+                  className="border-2 border-white/30 bg-secondary text-white font-bold shadow-[0_4px_16px_rgba(255,95,163,0.5)] hover:bg-secondary/90"
                 >
                   Registrarse
                 </Button>
@@ -195,9 +164,9 @@ export default function Nav() {
             <div className="ml-1 lg:hidden">
               <Button
                 onClick={() => setOpen(!open)}
-                className="p-2.5 rounded-md"
+                className="text-white hover:bg-white/15"
                 variant="ghost"
-                size="sm"
+                size="icon-lg"
                 aria-expanded={open}
                 aria-controls="menu-movil"
                 aria-label={open ? "Cerrar menú" : "Abrir menú"}

@@ -40,8 +40,10 @@ export default function ProductoDetalles({ product, quantity, setQuantity, onAdd
         <Button
           onClick={() => setQuantity(Math.max(1, quantity - 1))}
           variant="ghost"
-          size="sm"
-          className="p-2 bg-gray-200 rounded-md"
+          size="icon"
+          className="bg-gray-200"
+          aria-label="Disminuir cantidad"
+          title="Disminuir cantidad"
         >
           <Minus size={20} />
         </Button>
@@ -58,8 +60,10 @@ export default function ProductoDetalles({ product, quantity, setQuantity, onAdd
         <Button
           onClick={() => setQuantity(quantity + 1)}
           variant="ghost"
-          size="sm"
-          className="p-2 bg-gray-200 rounded-md"
+          size="icon"
+          className="bg-gray-200"
+          aria-label="Aumentar cantidad"
+          title="Aumentar cantidad"
         >
           <Plus size={20} />
         </Button>

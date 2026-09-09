@@ -19,8 +19,8 @@ export default function Contacto() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
           <div className="space-y-6">
-            <Card hover={false}>
-              <div className="flex items-center gap-4 mb-4">
+            <Card variant="subtle" padding="md">
+              <div className="flex items-center gap-4">
                 <Mail className="text-primary" size={32} />
                 <div>
                   <h3 className="font-bold text-ink">Email</h3>
@@ -29,8 +29,8 @@ export default function Contacto() {
               </div>
             </Card>
 
-            <Card hover={false}>
-              <div className="flex items-center gap-4 mb-4">
+            <Card variant="subtle" padding="md">
+              <div className="flex items-center gap-4">
                 <Phone className="text-primary" size={32} />
                 <div>
                   <h3 className="font-bold text-ink">Teléfono</h3>
@@ -39,8 +39,8 @@ export default function Contacto() {
               </div>
             </Card>
 
-            <Card hover={false}>
-              <div className="flex items-center gap-4 mb-4">
+            <Card variant="subtle" padding="md">
+              <div className="flex items-center gap-4">
                 <MapPin className="text-primary" size={32} />
                 <div>
                   <h3 className="font-bold text-ink">Ubicación</h3>
@@ -50,7 +50,7 @@ export default function Contacto() {
             </Card>
           </div>
 
-          <Card hover={false}>
+          <Card variant="default" padding="md">
             <h2 className="text-2xl font-bold mb-6 text-ink font-display">
               Envíanos un mensaje
             </h2>

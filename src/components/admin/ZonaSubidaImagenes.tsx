@@ -103,6 +103,7 @@ export default function ZonaSubidaImagenes({
               <div className="absolute inset-0 flex items-center justify-center gap-1 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity">
                 {showPrincipalBadge && onMarkPrincipal && !img.principal && (
                   <button
+                    type="button"
                     onClick={() => onMarkPrincipal(img.id)}
                     className="p-1 text-white bg-blue-500 rounded-full hover:bg-blue-600"
                     title="Hacer principal"
@@ -113,6 +114,7 @@ export default function ZonaSubidaImagenes({
 
                 {onRemoveExisting && (
                   <button
+                    type="button"
                     onClick={() => setEliminarId(img.id)}
                     className="p-1 text-white bg-red-500 rounded-full hover:bg-red-600"
                     title="Eliminar"
@@ -244,6 +246,7 @@ function PreviewThumb({ preview, onRemove }: { preview: PreviewFile; onRemove: (
         className="object-cover w-full h-full"
       />
       <button
+        type="button"
         onClick={onRemove}
         className="absolute top-1 right-1 p-0.5 text-white bg-red-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
         title="Quitar"

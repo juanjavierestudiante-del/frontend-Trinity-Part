@@ -1,6 +1,7 @@
 import { Navigate, Link, useLocation } from "react-router-dom";
 import { ShoppingBag } from "lucide-react";
 import Card from "../../components/ui/Card/Card";
+import Button from "../../components/ui/Button/Button";
 
 const WHATSAPP_NUMBER = '59177231475';
 
@@ -49,7 +50,7 @@ export default function Confirmacion() {
   return (
     <main className="min-h-screen">
       <div className="max-w-md px-4 py-16 mx-auto">
-        <Card hover={false} className="p-8 text-center">
+        <Card variant="elevated" padding={false} className="p-6 text-center sm:p-8">
           <div className="inline-flex items-center justify-center w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-primary to-secondary text-white">
             <ShoppingBag size={36} />
           </div>
@@ -61,7 +62,7 @@ export default function Confirmacion() {
             Tu pedido fue registrado correctamente. Pronto nos pondremos en contacto.
           </p>
 
-          <div className="mb-8 space-y-2 p-4 text-left rounded-card border border-white/30 bg-white/20">
+          <Card variant="subtle" padding="md" className="mb-8 space-y-2 text-left">
             <p className="text-sm text-ink">
               <span className="font-bold">N° de pedido:</span> #{pedido.idPedido}
             </p>
@@ -80,28 +81,33 @@ export default function Confirmacion() {
                 ))}
               </div>
             )}
-          </div>
+          </Card>
 
-          <a
+          <Button
+            as="a"
             href={enlaceWhatsApp}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 w-full rounded-md bg-[#25D366] text-white py-3.5 font-bold hover:bg-[#1EBE5D] transition-all duration-200"
+            size="lg"
+            className="w-full border-[#25D366] bg-[#25D366] hover:bg-[#1EBE5D]"
           >
             <IconoWhatsApp size={22} />
             Confirmar pedido por WhatsApp
-          </a>
+          </Button>
 
           <p className="mt-3 text-sm text-muted">
             Tu pedido quedó registrado. Envía el mensaje para confirmarlo con nosotros.
           </p>
 
-          <Link
+          <Button
+            as={Link}
             to="/perfil"
-            className="mt-6 block w-full rounded-md border-2 border-primary text-primary py-3 text-center font-bold hover:bg-primary-light transition-all duration-200"
+            variant="outline"
+            size="lg"
+            className="mt-6 w-full border-2 border-primary text-primary hover:bg-primary-light"
           >
             Ver mis pedidos
-          </Link>
+          </Button>
         </Card>
       </div>
     </main>

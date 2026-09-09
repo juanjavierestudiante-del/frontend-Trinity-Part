@@ -13,6 +13,7 @@ import AtributoSelector from "./AtributoSelector"
 import Button from "../ui/Button/Button"
 import Badge from "../ui/Badge/Badge"
 import Loader from "../ui/Loader/Loader"
+import Card from "../ui/Card/Card"
 
 interface Props {
   idProducto: number
@@ -65,9 +66,10 @@ export default function VarianteEditor({ idProducto }: Props) {
 
       <div className="flex flex-col gap-3">
         {variantes?.map((variante: any) => (
-          <div
+          <Card
             key={variante.idVariante}
-            className="p-3 bg-gray-800 border border-gray-700 rounded-lg"
+            variant="admin"
+            padding="sm"
           >
             <div className="flex items-start justify-between mb-2">
               <div>
@@ -163,7 +165,7 @@ export default function VarianteEditor({ idProducto }: Props) {
                 />
               </div>
             )}
-          </div>
+          </Card>
         ))}
       </div>
 

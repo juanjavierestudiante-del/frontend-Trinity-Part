@@ -53,7 +53,7 @@ export default function ProductoCard({ producto, featured = false, badge: extern
   };
 
   return (
-    <Card padding={false} className="group relative overflow-hidden hover:-translate-y-1">
+    <Card variant="interactive" padding="none" className="group overflow-hidden">
       {/* Badge */}
       {badgeLabel && (
         <span className={`absolute top-3 left-3 z-10 px-2.5 py-1 text-xs font-bold rounded-md backdrop-blur-sm ${BADGE_STYLES[badgeVariant] || BADGE_STYLES.primary}`}>
@@ -70,7 +70,7 @@ export default function ProductoCard({ producto, featured = false, badge: extern
               alt={producto.nombre}
               loading="lazy"
               decoding="async"
-              className="object-cover w-full h-full transition-transform duration-200 group-hover:scale-105"
+              className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-[1.035]"
             />
           ) : (
             <div className="w-full h-full bg-primary-light/30 flex items-center justify-center text-5xl text-primary-dark/40" role="img" aria-label={producto.nombre}>
@@ -84,7 +84,7 @@ export default function ProductoCard({ producto, featured = false, badge: extern
       {/* Contenido */}
       <div className="p-4">
         <Link to={`/productos/${producto.slug}`} className="block">
-          <h3 className="text-base font-bold text-ink font-display leading-tight line-clamp-2">
+          <h3 className="text-base font-extrabold text-ink font-display leading-tight line-clamp-2">
             {producto.nombre}
           </h3>
           {producto.descripcionCorta && (
@@ -97,7 +97,7 @@ export default function ProductoCard({ producto, featured = false, badge: extern
         <div className="flex items-end justify-between mt-3 gap-2">
           <div>
             {precioMinimo != null && (
-              <p className="text-lg font-bold text-primary font-display">
+              <p className="text-lg font-black tracking-tight text-primary font-display">
                 Bs. {precioMinimo.toFixed(2)}
               </p>
             )}

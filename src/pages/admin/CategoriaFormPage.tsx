@@ -19,6 +19,8 @@ import Label from '../../components/ui/Label/Label';
 import Loader from '../../components/ui/Loader/Loader';
 import SelectCategoriaJerarquico from '../../components/admin/SelectCategoriaJerarquico';
 import ZonaSubidaImagenes from '../../components/admin/ZonaSubidaImagenes';
+import Card from '../../components/ui/Card/Card';
+import Alert from '../../components/ui/Alert/Alert';
 
 export default function CategoriaFormPage() {
   const navigate = useNavigate();
@@ -198,16 +200,16 @@ export default function CategoriaFormPage() {
 
   return (
     <div className="min-h-screen p-3 sm:p-6">
-      <div className="max-w-2xl p-4 sm:p-6 mx-auto bg-gray-800 rounded-lg shadow-lg">
+      <Card variant="admin" padding={false} className="max-w-2xl p-4 sm:p-6 mx-auto">
 
         <h1 className="mb-6 text-2xl font-bold text-white">
           {esEdicion ? 'Editar categoría' : 'Nueva categoría'}
         </h1>
 
         {error && (
-          <div className="p-3 mb-4 text-sm text-red-300 border border-red-700 rounded bg-red-900/50">
+          <Alert type="danger" className="mb-4 border-red-700 bg-red-900/50 text-red-300">
             {error}
-          </div>
+          </Alert>
         )}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -314,7 +316,7 @@ export default function CategoriaFormPage() {
           </div>
 
         </form>
-      </div>
+      </Card>
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { useAuth } from "../../context/AuthContext.jsx";
 import Button from "../../components/ui/Button/Button";
 import Input from "../../components/ui/Input/Input";
 import Alert from "../../components/ui/Alert/Alert";
+import AuthShell from "../../components/ui/AuthShell/AuthShell";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -48,92 +49,100 @@ export default function Login() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen px-4">
-      <div className="w-full max-w-md">
-        <div className="p-8 bg-white shadow-2xl rounded-card">
-          <h1 className="mb-2 text-3xl font-black text-center text-gray-800 font-display">
-            INICIA SESIÓN
-          </h1>
-          <p className="mb-8 text-center text-gray-500">
-            Bienvenido de nuevo
-          </p>
+    <AuthShell
+      badge="Acceso de clientes"
+      title="Inicia sesión"
+      description="Entra a tu cuenta para revisar pedidos, retomar carritos y comprar más rápido."
+      highlights={[
+        "Consulta tus pedidos y direcciones guardadas sin perder el contexto.",
+        "Recupera el carrito y continúa la compra en una superficie glass consistente.",
+        "Aprovecha promociones y novedades desde tu cuenta personal.",
+      ]}
+      footer={
+        <p className="text-center text-sm text-muted">
+          ¿No tienes cuenta?{" "}
+          <Link to="/registro" className="font-semibold text-primary hover:text-primary-dark hover:underline">
+            Regístrate aquí
+          </Link>
+        </p>
+      }
+    >
+      <form className="space-y-5" onSubmit={handleSubmit}>
+        <Input
+          label="Email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="tu@email.com"
+          icon={<Mail size={18} />}
+          tone="glass"
+        />
 
-          <form className="space-y-5" onSubmit={handleSubmit}>
-            <div>
-              <Input
-                label="Email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="tu@email.com"
-                icon={<Mail size={18} />}
-              />
-            </div>
+        <Input
+          label="Contraseña"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="••••••••"
+          icon={<Lock size={18} />}
+          tone="glass"
+        />
 
-            <div>
-              <Input
-                label="Contraseña"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                icon={<Lock size={18} />}
-              />
-            </div>
-
-            <div>
-              <label className="block mb-2 text-sm font-bold text-gray-700">
-                Verificación de Seguridad
-              </label>
-              <div className="p-4 border border-primary-light bg-primary-light/20 rounded-card">
-                <p className="mb-3 text-sm text-gray-600">
-                  Ingresa el código mostrado abajo
-                </p>
-                <div className="flex items-center gap-3">
-                  <div className="flex-1 py-4 text-center bg-white border-2 border-dashed border-primary/30 rounded-lg">
-                    <span className="text-3xl font-black tracking-[8px] text-primary italic select-none font-display">
-                      {captcha}
-                    </span>
-                  </div>
-                  <Button
-                    type="button"
-                    onClick={() => { setCaptcha(generarCaptcha()); setCaptchaInput(""); }}
-                    className="p-4"
-                    variant="primary"
-                    size="md"
-                  >
-                    <RefreshCw size={22} />
-                  </Button>
-                </div>
-                <input
-                  type="text"
-                  value={captchaInput}
-                  onChange={(e) => setCaptchaInput(e.target.value)}
-                  placeholder="Escribe el código"
-                  className="w-full px-4 py-3 mt-4 transition-all border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                />
-              </div>
-            </div>
-
-            {error && (
-              <Alert type="danger">{error}</Alert>
-            )}
-
-            <Button type="submit" className="w-full" variant="primary" size="lg">
-              <span className="inline-flex items-center gap-2"><LogIn size={20} />Iniciar Sesión</span>
-            </Button>
-          </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-gray-600">
-              ¿No tienes cuenta?{" "}
-              <Link to="/registro" className="font-bold text-primary hover:underline">
-                Regístrate aquí
-              </Link>
+        <div>
+          <label className="mb-2 block text-sm font-bold text-ink">
+            Verificación de seguridad
+          </label>
+          <div className="rounded-2xl border border-white/35 bg-white/15 p-4 shadow-sm backdrop-blur-md">
+            <p className="mb-3 text-sm text-muted">
+              Ingresa el código mostrado abajo.
             </p>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <div className="flex-1 rounded-2xl border border-dashed border-primary/25 bg-white/20 px-4 py-5 text-center shadow-inner">
+                <span className="select-none font-display text-3xl font-black tracking-[0.35em] text-primary-dark">
+                  {captcha}
+                </span>
+              </div>
+              <Button
+                type="button"
+                onClick={() => {
+                  setCaptcha(generarCaptcha());
+                  setCaptchaInput("");
+                }}
+                variant="glass"
+                size="icon"
+                icon={RefreshCw}
+                className="self-center sm:self-auto"
+                aria-label="Generar nuevo código"
+                title="Generar nuevo código"
+              />
+            </div>
+            <Input
+              className="mt-4"
+              type="text"
+              value={captchaInput}
+              onChange={(e) => setCaptchaInput(e.target.value)}
+              placeholder="Escribe el código"
+              tone="glass"
+            />
           </div>
         </div>
-      </div>
-    </div>
+
+        {error && (
+          <Alert
+            type="danger"
+            className="border-rose-200/70 bg-rose-50/80 text-rose-900 backdrop-blur-md"
+          >
+            {error}
+          </Alert>
+        )}
+
+        <Button type="submit" className="w-full shadow-brand-lg" variant="primary" size="lg">
+          <span className="inline-flex items-center gap-2">
+            <LogIn size={20} />
+            Iniciar sesión
+          </span>
+        </Button>
+      </form>
+    </AuthShell>
   );
 }

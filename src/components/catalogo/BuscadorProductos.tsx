@@ -40,8 +40,9 @@ export default function BuscadorProductos({ onBuscar, placeholder = 'Buscar prod
         />
         {texto && (
           <button
+            type="button"
             onClick={limpiar}
-            className="absolute text-primary-dark/50 -translate-y-1/2 right-3 top-1/2 hover:text-primary-dark transition-colors"
+            className="absolute right-1 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full text-primary-dark/50 transition-colors hover:bg-primary-light/50 hover:text-primary-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             aria-label="Limpiar búsqueda"
           >
             <X size={16} />

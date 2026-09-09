@@ -77,7 +77,7 @@ export default function PedidosPage() {
   const [expandido, setExpandido] = useState<Set<number>>(new Set());
   const [feedback, setFeedback] = useState<string | null>(null);
 
-  const pedidosTipados = (pedidos as Pedido[] | undefined) ?? [];
+  const pedidosTipados = ((pedidos?.items ?? []) as Pedido[]);
 
   const filtrados =
     filtro === 'TODOS'
@@ -125,8 +125,9 @@ export default function PedidosPage() {
         {FILTROS.map((f) => (
           <button
             key={f.key}
+            type="button"
             onClick={() => setFiltro(f.key)}
-            className={`px-3 py-1.5 rounded-md text-sm font-medium border transition-colors ${
+            className={`min-w-0 max-w-full rounded-md border px-3 py-1.5 text-center text-sm font-medium leading-5 transition-colors ${
               filtro === f.key
                 ? 'bg-primary text-white border-primary'
                 : 'bg-gray-800 text-gray-300 border-gray-700 hover:bg-gray-700'
@@ -218,7 +219,7 @@ function FragmentPedido({
       <TableRow dark hoverable>
         <TableCell dark className="w-8">
           <Button
-            size="xs"
+            size="sm"
             variant="ghost"
             onClick={onToggle}
             className="text-gray-400 p-1"

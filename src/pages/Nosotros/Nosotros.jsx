@@ -13,7 +13,7 @@ export default function Nosotros() {
           NOSOTROS
         </h1>
 
-        <Card hover={false} className="p-8 mb-8">
+        <Card variant="default" padding="lg" className="mb-8">
           <h2 className="text-3xl font-black mb-6 text-gray-800 font-display">
             ¿Quiénes somos?
           </h2>
@@ -30,21 +30,21 @@ export default function Nosotros() {
         </Card>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card hover={false} className="p-6 text-center">
+          <Card variant="metric" padding="lg" className="text-center">
             <div className="text-4xl font-black text-primary mb-2 font-display">10+</div>
             <h3 className="font-bold text-gray-800">Años de Experiencia</h3>
           </Card>
-          <Card hover={false} className="p-6 text-center">
+          <Card variant="metric" padding="lg" className="text-center">
             <div className="text-4xl font-black text-primary mb-2 font-display">5000+</div>
             <h3 className="font-bold text-gray-800">Clientes Felices</h3>
           </Card>
-          <Card hover={false} className="p-6 text-center">
+          <Card variant="metric" padding="lg" className="text-center">
             <div className="text-4xl font-black text-primary mb-2 font-display">500+</div>
             <h3 className="font-bold text-gray-800">Productos</h3>
           </Card>
         </div>
 
-        <Card hover={false} className="p-8">
+        <Card variant="default" padding="lg">
           <h2 className="text-3xl font-black mb-6 text-gray-800 font-display">Nuestros Valores</h2>
           <ul className="space-y-4 text-gray-700">
             <li className="flex gap-3">

@@ -15,6 +15,7 @@ import Button from '../../components/ui/Button/Button';
 import Badge from '../../components/ui/Badge/Badge';
 import Loader from '../../components/ui/Loader/Loader';
 import Modal from '../../components/ui/Modal/Modal';
+import Card from '../../components/ui/Card/Card';
 
 interface Edicion {
   idVariante: number;
@@ -33,7 +34,7 @@ function PanelAlertas({ onVer }: { onVer: (variante: { idVariante: number; sku: 
   const { data: alertas, isLoading } = useAlertasInventario();
 
   return (
-    <div className="mb-6 bg-gray-800 border border-gray-700 rounded-lg p-4">
+    <Card variant="admin" padding="md" className="mb-6">
       <div className="flex items-center gap-2 mb-3">
         <HiExclamationCircle className="w-5 h-5 text-red-400" />
         <h2 className="text-sm font-bold text-gray-100 uppercase tracking-wide">
@@ -62,14 +63,14 @@ function PanelAlertas({ onVer }: { onVer: (variante: { idVariante: number; sku: 
               <Badge variant={a.stockActual === 0 ? 'danger' : 'warning'} size="sm">
                 {a.stockActual} / mín {a.stockMinimo}
               </Badge>
-              <Button size="xs" variant="light" onClick={() => onVer({ idVariante: a.idVariante, sku: a.sku })}>
+              <Button size="sm" variant="light" onClick={() => onVer({ idVariante: a.idVariante, sku: a.sku })}>
                 <HiClock className="w-3 h-3" />
               </Button>
             </li>
           ))}
         </ul>
       )}
-    </div>
+    </Card>
   );
 }
 
@@ -202,17 +203,19 @@ function FilaInventarioRow({
           <td className="px-2 py-2">
             <span className={`inline-flex items-center gap-1 text-sm font-semibold ${alerta ? 'text-red-400' : 'text-gray-100'}`}>
               <button
+                type="button"
                 onClick={() => onAjustar(-1)}
                 title="Restar 1"
-                className="w-5 h-5 rounded bg-gray-700 text-gray-300 hover:bg-gray-600"
+                className="flex h-8 w-8 items-center justify-center rounded bg-gray-700 text-gray-300 hover:bg-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 −
               </button>
               {fila.stockActual}
               <button
+                type="button"
                 onClick={() => onAjustar(1)}
                 title="Sumar 1"
-                className="w-5 h-5 rounded bg-gray-700 text-gray-300 hover:bg-gray-600"
+                className="flex h-8 w-8 items-center justify-center rounded bg-gray-700 text-gray-300 hover:bg-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 +
               </button>
@@ -235,15 +238,15 @@ function FilaInventarioRow({
         <div className="flex gap-1 justify-end">
           {esEditando ? (
             <>
-              <Button size="xs" variant="success" onClick={onGuardar}>Guardar</Button>
-              <Button size="xs" variant="light" onClick={onCancelar}>Cancelar</Button>
+              <Button size="sm" variant="success" onClick={onGuardar}>Guardar</Button>
+              <Button size="sm" variant="light" onClick={onCancelar}>Cancelar</Button>
             </>
           ) : (
             <>
-              <Button size="xs" variant="light" onClick={onEditar} title="Editar stocks">
+              <Button size="icon-sm" variant="light" onClick={onEditar} title="Editar stocks" aria-label="Editar stocks">
                 <HiPencil className="w-3 h-3" />
               </Button>
-              <Button size="xs" variant="light" onClick={onHistorial} title="Historial">
+              <Button size="icon-sm" variant="light" onClick={onHistorial} title="Historial" aria-label="Ver historial">
                 <HiClock className="w-3 h-3" />
               </Button>
             </>
@@ -269,9 +272,10 @@ export default function InventarioPage() {
   const [historialDe, setHistorialDe] = useState<{ idVariante: number; sku: string } | null>(null);
 
   const filtradas = useMemo(() => {
+    const items = filas?.items ?? [];
     if (!filas) return [];
     const q = busqueda.trim().toLowerCase();
-    return filas.filter((f) => {
+    return items.filter((f) => {
       if (soloAlertas && !enAlerta(f)) return false;
       if (!q) return true;
       return (
@@ -353,11 +357,11 @@ export default function InventarioPage() {
           Solo alertas
         </label>
         <span className="text-xs text-gray-500 ml-auto">
-          {filtradas.length} de {filas?.length ?? 0} variantes
+          {filtradas.length} de {filas?.total ?? 0} variantes
         </span>
       </div>
 
-      <div className="bg-gray-800 border border-gray-700 rounded-lg overflow-x-auto">
+      <Card variant="admin" padding="none" className="overflow-x-auto">
         <table className="w-full text-left">
           <thead>
             <tr className="text-xs uppercase tracking-wide text-gray-400 border-b border-gray-700">
@@ -402,7 +406,7 @@ export default function InventarioPage() {
             )}
           </tbody>
         </table>
-      </div>
+      </Card>
 
       {historialDe && (
         <ModalHistorial variante={historialDe} onClose={() => setHistorialDe(null)} />

@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { ChevronDown, X } from 'lucide-react';
 import { useCategorias } from '../../hooks/useCatalogo';
 import type { Categoria } from '../../types/catalogo.types';
+import Card from '../ui/Card/Card';
 
 interface NodoCategoriaProps {
   categoria: Categoria;
@@ -39,8 +40,9 @@ function NodoCategoria({ categoria, slug, abiertas, toggle, nivel }: NodoCategor
 
         {tieneSub && (
           <button
+            type="button"
             onClick={() => toggle(categoria.idCategoria)}
-            className="p-2 text-primary-dark/60 transition-all duration-200 rounded-full hover:bg-white/30 hover:text-primary-dark"
+            className="flex h-10 w-10 items-center justify-center rounded-full p-2 text-primary-dark/60 transition-all duration-200 hover:bg-white/30 hover:text-primary-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             aria-label="Expandir subcategorías"
           >
             <ChevronDown
@@ -87,7 +89,7 @@ export default function MenuCategorias() {
   if (isLoading) return <p className="p-4 text-sm text-primary-dark/70">Cargando menú...</p>;
 
   return (
-    <nav className="w-full max-w-xs p-4 space-y-2 bg-gradient-to-br from-white/30 via-white/15 to-white/10 border border-white/30 shadow-brand backdrop-blur-xl rounded-card">
+    <Card as="nav" variant="subtle" padding="md" className="w-full space-y-2 lg:max-w-xs">
       <div className="flex items-center justify-between px-3 mb-2">
         <h2 className="text-xs font-bold tracking-wider text-primary-dark/70 uppercase">
           Categorías
@@ -114,6 +116,6 @@ export default function MenuCategorias() {
           nivel={0}
         />
       ))}
-    </nav>
+    </Card>
   );
 }

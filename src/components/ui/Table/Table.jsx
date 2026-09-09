@@ -1,6 +1,8 @@
+import Card from '../Card/Card'
+
 export default function Table({ children, hoverable = false, className = '', dark = false }) {
   return (
-    <div className="overflow-x-auto">
+    <Card variant={dark ? 'admin' : 'default'} padding="none" className="overflow-x-auto">
       <table
         className={`w-full text-left text-sm ${
           dark ? 'text-gray-300' : 'text-gray-700'
@@ -8,6 +10,6 @@ export default function Table({ children, hoverable = false, className = '', dar
       >
         {children}
       </table>
-    </div>
+    </Card>
   )
 }

@@ -2,7 +2,15 @@ import adminApi from '../axios.admin';
 
 export type EstadoPedido = 'PENDIENTE' | 'CONFIRMADO' | 'CANCELADO';
 
-export const getPedidosAdmin = async (): Promise<unknown[]> => {
+export interface ResultadoPedidos {
+  items: unknown[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export const getPedidosAdmin = async (): Promise<ResultadoPedidos> => {
   const { data } = await adminApi.get('/admin/pedidos');
   return data;
 };

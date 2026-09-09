@@ -37,7 +37,7 @@ export default function Perfil() {
 
         <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
           <div className="space-y-6 md:col-span-2">
-            <Card hover={false} className="p-8">
+            <Card variant="default" padding={false} className="p-6 sm:p-8">
               <h2 className="mb-6 text-2xl font-bold text-gray-800 font-display">
                 Información Personal
               </h2>
@@ -81,7 +81,7 @@ export default function Perfil() {
               </Button>
             </Card>
 
-            <Card hover={false} className="p-8">
+            <Card variant="default" padding={false} className="p-6 sm:p-8">
               <h2 className="mb-6 text-2xl font-bold text-gray-800 font-display">
                 Mis Compras
               </h2>
@@ -98,7 +98,7 @@ export default function Perfil() {
                 ) : (
                   <div className="space-y-4">
                     {orders.map((p) => (
-                      <Card key={p.idPedido} className="p-4">
+                      <Card key={p.idPedido} variant="subtle" padding="md">
                         <div className="flex justify-between mb-2">
                           <div>
                             <p className="font-bold">Pedido #{p.idPedido}</p>
@@ -134,7 +134,7 @@ export default function Perfil() {
           </div>
 
           <div className="md:col-span-1">
-            <Card hover={false} className="p-6">
+            <Card variant="default" padding="lg">
               <div className="mb-6 text-center">
                 <div className="flex items-center justify-center w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-primary to-secondary">
                   <User className="text-white" size={32} />

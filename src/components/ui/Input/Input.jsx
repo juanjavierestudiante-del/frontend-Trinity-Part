@@ -19,17 +19,34 @@ export default function Input(props) {
     icon,
     sizing = 'md',
     dark = false,
+    tone = 'default',
     ...rest
   } = props
 
   const sizeClass = SIZE_CLASSES[sizing] || SIZE_CLASSES.md
+  const glassTone = tone === 'glass'
+  const labelClass = glassTone
+    ? 'text-ink'
+    : dark
+      ? 'text-gray-200'
+      : 'text-gray-700'
+  const inputClass = glassTone
+    ? 'bg-white/20 border-white/35 text-ink placeholder:text-primary-dark/45 backdrop-blur-md shadow-sm focus:ring-primary/30 focus:border-white/50'
+    : dark
+      ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-primary focus:border-transparent'
+      : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:ring-primary focus:border-transparent'
+  const iconClass = glassTone
+    ? 'text-primary-dark/70'
+    : dark
+      ? 'text-gray-400'
+      : 'text-gray-400'
 
   return (
     <div className={`w-full ${className}`}>
       {label ? (
         <label
           htmlFor={id || name}
-          className={`block text-sm font-medium mb-1 ${dark ? 'text-gray-200' : 'text-gray-700'}`}
+          className={`mb-1 block text-sm font-medium ${labelClass}`}
         >
           {label} {required ? <span className="text-red-500">*</span> : null}
         </label>
@@ -37,7 +54,7 @@ export default function Input(props) {
 
       <div className="relative">
         {icon ? (
-          <div className={`absolute left-3 top-2.5 ${dark ? 'text-gray-400' : 'text-gray-400'}`}>
+          <div className={`absolute left-3 top-2.5 ${iconClass}`}>
             {icon}
           </div>
         ) : null}
@@ -49,11 +66,7 @@ export default function Input(props) {
           placeholder={placeholder}
           type={type}
           aria-invalid={!!error}
-          className={`block w-full rounded-md border px-3 ${sizeClass} focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
-            dark
-              ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
-              : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
-          } ${icon ? 'pl-10' : ''} ${error ? 'border-red-500' : ''}`}
+          className={`block w-full rounded-md border px-3 ${sizeClass} focus:outline-none focus:ring-2 ${inputClass} ${icon ? 'pl-10' : ''} ${error ? 'border-red-500' : ''}`}
           {...rest}
         />
       </div>

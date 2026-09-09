@@ -19,11 +19,11 @@ export default function CartItem({ item, onRemove, onQuantityChange }) {
       </td>
       <td className="px-6 py-4 text-center">
         <div className="flex items-center justify-center gap-2">
-          <Button onClick={() => onQuantityChange(item.id, item.quantity - 1)} variant="ghost" size="sm" className="p-1 rounded-md">
+          <Button onClick={() => onQuantityChange(item.id, item.quantity - 1)} variant="ghost" size="icon-sm" aria-label="Disminuir cantidad" title="Disminuir cantidad">
             <Minus size={16} />
           </Button>
           <span className="w-8 text-center">{item.quantity}</span>
-          <Button onClick={() => onQuantityChange(item.id, item.quantity + 1)} variant="ghost" size="sm" className="p-1 rounded-md">
+          <Button onClick={() => onQuantityChange(item.id, item.quantity + 1)} variant="ghost" size="icon-sm" aria-label="Aumentar cantidad" title="Aumentar cantidad">
             <Plus size={16} />
           </Button>
         </div>
@@ -32,7 +32,7 @@ export default function CartItem({ item, onRemove, onQuantityChange }) {
         Bs. {(item.quantity * item.price).toFixed(2)}
       </td>
       <td className="px-6 py-4 text-center">
-        <Button onClick={() => onRemove(item.id)} variant="ghost" size="sm" className="text-red-500">
+        <Button onClick={() => onRemove(item.id)} variant="ghost" size="icon" className="text-red-500" aria-label={`Eliminar ${item.name}`} title="Eliminar artículo">
           <Trash2 size={20} />
         </Button>
       </td>

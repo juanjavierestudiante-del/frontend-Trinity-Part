@@ -43,8 +43,7 @@ export default function ProductosPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <h1 className="text-2xl font-bold text-gray-100">Productos</h1>
         {isAdmin && (
-          <Button onClick={() => navigate('/admin/productos/nuevo')}>
-            <HiPlus className="w-4 h-4 mr-2" />
+          <Button size="md" icon={HiPlus} onClick={() => navigate('/admin/productos/nuevo')}>
             Nuevo producto
           </Button>
         )}
@@ -82,23 +81,23 @@ export default function ProductosPage() {
               <TableCell dark>
                 <div className="flex gap-1 sm:gap-2">
                   <Button
-                    size="xs"
+                    size="sm"
                     variant="light"
                     onClick={() => navigate(`/admin/productos/${producto.idProducto}/editar`)}
                     title="Editar"
                   >
-                    <HiPencil className="w-3 h-3 sm:mr-1" />
-                    <span className="hidden sm:inline">Editar</span>
+                    <HiPencil className="w-4 h-4" />
+                    <span>Editar</span>
                   </Button>
                   {isAdmin && (
                     <Button
-                      size="xs"
+                      size="sm"
                       variant="danger"
                       onClick={() => handleEliminar(producto.idProducto, producto.nombre)}
                       title="Eliminar"
                     >
-                      <HiTrash className="w-3 h-3 sm:mr-1" />
-                      <span className="hidden sm:inline">Eliminar</span>
+                      <HiTrash className="w-4 h-4" />
+                      <span>Eliminar</span>
                     </Button>
                   )}
                 </div>

@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import Button from "../ui/Button/Button";
 
 export default function Hero() {
   return (
@@ -22,13 +23,17 @@ export default function Hero() {
         <p className="text-lg md:text-xl mb-8 text-white/90 animate-fade-in-up" style={{ animationDelay: "0.25s" }}>
           Decoraciones, regalos y cotillones para celebraciones inolvidables
         </p>
-        <Link
+        <Button
+          as={Link}
           to="/catalogo"
-          className="inline-block px-8 py-3 bg-white text-primary font-bold rounded-full hover:bg-primary-light transition-all duration-200 transform hover:scale-105 hover:shadow-[0_8px_32px_rgba(255,255,255,0.35)] font-display animate-fade-in-up"
+          variant="secondary"
+          size="lg"
+          pill
+          className="bg-white text-primary hover:bg-primary-light hover:shadow-[0_8px_32px_rgba(255,255,255,0.35)] font-display animate-fade-in-up"
           style={{ animationDelay: "0.35s" }}
         >
           Comprar Ahora
-        </Link>
+        </Button>
       </div>
     </section>
   );

@@ -26,12 +26,12 @@ export default function Catalogo() {
         title={`Catálogo | Trinity Party & Events`}
         description="Descubre todos nuestros productos: decoraciones, regalos, cotillones y artículos para fiestas y celebraciones."
         jsonLd={
-          productos && productos.length > 0
+          productos && productos.items.length > 0
             ? {
                 '@context': 'https://schema.org',
                 '@type': 'ItemList',
                 name: 'Catálogo de productos Trinity Party',
-                itemListElement: productos.slice(0, 50).map((p, index) => ({
+                itemListElement: productos.items.slice(0, 50).map((p, index) => ({
                   '@type': 'ListItem',
                   position: index + 1,
                   url: `https://www.trinitypartyevent.com/productos/${p.slug}`,
@@ -74,16 +74,16 @@ export default function Catalogo() {
               <StatusMessage status="error" message="Error al cargar el catálogo." />
             )}
 
-            {!isLoading && !isError && productos && productos.length === 0 && (
+            {!isLoading && !isError && productos && productos.items.length === 0 && (
               <StatusMessage
                 status="empty"
                 message="No se encontraron productos. Intenta con otra categoría o cambia los términos de búsqueda."
               />
             )}
 
-            {!isLoading && !isError && productos && productos.length > 0 && (
+            {!isLoading && !isError && productos && productos.items.length > 0 && (
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
-                {productos.map((producto, index) => (
+                {productos.items.map((producto, index) => (
                   <div
                     key={producto.idProducto}
                     className="animate-fade-in-up"

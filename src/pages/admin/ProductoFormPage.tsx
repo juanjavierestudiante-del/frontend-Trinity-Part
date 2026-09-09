@@ -14,6 +14,7 @@ import Select from "../../components/ui/Select/Select"
 import Label from "../../components/ui/Label/Label"
 import ToggleSwitch from "../../components/ui/ToggleSwitch/ToggleSwitch"
 import Loader from "../../components/ui/Loader/Loader"
+import Card from "../../components/ui/Card/Card"
 
 const aplanarCategorias = (
   categorias: Categoria[],
@@ -94,7 +95,7 @@ export default function ProductoFormPage() {
 
   return (
     <div className="min-h-screen p-3 sm:p-6 bg-gray-900">
-      <div className="max-w-2xl p-4 sm:p-6 mx-auto bg-gray-800 rounded-lg shadow-lg">
+      <Card variant="admin" padding={false} className="max-w-2xl p-4 sm:p-6 mx-auto">
         <h1 className="mb-6 text-2xl font-bold text-white">
           {esEdicion ? "Editar producto" : "Nuevo producto"}
         </h1>
@@ -225,7 +226,7 @@ export default function ProductoFormPage() {
             </Button>
           </div>
         </form>
-      </div>
+      </Card>
     </div>
   )
 }

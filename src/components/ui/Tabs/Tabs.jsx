@@ -21,8 +21,9 @@ export default function Tabs(props) {
         {tabs.map((tab) => (
           <button
             key={tab.index}
+            type="button"
             onClick={() => setActiveIndex(tab.index)}
-            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+            className={`flex shrink-0 items-center gap-2 whitespace-nowrap px-4 py-3 text-sm font-medium leading-5 border-b-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
               activeIndex === tab.index
                 ? dark
                   ? 'border-primary text-primary-light'

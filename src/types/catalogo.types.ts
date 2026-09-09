@@ -1,6 +1,14 @@
 // Tipos que representan exactamente lo que devuelve tu backend.
 // Si cambiás algo en el backend, lo reflejás acá.
 
+export interface ResultadoPaginado<T> {
+  items: T[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 export interface Categoria {
   idCategoria: number;
   nombre: string;

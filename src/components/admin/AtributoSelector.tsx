@@ -90,6 +90,7 @@ export default function AtributoSelector({ idVariante, idProducto, atributosAsig
           <Badge key={a.idValor} variant="indigo" className="flex items-center gap-1 pr-1">
             <span>{a.valorAtributo.atributo.nombre}: {a.valorAtributo.valor}</span>
             <button
+              type="button"
               onClick={() => quitar({ idVariante, idValor: a.idValor })}
               className="ml-1 hover:text-red-400"
             >
@@ -148,6 +149,7 @@ export default function AtributoSelector({ idVariante, idProducto, atributosAsig
         <div className="flex flex-wrap gap-2 mt-2">
           {!mostrarNuevoValor ? (
             <button
+              type="button"
               onClick={() => setMostrarNuevoValor(true)}
               className="flex items-center gap-1 text-xs text-primary-light hover:underline"
             >
@@ -168,6 +170,7 @@ export default function AtributoSelector({ idVariante, idProducto, atributosAsig
                 {creandoValor ? '...' : 'Crear y asignar'}
               </Button>
               <button
+                type="button"
                 onClick={() => { setMostrarNuevoValor(false); setNuevoValor('') }}
                 className="text-xs text-gray-500 hover:text-gray-300"
               >
@@ -181,6 +184,7 @@ export default function AtributoSelector({ idVariante, idProducto, atributosAsig
       <div className="pt-3 mt-3 border-t border-gray-700">
         {!mostrarNuevoAtributo ? (
           <button
+            type="button"
             onClick={() => setMostrarNuevoAtributo(true)}
             className="flex items-center gap-1 text-xs text-gray-400 hover:text-primary-light"
           >
@@ -201,6 +205,7 @@ export default function AtributoSelector({ idVariante, idProducto, atributosAsig
               {creandoAtributo ? '...' : 'Crear atributo'}
             </Button>
             <button
+              type="button"
               onClick={() => { setMostrarNuevoAtributo(false); setNuevoAtributo('') }}
               className="text-xs text-gray-500 hover:text-gray-300"
             >

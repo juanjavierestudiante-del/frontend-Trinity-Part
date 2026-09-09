@@ -3,12 +3,12 @@ import { useProductos } from "../../hooks/useCatalogo";
 
 export default function FeaturedProducts() {
   const {
-    data: productos = [],
+    data,
     isLoading,
     isError,
   } = useProductos();
 
-  const featured = productos.slice(0, 3);
+  const featured = (data?.items ?? []).slice(0, 3);
 
   if (isLoading || isError) return null;
 
