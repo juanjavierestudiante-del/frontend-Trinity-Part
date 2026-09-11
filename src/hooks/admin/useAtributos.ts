@@ -3,6 +3,8 @@ import {
   getAtributos,
   crearAtributo,
   crearValorAtributo,
+  actualizarAtributo,
+  actualizarValorAtributo,
   asignarAtributoVariante,
   quitarAtributoVariante,
 } from '../../services/admin/atributo.api';
@@ -25,8 +27,26 @@ export const useCrearAtributo = () => {
 export const useCrearValorAtributo = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ idAtributo, valor }: { idAtributo: number; valor: string }) =>
-      crearValorAtributo(idAtributo, valor),
+    mutationFn: ({ idAtributo, valor, visualValue }: { idAtributo: number; valor: string; visualValue?: string | null }) =>
+      crearValorAtributo(idAtributo, valor, visualValue),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'atributos'] }),
+  });
+};
+
+export const useActualizarAtributo = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ idAtributo, tipoVisualizacion }: { idAtributo: number; tipoVisualizacion: 'text' | 'color' | 'image' }) =>
+      actualizarAtributo(idAtributo, { tipoVisualizacion }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'atributos'] }),
+  });
+};
+
+export const useActualizarValorAtributo = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ idAtributo, idValor, body }: { idAtributo: number; idValor: number; body: { valor?: string; visualValue?: string | null } }) =>
+      actualizarValorAtributo(idAtributo, idValor, body),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'atributos'] }),
   });
 };
@@ -53,4 +73,3 @@ export const useQuitarAtributo = (idProducto: number) => {
       qc.invalidateQueries({ queryKey: ['admin', 'variantes', idProducto] }),
   });
 };
-

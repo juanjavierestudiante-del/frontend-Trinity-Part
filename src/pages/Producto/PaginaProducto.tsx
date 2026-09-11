@@ -1,12 +1,12 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useProducto } from '../../hooks/useCatalogo';
-import SelectorVariante from '../../components/producto/SelectorVariante';
-import type { Variante } from '../../types/catalogo.types';
+import type { ImagenProducto, ImagenVariante, Variante } from '../../types/catalogo.types';
 import StatusMessage from '../../components/ui/StatusMessage/StatusMessage';
-import Button from '../../components/ui/Button/Button';
 import Card from '../../components/ui/Card/Card';
 import Seo from '../../components/seo/Seo';
+import ProductoGaleria from '../../components/producto/ProductoGaleria';
+import BuyBox, { ResumenProducto } from '../../components/producto/BuyBox';
 import { useAuth } from '../../context/AuthContext';
 import { useAgregarAlCarrito } from '../../hooks/useCarrito';
 
@@ -14,151 +14,98 @@ export default function PaginaProducto() {
   const { slug } = useParams<{ slug: string }>();
   const { data: producto, isLoading, isError } = useProducto(slug!);
   const [varianteSeleccionada, setVarianteSeleccionada] = useState<Variante | null>(null);
+  const [cantidad, setCantidad] = useState(1);
   const { mutate: agregarAlCarrito, isPending: agregando } = useAgregarAlCarrito();
   const { user } = useAuth();
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen px-4 py-16">
-        <StatusMessage status="loading" message="Cargando producto..." className="max-w-3xl mx-auto" />
-      </div>
+  const seleccionarVariante = useCallback((variante: Variante | null) => {
+    setVarianteSeleccionada(variante);
+  }, []);
+
+  useEffect(() => {
+    const inicial = producto?.variantes.find((variante) => variante.estado === 'Activo') ?? null;
+    setVarianteSeleccionada(inicial);
+    setCantidad(1);
+  }, [producto?.idProducto]);
+
+  const stock = varianteSeleccionada?.inventario?.stockActual ?? 0;
+
+  useEffect(() => {
+    setCantidad((actual) => Math.min(Math.max(1, actual), Math.max(1, stock)));
+  }, [varianteSeleccionada?.idVariante, stock]);
+
+  const imagenes = useMemo(() => {
+    if (!producto) return [];
+    const vistas: Array<ImagenProducto | ImagenVariante> = [
+      ...(varianteSeleccionada?.imagenes ?? []),
+      ...producto.imagenes,
+    ];
+    return vistas.filter((imagen, indice, lista) =>
+      lista.findIndex((otra) => otra.idImagen === imagen.idImagen || otra.url === imagen.url) === indice
     );
+  }, [producto, varianteSeleccionada]);
+
+  if (isLoading) {
+    return <div className="min-h-screen px-4 py-16"><StatusMessage status="loading" message="Cargando producto..." className="mx-auto max-w-3xl" /></div>;
   }
 
   if (isError || !producto) {
-    return (
-      <div className="min-h-screen px-4 py-16">
-        <StatusMessage status="error" message="Producto no encontrado." className="max-w-3xl mx-auto" />
-      </div>
-    );
+    return <div className="min-h-screen px-4 py-16"><StatusMessage status="error" message="Producto no encontrado." className="mx-auto max-w-3xl" /></div>;
   }
 
-  const varianteActual = varianteSeleccionada
-    ?? producto.variantes.find((v) => v.estado === 'Activo')
-    ?? null;
-
-  const imagen =
-    varianteActual?.imagenes.find((i) => i.principal)?.url
-    ?? producto.imagenes.find((i) => i.principal)?.url;
-
-  const stock = varianteActual?.inventario?.stockActual ?? 0;
-
+  const imagenPrincipal = imagenes.find((imagen) => imagen.principal)?.url ?? imagenes[0]?.url;
   const jsonLdProduct = {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: producto.nombre,
     description: producto.descripcion ?? producto.descripcionCorta ?? undefined,
-    image: imagen,
-    sku: varianteActual?.sku,
-    brand: varianteActual?.marca?.nombre
-      ? { '@type': 'Brand', name: varianteActual.marca.nombre }
-      : undefined,
-    ...(varianteActual
-      ? {
-          offers: {
-            '@type': 'Offer',
-            price: Number(varianteActual.precioOferta ?? varianteActual.precioVenta).toFixed(2),
-            priceCurrency: 'BOB',
-            availability: stock > 0
-              ? 'https://schema.org/InStock'
-              : 'https://schema.org/OutOfStock',
-          },
-        }
-      : {}),
+    image: imagenPrincipal,
+    sku: varianteSeleccionada?.sku,
+    brand: varianteSeleccionada?.marca?.nombre ? { '@type': 'Brand', name: varianteSeleccionada.marca.nombre } : undefined,
+    ...(varianteSeleccionada ? {
+      offers: {
+        '@type': 'Offer',
+        price: Number(varianteSeleccionada.precioOferta ?? varianteSeleccionada.precioVenta).toFixed(2),
+        priceCurrency: 'BOB',
+        availability: stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+      },
+    } : {}),
   };
 
+  const handleCantidad = (nuevaCantidad: number) => setCantidad(Math.min(Math.max(1, nuevaCantidad), Math.max(1, stock)));
   const handleAgregarAlCarrito = () => {
-    if (!varianteActual || !user) return;
+    if (!varianteSeleccionada || !user || stock === 0) return;
     agregarAlCarrito(
-      { idVariante: varianteActual.idVariante },
-      {
-        onError: (err: any) => {
-          alert(err?.response?.data?.error || 'Error al agregar al carrito');
-        },
-      }
+      { idVariante: varianteSeleccionada.idVariante, cantidad },
+      { onError: (err: any) => alert(err?.response?.data?.error || 'Error al agregar al carrito') }
     );
   };
 
   return (
-    <main className="min-h-screen px-4 py-10">
-      <Seo
-        title={`${producto.nombre} | Trinity Party & Events`}
-        description={producto.descripcionCorta ?? producto.descripcion ?? undefined}
-        jsonLd={jsonLdProduct}
-      />
+    <main className="min-h-screen px-4 py-8 sm:py-10">
+      <Seo title={`${producto.nombre} | Trinity Party & Events`} description={producto.descripcionCorta ?? producto.descripcion ?? undefined} jsonLd={jsonLdProduct} />
       <div className="mx-auto max-w-7xl">
-        <div className="grid gap-10 lg:grid-cols-[1.4fr_0.9fr]">
-          <Card variant="elevated" padding="lg">
-            <div className="space-y-6">
-              <div className="space-y-4">
-                <p className="text-sm font-semibold uppercase tracking-[0.3em] text-primary">Producto</p>
-                <h1 className="text-4xl font-black text-gray-900 font-display">{producto.nombre}</h1>
-                <p className="text-base text-gray-600">{producto.descripcionCorta}</p>
-              </div>
-
-              {imagen && (
-                <img
-                  src={imagen}
-                  alt={producto.nombre}
-                  className="w-full rounded-card object-cover shadow-brand"
-                />
-              )}
-
-              <Card variant="subtle" padding="lg">
-                <h2 className="mb-4 text-xl font-bold text-gray-900 font-display">Elegir variante</h2>
-                <SelectorVariante
-                  variantes={producto.variantes}
-                  seleccionada={varianteActual}
-                  onSeleccionar={setVarianteSeleccionada}
-                />
-              </Card>
-
-              <Card variant="subtle" padding="lg">
-                <h2 className="mb-3 text-lg font-bold text-gray-900 font-display">Descripción completa</h2>
-                <p className="text-gray-600 leading-relaxed">{producto.descripcion}</p>
-              </Card>
-            </div>
-          </Card>
-
-          <div className="lg:col-span-1">
-            <div className="sticky top-24 space-y-4">
-              <Card variant="highlight" padding="lg">
-                {varianteActual ? (
-                  <div className="space-y-4">
-                    <div className="flex flex-wrap items-center gap-4">
-                      {varianteActual.precioOferta ? (
-                        <>
-                          <span className="text-sm text-gray-500 line-through">Bs. {Number(varianteActual.precioVenta).toFixed(2)}</span>
-                          <span className="text-3xl font-black text-primary">Bs. {Number(varianteActual.precioOferta).toFixed(2)}</span>
-                        </>
-                      ) : (
-                        <span className="text-3xl font-black text-primary">Bs. {Number(varianteActual.precioVenta).toFixed(2)}</span>
-                      )}
-                    </div>
-                    <p className="text-sm text-gray-700">
-                      Presentación: {varianteActual.cantidadContenido} {varianteActual.unidad?.abreviatura}
-                    </p>
-                    <p className="text-sm text-gray-700">
-                      Stock disponible: <span className="font-semibold">{stock}</span> unidades
-                    </p>
-                  </div>
-                ) : (
-                  <p className="text-gray-600">Seleccioná una variante para ver el precio.</p>
-                )}
-              </Card>
-
-              <Button
-                onClick={handleAgregarAlCarrito}
-                disabled={!varianteActual || stock === 0 || !user}
-                loading={agregando}
-                variant="primary"
-                size="lg"
-                className="w-full"
-              >
-                {!user ? 'Iniciá sesión para comprar' : stock === 0 ? 'Sin stock' : 'Agregar al carrito'}
-              </Button>
-            </div>
+        <div className="mb-6 lg:hidden"><ResumenProducto producto={producto} variante={varianteSeleccionada} stock={stock} /></div>
+        <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(22rem,0.98fr)] lg:gap-10">
+          <ProductoGaleria imagenes={imagenes} nombre={producto.nombre} />
+          <div className="lg:sticky lg:top-24">
+            <BuyBox producto={producto} variante={varianteSeleccionada} stock={stock} cantidad={cantidad} onCantidadChange={handleCantidad} onSeleccionarVariante={seleccionarVariante} onAgregarAlCarrito={handleAgregarAlCarrito} agregando={agregando} usuario={user} />
           </div>
+        </div>
+        <div className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(22rem,0.98fr)]">
+          <Card variant="subtle" padding="lg">
+            <h2 className="text-2xl font-bold text-ink">Descripción</h2>
+            <p className="mt-4 whitespace-pre-line leading-relaxed text-muted">{producto.descripcion || producto.descripcionCorta || 'Sin descripción adicional.'}</p>
+          </Card>
+          <Card variant="subtle" padding="lg">
+            <h2 className="text-2xl font-bold text-ink">Información adicional</h2>
+            <dl className="mt-4 divide-y divide-white/45 text-sm">
+              {varianteSeleccionada?.sku && <div className="flex justify-between gap-4 py-3"><dt className="text-muted">SKU</dt><dd className="text-right font-semibold text-ink">{varianteSeleccionada.sku}</dd></div>}
+              {producto.categoria?.nombre && <div className="flex justify-between gap-4 py-3"><dt className="text-muted">Categoría</dt><dd className="text-right font-semibold text-ink">{producto.categoria.nombre}</dd></div>}
+              {varianteSeleccionada?.marca?.nombre && <div className="flex justify-between gap-4 py-3"><dt className="text-muted">Marca</dt><dd className="text-right font-semibold text-ink">{varianteSeleccionada.marca.nombre}</dd></div>}
+              {varianteSeleccionada && <div className="flex justify-between gap-4 py-3"><dt className="text-muted">Presentación</dt><dd className="text-right font-semibold text-ink">{varianteSeleccionada.cantidadContenido} {varianteSeleccionada.unidad?.nombre ?? varianteSeleccionada.unidad?.abreviatura ?? ''}</dd></div>}
+            </dl>
+          </Card>
         </div>
       </div>
     </main>

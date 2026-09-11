@@ -28,8 +28,11 @@ export const useCrearProducto = () => {
 export const useActualizarProducto = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, body }: { id: number; body: any }) => actualizarProducto(id, body),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'productos'] }),
+    mutationFn: ({ id, body }: { id: number; body: Parameters<typeof actualizarProducto>[1] }) => actualizarProducto(id, body),
+    onSuccess: (_data, variables) => {
+      qc.invalidateQueries({ queryKey: ['admin', 'productos'] });
+      qc.invalidateQueries({ queryKey: ['admin', 'producto', variables.id] });
+    },
   });
 };
 
@@ -40,5 +43,4 @@ export const useEliminarProducto = () => {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'productos'] }),
   });
 };
-
 

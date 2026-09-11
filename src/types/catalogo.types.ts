@@ -25,9 +25,17 @@ export interface ImagenProducto {
 }
 
 export interface ValorAtributo {
-  valor: string;              // ej: "Rojo"
-  atributo: { nombre: string }; // ej: { nombre: "Color" }
+  idValor: number;
+  valor: string;
+  visualValue: string | null;
+  atributo: {
+    idAtributo: number;
+    nombre: string;
+    tipoVisualizacion: TipoVisualizacionAtributo;
+  };
 }
+
+export type TipoVisualizacionAtributo = 'text' | 'color' | 'image';
 
 export interface VarianteAtributo {
   valorAtributo: ValorAtributo;
@@ -61,6 +69,12 @@ export interface Variante {
 
 export interface Producto {
   idProducto: number;
+  idAtributoPrincipal: number | null;
+  atributoPrincipal: {
+    idAtributo: number;
+    nombre: string;
+    tipoVisualizacion: TipoVisualizacionAtributo;
+  } | null;
   nombre: string;
   slug: string;
   descripcionCorta: string | null;

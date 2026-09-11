@@ -1,8 +1,9 @@
 import { useParams } from 'react-router-dom'
-import { HiInformationCircle, HiPhotograph, HiCube } from 'react-icons/hi'
+import { HiInformationCircle, HiPhotograph, HiCube, HiTag } from 'react-icons/hi'
 import { useProductoAdmin } from '../../hooks/admin/useProductosAdmin'
 import ImagenEditor from '../../components/admin/ImagenEditor'
 import VarianteEditor from '../../components/admin/VarianteEditor'
+import AtributosProductoTab from '../../components/admin/AtributosProductoTab'
 import ProductoFormPage from './ProductoFormPage'
 import Tabs, { TabItem } from '../../components/ui/Tabs/Tabs'
 import Loader from '../../components/ui/Loader/Loader'
@@ -42,6 +43,10 @@ export default function ProductoDetallePage() {
           <div className="mt-4">
             <VarianteEditor idProducto={producto.idProducto} />
           </div>
+        </TabItem>
+
+        <TabItem title="Atributos" icon={HiTag}>
+          <AtributosProductoTab producto={producto} />
         </TabItem>
       </Tabs>
     </div>

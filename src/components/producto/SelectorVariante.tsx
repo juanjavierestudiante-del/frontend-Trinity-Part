@@ -7,14 +7,20 @@ interface Props {
 }
 
 export default function SelectorVariante({ variantes, seleccionada, onSeleccionar }: Props) {
+  const variantesActivas = variantes.filter((variante) => variante.estado === 'Activo');
+
+  if (variantesActivas.length === 0) {
+    return <p className="text-sm text-muted">No hay presentaciones disponibles por el momento.</p>;
+  }
+
   return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-      {variantes
-        .filter((v) => v.estado === 'Activo')
-        .map((variante) => {
+    <fieldset>
+      <legend className="text-sm font-bold text-ink">Elige una presentación</legend>
+      <div className="mt-3 grid gap-2 sm:grid-cols-2">
+      {variantesActivas.map((variante) => {
           const label = variante.varianteAtributo
             .map((va) => `${va.valorAtributo.atributo.nombre}: ${va.valorAtributo.valor}`)
-            .join(' | ') || variante.sku;
+            .join(' · ') || `${variante.cantidadContenido} ${variante.unidad?.abreviatura ?? ''}`.trim() || variante.sku;
 
           const estaSeleccionada = seleccionada?.idVariante === variante.idVariante;
           const sinStock = (variante.inventario?.stockActual ?? 0) === 0;
@@ -25,21 +31,23 @@ export default function SelectorVariante({ variantes, seleccionada, onSelecciona
               type="button"
               onClick={() => onSeleccionar(variante)}
               disabled={sinStock}
-              className={`min-w-0 rounded-md border px-4 py-3 text-left text-sm leading-5 transition duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+              aria-pressed={estaSeleccionada}
+              className={`min-h-14 min-w-0 rounded-md border px-3 py-2.5 text-left text-sm leading-5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
                 sinStock
-                  ? 'cursor-not-allowed border-gray-200 bg-gray-100 text-gray-500'
+                  ? 'cursor-not-allowed border-white/30 bg-white/15 text-muted line-through opacity-70'
                   : estaSeleccionada
-                  ? 'border-primary bg-primary-light text-primary-dark shadow-sm'
-                  : 'border-gray-200 bg-white text-gray-700 hover:border-primary hover:bg-primary-light/50'
+                  ? 'border-primary bg-primary-light/85 text-primary-dark shadow-brand'
+                  : 'border-white/45 bg-white/25 text-ink hover:border-primary/60 hover:bg-white/40'
               }`}
             >
               <span className="block break-words font-semibold">{label}</span>
-              <span className="mt-1 block text-xs text-gray-500">
-                {sinStock ? 'Agotado' : 'Disponible'}
+              <span className="mt-0.5 block text-xs text-muted">
+                {sinStock ? 'Agotado' : `${variante.inventario?.stockActual ?? 0} disponibles`}
               </span>
             </button>
           );
-        })}
-    </div>
+      })}
+      </div>
+    </fieldset>
   );
 }
