@@ -15,20 +15,18 @@ import {
   HiMenu,
 } from 'react-icons/hi'
 import { useAuthStore } from '../../store/auth.store'
-import { useAuth } from '../../context/AuthContext'
 
 export default function AdminLayout() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { usuario, logout } = useAuthStore()
-  const { clearPublicSession } = useAuth()
+  const user = useAuthStore((state) => state.user)
+  const logout = useAuthStore((state) => state.logout)
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const isActive = (path: string) => location.pathname.startsWith(path)
 
   const handleLogout = () => {
-    logout()
-    clearPublicSession()
+    void logout()
     navigate('/admin/login')
   }
 
@@ -98,8 +96,8 @@ export default function AdminLayout() {
 
           <SidebarItemGroup>
             <div className="px-3 py-2 text-sm text-gray-400">
-              <p className="font-medium text-gray-200">{usuario?.nombre}</p>
-              <p className="text-xs">{usuario?.rol}</p>
+              <p className="font-medium text-gray-200">{user?.nombre}</p>
+              <p className="text-xs">{user?.rol}</p>
             </div>
             <SidebarItem
               icon={HiLogout}

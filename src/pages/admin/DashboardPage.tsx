@@ -5,7 +5,7 @@ import { useInventario, useAlertasInventario } from '../../hooks/admin/useInvent
 import Card from '../../components/ui/Card/Card'
 
 export default function DashboardPage() {
-  const usuario = useAuthStore((state) => state.usuario)
+  const usuario = useAuthStore((state) => state.user)
   const { data: productos } = useProductosAdmin()
   const { data: inventario } = useInventario()
   const { data: alertas } = useAlertasInventario()

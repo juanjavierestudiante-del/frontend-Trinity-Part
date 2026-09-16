@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { useAuthStore } from '../../store/auth.store';
 
 export default function UnauthorizedPage() {
-  const usuario = useAuthStore((state) => state.usuario);
+  const usuario = useAuthStore((state) => state.user);
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-900">

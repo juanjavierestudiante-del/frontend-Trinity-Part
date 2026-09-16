@@ -1,13 +1,14 @@
 import { Navigate, Link } from "react-router-dom";
 import { User, Mail, Phone, MapPin, LogOut } from "lucide-react";
-import { useAuth } from "../../context/AuthContext.jsx";
+import { useAuthStore } from "../../store/auth.store";
 import { useEffect, useState } from "react";
 import { obtenerPedidos } from "../../services/public/carrito.api";
 import Button from "../../components/ui/Button/Button";
 import Card from "../../components/ui/Card/Card";
 
 export default function Perfil() {
-  const { user, logout } = useAuth();
+  const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -47,7 +48,7 @@ export default function Perfil() {
                   <User className="text-primary" size={24} />
                   <div>
                     <p className="text-sm text-gray-600">Nombre</p>
-                    <p className="font-bold text-gray-800">{user.name}</p>
+                    <p className="font-bold text-gray-800">{user.nombre}</p>
                   </div>
                 </div>
 
@@ -139,7 +140,7 @@ export default function Perfil() {
                 <div className="flex items-center justify-center w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-primary to-secondary">
                   <User className="text-white" size={32} />
                 </div>
-                <h3 className="text-xl font-bold text-gray-800 font-display">{user.name}</h3>
+                <h3 className="text-xl font-bold text-gray-800 font-display">{user.nombre}</h3>
                 <p className="text-sm text-gray-600">
                   Miembro desde {user.joinDate}
                 </p>

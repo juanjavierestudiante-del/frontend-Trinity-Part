@@ -1,17 +1,18 @@
 import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { Menu, X, Search, ShoppingCart, User, LogOut, Settings } from "lucide-react";
-import { useAuth } from "../../context/AuthContext.jsx";
+import { useAuthStore } from "../../store/auth.store";
 import { useContadorCarrito } from "../../hooks/useCarrito";
 import Button from "../ui/Button/Button";
 
 export default function Nav() {
   const [open, setOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
   const logo = "https://res.cloudinary.com/dslh6rwix/image/upload/q_auto/f_auto/v1780528934/logo_eolnrp.png";
   const { data: contador } = useContadorCarrito();
   const cartCount = contador?.items ?? 0;
-  const isAdmin = user?.role === "ADMIN";
+  const isAdmin = user?.rol === "ADMIN";
 
   const navLinks = [
     { to: "/", label: "Inicio" },
@@ -122,7 +123,7 @@ export default function Nav() {
                   className="flex items-center gap-2 px-3 py-2 transition-all duration-300 rounded-full bg-white/10 hover:bg-white/20"
                 >
                   <User className="w-5 h-5" />
-                  <span className="hidden text-sm font-semibold text-white sm:inline">{user.name.split(" ")[0]}</span>
+                  <span className="hidden text-sm font-semibold text-white sm:inline">{user.nombre.split(" ")[0]}</span>
                 </Link>
                 <Button
                   onClick={logout}

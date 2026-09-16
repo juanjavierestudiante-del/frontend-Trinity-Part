@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import CartItem from "../../components/tienda/CartItem";
 import CartSummary from "../../components/tienda/CartSummary";
-import { useAuth } from "../../context/AuthContext";
+import { useAuthStore } from "../../store/auth.store";
 import {
   useCarrito,
   useEliminarDelCarrito,
@@ -13,7 +13,7 @@ import StatusMessage from "../../components/ui/StatusMessage/StatusMessage";
 import Alert from "../../components/ui/Alert/Alert";
 
 export default function Carrito() {
-  const { user } = useAuth();
+  const user = useAuthStore((state) => state.user);
   const { data, isLoading, isError } = useCarrito();
   const eliminarMutation = useEliminarDelCarrito();
   const actualizarMutation = useActualizarCantidadCarrito();

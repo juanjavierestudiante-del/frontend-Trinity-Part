@@ -1,7 +1,7 @@
-import { Mail, Lock, LogIn, RefreshCw } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, LogIn } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { useAuth } from "../../context/AuthContext.jsx";
+import { useAuthStore } from "../../store/auth.store";
 import Button from "../../components/ui/Button/Button";
 import Input from "../../components/ui/Input/Input";
 import Alert from "../../components/ui/Alert/Alert";
@@ -9,23 +9,13 @@ import AuthShell from "../../components/ui/AuthShell/AuthShell";
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const login = useAuthStore((state) => state.login);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [captchaInput, setCaptchaInput] = useState("");
-
-  const generarCaptcha = () => {
-    const caracteres = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    let captchaGenerado = "";
-    for (let i = 0; i < 6; i++) {
-      captchaGenerado += caracteres[Math.floor(Math.random() * caracteres.length)];
-    }
-    return captchaGenerado;
-  };
-
-  const [captcha, setCaptcha] = useState(() => generarCaptcha());
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -36,6 +26,7 @@ export default function Login() {
       return;
     }
 
+    setLoading(true);
     (async () => {
       const success = await login(email, password);
       if (success) {
@@ -43,9 +34,7 @@ export default function Login() {
         return;
       }
       setError("Email o contraseña incorrectos.");
-      setCaptcha(generarCaptcha());
-      setCaptchaInput("");
-    })();
+    })().catch(() => setError("Email o contraseña incorrectos.")).finally(() => setLoading(false));
   };
 
   return (
@@ -67,7 +56,7 @@ export default function Login() {
         </p>
       }
     >
-      <form className="space-y-5" onSubmit={handleSubmit}>
+      <form className="space-y-5" onSubmit={handleSubmit} noValidate>
         <Input
           label="Email"
           type="email"
@@ -76,56 +65,26 @@ export default function Login() {
           placeholder="tu@email.com"
           icon={<Mail size={18} />}
           tone="glass"
+          id="login-email"
+          name="email"
+          required
+          autoComplete="email"
         />
 
         <Input
           label="Contraseña"
-          type="password"
+          type={showPassword ? "text" : "password"}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="••••••••"
           icon={<Lock size={18} />}
           tone="glass"
+          id="login-password"
+          name="password"
+          required
+          autoComplete="current-password"
+          endAdornment={<button type="button" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"} title={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"} className="flex h-10 w-10 items-center justify-center rounded-md text-primary-dark hover:bg-white/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button>}
         />
-
-        <div>
-          <label className="mb-2 block text-sm font-bold text-ink">
-            Verificación de seguridad
-          </label>
-          <div className="rounded-2xl border border-white/35 bg-white/15 p-4 shadow-sm backdrop-blur-md">
-            <p className="mb-3 text-sm text-muted">
-              Ingresa el código mostrado abajo.
-            </p>
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-              <div className="flex-1 rounded-2xl border border-dashed border-primary/25 bg-white/20 px-4 py-5 text-center shadow-inner">
-                <span className="select-none font-display text-3xl font-black tracking-[0.35em] text-primary-dark">
-                  {captcha}
-                </span>
-              </div>
-              <Button
-                type="button"
-                onClick={() => {
-                  setCaptcha(generarCaptcha());
-                  setCaptchaInput("");
-                }}
-                variant="glass"
-                size="icon"
-                icon={RefreshCw}
-                className="self-center sm:self-auto"
-                aria-label="Generar nuevo código"
-                title="Generar nuevo código"
-              />
-            </div>
-            <Input
-              className="mt-4"
-              type="text"
-              value={captchaInput}
-              onChange={(e) => setCaptchaInput(e.target.value)}
-              placeholder="Escribe el código"
-              tone="glass"
-            />
-          </div>
-        </div>
 
         {error && (
           <Alert
@@ -136,10 +95,10 @@ export default function Login() {
           </Alert>
         )}
 
-        <Button type="submit" className="w-full shadow-brand-lg" variant="primary" size="lg">
+        <Button type="submit" loading={loading} disabled={loading} className="w-full shadow-brand-lg" variant="primary" size="lg">
           <span className="inline-flex items-center gap-2">
             <LogIn size={20} />
-            Iniciar sesión
+            {loading ? "Ingresando..." : "Iniciar sesión"}
           </span>
         </Button>
       </form>

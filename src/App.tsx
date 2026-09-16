@@ -1,7 +1,7 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-import { AuthProvider } from "./context/AuthContext";
+import { useAuthStore } from "./store/auth.store";
 
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
@@ -56,9 +56,17 @@ function PageFallback() {
 }
 
 export default function App() {
+  const initialize = useAuthStore((state) => state.initialize);
+  const isLoading = useAuthStore((state) => state.isLoading);
+
+  useEffect(() => {
+    void initialize();
+  }, [initialize]);
+
+  if (isLoading) return <PageFallback />;
+
   return (
-    <AuthProvider>
-      <BrowserRouter>
+    <BrowserRouter>
         <Navbar />
 
         <Suspense fallback={<PageFallback />}>
@@ -89,7 +97,7 @@ export default function App() {
             <Route
               path="/admin"
               element={
-                <ProtectedRoute>
+              <ProtectedRoute roles={["ADMIN"]}>
                   <AdminLayout />
                 </ProtectedRoute>
               }
@@ -110,7 +118,6 @@ export default function App() {
         </Suspense>
 
         <Footer />
-      </BrowserRouter>
-    </AuthProvider>
+    </BrowserRouter>
   );
 }

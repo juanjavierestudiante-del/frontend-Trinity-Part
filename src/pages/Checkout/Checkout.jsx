@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { MapPin, Phone, User } from "lucide-react";
-import { useAuth } from "../../context/AuthContext";
+import { useAuthStore } from "../../store/auth.store";
 import { useCarrito, useCrearPedido } from "../../hooks/useCarrito";
 import Input from "../../components/ui/Input/Input";
 import Textarea from "../../components/ui/Textarea/Textarea";
@@ -14,7 +14,7 @@ import StatusMessage from "../../components/ui/StatusMessage/StatusMessage";
 const PHONE_RE = /^(\+?591)?[\s-]?[67]\d{7}$/;
 
 export default function Checkout() {
-  const { user } = useAuth();
+  const user = useAuthStore((state) => state.user);
   const navigate = useNavigate();
 
   const { data, isLoading, isError } = useCarrito();

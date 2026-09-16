@@ -1,24 +1,29 @@
-import { Mail, Lock, User, UserPlus } from "lucide-react";
+import { Eye, EyeOff, Lock, Mail, Phone, User, UserPlus } from "lucide-react";
 import Input from "../../components/ui/Input/Input";
 import Button from "../../components/ui/Button/Button";
 import Alert from "../../components/ui/Alert/Alert";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { useAuth } from "../../context/AuthContext";
+import { useAuthStore } from "../../store/auth.store";
 import AuthShell from "../../components/ui/AuthShell/AuthShell";
 
 export default function Registro() {
   const navigate = useNavigate();
-  const { register } = useAuth();
+  const register = useAuthStore((state) => state.register);
 
   const [formData, setFormData] = useState({
     nombre: "",
-    correo: "",
+    apellido: "",
+    email: "",
+    telefono: "",
     password: "",
     confirmPassword: "",
   });
 
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [visible, setVisible] = useState({ password: false, confirm: false });
 
   const evaluarPassword = (password) => {
     let fuerza = 0;
@@ -47,26 +52,25 @@ export default function Registro() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError("");
-
-    if (!formData.nombre || !formData.correo || !formData.password || !formData.confirmPassword) {
-      setError("Completa todos los campos.");
-      return;
-    }
+    const errors = {};
+    if (!formData.nombre.trim()) errors.nombre = "Ingresa tu nombre.";
+    if (!formData.apellido.trim()) errors.apellido = "Ingresa tu apellido.";
+    if (!/^\S+@\S+\.\S+$/.test(formData.email.trim())) errors.email = "Ingresa un correo válido.";
+    if (!/^(?:\+?591)?[67]\d{7}$/.test(formData.telefono.replace(/[\s-]/g, ""))) errors.telefono = "Usa un número boliviano válido.";
+    if (formData.password.length < 8) errors.password = "Usa al menos 8 caracteres.";
     if (formData.password !== formData.confirmPassword) {
-      setError("Las contraseñas no coinciden.");
+      errors.confirmPassword = "Las contraseñas no coinciden.";
+    }
+    setFieldErrors(errors);
+    const firstError = Object.keys(errors)[0];
+    if (firstError) {
+      requestAnimationFrame(() => document.getElementById(`register-${firstError}`)?.focus());
       return;
     }
-    if (formData.password.length < 6) {
-      setError("La contraseña debe tener al menos 6 caracteres.");
-      return;
-    }
-
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     try {
-      const res = await register({ name: formData.nombre, email: formData.correo, password: formData.password });
-      if (res?.error) {
-        setError(res.error);
-        return;
-      }
+      await register({ nombre: formData.nombre, apellido: formData.apellido, email: formData.email, telefono: formData.telefono, password: formData.password });
       navigate("/perfil");
     } catch (error) {
       if (error.response?.data?.errores) {
@@ -78,6 +82,8 @@ export default function Registro() {
         return;
       }
       setError("Error al registrar usuario.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -100,9 +106,10 @@ export default function Registro() {
         </p>
       }
     >
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+        <div className="grid gap-5 sm:grid-cols-2">
         <Input
-          label="Nombre completo"
+          label="Nombre"
           type="text"
           name="nombre"
           value={formData.nombre}
@@ -110,34 +117,41 @@ export default function Registro() {
           placeholder="Tu nombre"
           icon={<User size={18} />}
           tone="glass"
+          id="register-nombre" required autoComplete="given-name" error={fieldErrors.nombre}
         />
+        <Input label="Apellido" type="text" name="apellido" value={formData.apellido} onChange={handleChange} placeholder="Tu apellido" icon={<User size={18} />} tone="glass" id="register-apellido" required autoComplete="family-name" error={fieldErrors.apellido} />
+        </div>
 
         <Input
           label="Correo electrónico"
           type="email"
-          name="correo"
-          value={formData.correo}
+          name="email"
+          value={formData.email}
           onChange={handleChange}
           placeholder="tu@email.com"
           icon={<Mail size={18} />}
           tone="glass"
+          id="register-email" required autoComplete="email" error={fieldErrors.email}
         />
+        <Input label="Teléfono" type="tel" name="telefono" value={formData.telefono} onChange={handleChange} placeholder="71234567" icon={<Phone size={18} />} tone="glass" id="register-telefono" required autoComplete="tel" inputMode="tel" error={fieldErrors.telefono} />
 
         <div>
           <Input
             label="Contraseña"
-            type="password"
+            type={visible.password ? "text" : "password"}
             name="password"
             value={formData.password}
             onChange={handleChange}
             placeholder="••••••••"
             icon={<Lock size={18} />}
             tone="glass"
+            id="register-password" required autoComplete="new-password" error={fieldErrors.password}
+            endAdornment={<button type="button" onClick={() => setVisible((state) => ({ ...state, password: !state.password }))} aria-label={visible.password ? "Ocultar contraseña" : "Mostrar contraseña"} title={visible.password ? "Ocultar contraseña" : "Mostrar contraseña"} className="flex h-10 w-10 items-center justify-center rounded-md text-primary-dark hover:bg-white/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">{visible.password ? <EyeOff size={18} /> : <Eye size={18} />}</button>}
           />
           {formData.password && (
             <div className="mt-3 rounded-2xl border border-white/35 bg-white/15 p-4 shadow-sm backdrop-blur-md">
               <p className={`text-sm font-semibold ${seguridadPassword.colorTexto}`}>
-                Seguridad: {seguridadPassword.texto}
+                Seguridad: {seguridadPassword.texto}. Mínimo 8 caracteres.
               </p>
               <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-white/35">
                 <div
@@ -151,13 +165,15 @@ export default function Registro() {
 
         <Input
           label="Confirmar contraseña"
-          type="password"
+          type={visible.confirm ? "text" : "password"}
           name="confirmPassword"
           value={formData.confirmPassword}
           onChange={handleChange}
           placeholder="••••••••"
           icon={<Lock size={18} />}
           tone="glass"
+          id="register-confirmPassword" required autoComplete="new-password" error={fieldErrors.confirmPassword}
+          endAdornment={<button type="button" onClick={() => setVisible((state) => ({ ...state, confirm: !state.confirm }))} aria-label={visible.confirm ? "Ocultar confirmación" : "Mostrar confirmación"} title={visible.confirm ? "Ocultar confirmación" : "Mostrar confirmación"} className="flex h-10 w-10 items-center justify-center rounded-md text-primary-dark hover:bg-white/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">{visible.confirm ? <EyeOff size={18} /> : <Eye size={18} />}</button>}
         />
 
         {error && (
@@ -169,7 +185,7 @@ export default function Registro() {
           </Alert>
         )}
 
-        <Button type="submit" variant="primary" size="lg" className="flex w-full items-center justify-center gap-2 shadow-brand-lg">
+        <Button type="submit" loading={isSubmitting} disabled={isSubmitting} variant="primary" size="lg" className="flex w-full items-center justify-center gap-2 shadow-brand-lg">
           <UserPlus size={20} />
           Registrarse
         </Button>

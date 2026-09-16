@@ -1,9 +1,7 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { HiMail, HiLockClosed, HiInformationCircle } from "react-icons/hi"
-import { loginAdmin } from "../../services/admin/auth.api"
 import { useAuthStore } from "../../store/auth.store"
-import { useAuth } from "../../context/AuthContext"
 import Button from "../../components/ui/Button/Button"
 import Card from "../../components/ui/Card/Card"
 import Input from "../../components/ui/Input/Input"
@@ -14,8 +12,7 @@ import Loader from "../../components/ui/Loader/Loader"
 export default function LoginPage() {
   const logo = "https://res.cloudinary.com/dslh6rwix/image/upload/q_auto/f_auto/v1780528934/logo_eolnrp.png"
   const navigate = useNavigate()
-  const setAuth = useAuthStore((state) => state.setAuth)
-  const { applyPublicSession } = useAuth()
+  const loginAdmin = useAuthStore((state) => state.loginAdmin)
 
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -28,9 +25,7 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      const { usuario, token } = await loginAdmin(email, password)
-      setAuth(usuario, token)
-      applyPublicSession(usuario, token)
+      await loginAdmin(email, password)
       navigate("/admin/dashboard")
     } catch (err: unknown) {
       const data = (err as { response?: { data?: { error?: string } } })?.response?.data

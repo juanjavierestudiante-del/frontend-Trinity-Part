@@ -20,6 +20,7 @@ export default function Input(props) {
     sizing = 'md',
     dark = false,
     tone = 'default',
+    endAdornment,
     ...rest
   } = props
 
@@ -41,11 +42,13 @@ export default function Input(props) {
       ? 'text-gray-400'
       : 'text-gray-400'
 
+  const inputId = id || name
+  const errorId = error && inputId ? `${inputId}-error` : undefined
   return (
     <div className={`w-full ${className}`}>
       {label ? (
         <label
-          htmlFor={id || name}
+          htmlFor={inputId}
           className={`mb-1 block text-sm font-medium ${labelClass}`}
         >
           {label} {required ? <span className="text-red-500">*</span> : null}
@@ -59,19 +62,21 @@ export default function Input(props) {
           </div>
         ) : null}
         <input
-          id={id || name}
+          id={inputId}
           name={name}
           value={value}
           onChange={onChange}
           placeholder={placeholder}
           type={type}
           aria-invalid={!!error}
-          className={`block w-full rounded-md border px-3 ${sizeClass} focus:outline-none focus:ring-2 ${inputClass} ${icon ? 'pl-10' : ''} ${error ? 'border-red-500' : ''}`}
+          aria-describedby={errorId}
+          className={`block w-full rounded-md border px-3 ${sizeClass} focus:outline-none focus:ring-2 ${inputClass} ${icon ? 'pl-10' : ''} ${endAdornment ? 'pr-12' : ''} ${error ? 'border-red-500' : ''}`}
           {...rest}
         />
+        {endAdornment ? <div className="absolute right-1 top-1/2 -translate-y-1/2">{endAdornment}</div> : null}
       </div>
 
-      {error ? <p className="mt-1 text-sm text-red-600">{error}</p> : null}
+      {error ? <p id={errorId} role="alert" className="mt-1 text-sm text-red-700">{error}</p> : null}
     </div>
   )
 }

@@ -13,7 +13,7 @@ import {
   crearPedido,
   type CrearPedidoInput,
 } from '../services/public/carrito.api';
-import { useAuth } from '../context/AuthContext';
+import { useAuthStore } from '../store/auth.store';
 
 const carritoKey = (idUsuario?: number): unknown[] => ['carrito', idUsuario];
 const contadorKey = (idUsuario?: number): unknown[] => ['carrito', 'count', idUsuario];
@@ -33,8 +33,8 @@ interface CarritoData {
 // ── Queries ────────────────────────────────────────────────────────
 
 export const useCarrito = () => {
-  const { user } = useAuth();
-  const idUsuario = user?.id as number | undefined;
+  const user = useAuthStore((state) => state.user);
+  const idUsuario = user?.id_usuario;
   return useQuery({
     queryKey: carritoKey(idUsuario),
     queryFn: getCarrito,
@@ -44,8 +44,8 @@ export const useCarrito = () => {
 
 // Contador liviano para el Navbar: GET /carrito/count.
 export const useContadorCarrito = () => {
-  const { user } = useAuth();
-  const idUsuario = user?.id as number | undefined;
+  const user = useAuthStore((state) => state.user);
+  const idUsuario = user?.id_usuario;
   return useQuery({
     queryKey: contadorKey(idUsuario),
     queryFn: getContadorCarrito,
@@ -63,18 +63,18 @@ const invalidarCarrito = (qc: ReturnType<typeof useQueryClient>, idUsuario?: num
 
 export const useAgregarAlCarrito = () => {
   const qc = useQueryClient();
-  const { user } = useAuth();
+  const user = useAuthStore((state) => state.user);
   return useMutation({
     mutationFn: ({ idVariante, cantidad = 1 }: { idVariante: number; cantidad?: number }) =>
       agregarAlCarrito(idVariante, cantidad),
-    onSuccess: () => invalidarCarrito(qc, user?.id as number | undefined),
+    onSuccess: () => invalidarCarrito(qc, user?.id_usuario),
   });
 };
 
 export const useActualizarCantidadCarrito = () => {
   const qc = useQueryClient();
-  const { user } = useAuth();
-  const idUsuario = user?.id as number | undefined;
+  const user = useAuthStore((state) => state.user);
+  const idUsuario = user?.id_usuario;
 
   return useMutation({
     mutationFn: ({ idDetalle, cantidad }: { idDetalle: number; cantidad: number }) =>
@@ -104,8 +104,8 @@ export const useActualizarCantidadCarrito = () => {
 
 export const useEliminarDelCarrito = () => {
   const qc = useQueryClient();
-  const { user } = useAuth();
-  const idUsuario = user?.id as number | undefined;
+  const user = useAuthStore((state) => state.user);
+  const idUsuario = user?.id_usuario;
 
   return useMutation({
     mutationFn: ({ idDetalle }: { idDetalle: number }) => eliminarDelCarrito(idDetalle),
@@ -134,9 +134,9 @@ export const useEliminarDelCarrito = () => {
 // solo invalidamos las queries para que todos (Navbar incluido) se refresquen.
 export const useCrearPedido = () => {
   const qc = useQueryClient();
-  const { user } = useAuth();
+  const user = useAuthStore((state) => state.user);
   return useMutation({
     mutationFn: (body: CrearPedidoInput) => crearPedido(body),
-    onSuccess: () => invalidarCarrito(qc, user?.id as number | undefined),
+    onSuccess: () => invalidarCarrito(qc, user?.id_usuario),
   });
 };
