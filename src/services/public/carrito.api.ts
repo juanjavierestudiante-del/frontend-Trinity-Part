@@ -25,12 +25,23 @@ export const eliminarDelCarrito = async (idDetalle: number) => {
   await publicApi.delete(`/carrito/items/${idDetalle}`);
 };
 
-export interface CrearPedidoInput {
+interface ContactoPedidoInput {
   nombreContacto: string;
   telefonoContacto: string;
-  direccionEntrega?: string | null;
   notas?: string | null;
 }
+
+export type CrearPedidoInput =
+  | (ContactoPedidoInput & {
+      metodoEntrega: 'PUNTO_ENTREGA' | 'RECOJO_TIENDA';
+      idPuntoEntrega: number;
+    })
+  | (ContactoPedidoInput & {
+      metodoEntrega: 'DELIVERY';
+      deliveryZona: string;
+      deliveryDireccion: string;
+      deliveryReferencia?: string | null;
+    });
 
 export const crearPedido = async (body: CrearPedidoInput) => {
   const { data } = await publicApi.post('/pedidos', body);

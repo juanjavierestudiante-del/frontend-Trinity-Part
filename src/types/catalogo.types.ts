@@ -56,8 +56,6 @@ export interface Inventario {
 export interface Variante {
   idVariante: number;
   sku: string;
-  precioVenta: number;
-  precioOferta: number | null;   // null si no tiene oferta
   cantidadContenido: number;     // ej: 50, 100
   estado: 'Activo' | 'Inactivo';
   inventario: Inventario | null;
@@ -65,6 +63,23 @@ export interface Variante {
   varianteAtributo: VarianteAtributo[]; // atributos de esta variante (Color, Tamaño, etc.)
   marca: { nombre: string } | null;
   unidad: { nombre: string; abreviatura: string } | null;
+  idListaPrecio: number | null;
+}
+
+export interface ReglaPrecioPublica {
+  idReglaPrecio: number;
+  nombre: string;
+  cantidadMinima: number;
+  precioPorPresentacion: string;
+  principal: boolean;
+  orden: number;
+}
+
+export interface ListaPrecioPublica {
+  idListaPrecio: number;
+  nombre: string;
+  principal: boolean;
+  reglas: ReglaPrecioPublica[];
 }
 
 export interface Producto {
@@ -82,7 +97,10 @@ export interface Producto {
   destacado: boolean;
   imagenes: ImagenProducto[];
   variantes: Variante[];
+  listaPrecios: ListaPrecioPublica[];
   categoria: Categoria;
   estado: 'Activo' | 'Inactivo' | 'Borrador' | 'Descontinuado';
   rating:number // agregamos rating
+  precioDesde: string | null;
+  tieneVariacionPrecio: boolean;
 }

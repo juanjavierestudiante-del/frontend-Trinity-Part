@@ -1,12 +1,12 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+import { useAuthStore } from "../../store/auth.store";
 import Button from "../ui/Button/Button";
 import Card from "../ui/Card/Card";
 
-export default function CartSummary({ total }) {
+export default function CartSummary({ total, sincronizando = false }) {
   const subtotal = total;
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const user = useAuthStore((state) => state.user);
 
   const handleCheckout = () => {
     if (!user) {
@@ -33,9 +33,10 @@ export default function CartSummary({ total }) {
         <span>TOTAL:</span>
         <span className="text-primary">Bs. {subtotal.toFixed(2)}</span>
       </div>
-      <Button onClick={handleCheckout} className="w-full mb-3" variant="primary" size="lg">
+      <Button onClick={handleCheckout} disabled={sincronizando} aria-describedby={sincronizando ? 'carrito-sincronizando' : undefined} className="w-full mb-3" variant="primary" size="lg">
         Proceder al pago
       </Button>
+      {sincronizando ? <p id="carrito-sincronizando" role="status" className="mb-3 text-sm text-muted">Actualizando carrito…</p> : null}
       <Button
         as={Link}
         to="/catalogo"

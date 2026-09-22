@@ -20,7 +20,7 @@ interface Props {
 }
 
 export default function VarianteEditor({ idProducto }: Props) {
-  const usuario = useAuthStore((state) => state.usuario)
+  const usuario = useAuthStore((state) => state.user)
   const isAdmin = usuario?.rol === 'ADMIN'
   const { data: variantes, isLoading } = useVariantesPorProducto(idProducto)
   const { mutate: crear, isPending: creando } = useCrearVariante()
@@ -45,7 +45,7 @@ export default function VarianteEditor({ idProducto }: Props) {
               setFormAbierto(formAbierto === "nuevo" ? null : "nuevo")
             }
           >
-            <HiPlus className="w-3 h-3 mr-1" />
+            <HiPlus className="w-3 h-3" />
             Nueva variante
           </Button>
         )}
@@ -82,14 +82,6 @@ export default function VarianteEditor({ idProducto }: Props) {
                     idProducto={idProducto}
                     atributosAsignados={variante.varianteAtributo || []}
                   />
-                  <Badge variant="success" size="sm">
-                    Bs. {Number(variante.precioVenta).toFixed(2)}
-                    {variante.precioOferta && (
-                      <span className="ml-1 text-gray-400 line-through">
-                        → Bs. {Number(variante.precioOferta).toFixed(2)}
-                      </span>
-                    )}
-                  </Badge>
                   <Badge
                     variant={
                       variante.inventario?.stockActual >

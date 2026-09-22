@@ -1,0 +1,9 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { asignarListaPrecio, crearListaPrecio, eliminarListaPrecio, getConfiguracionPrecioCantidad, guardarListaPrecio, previsualizarPrecioCantidad, type ListaPrecioPayload, type ReglaPrecioCantidadBorrador } from '../../services/admin/precioCantidad.api'
+const key = (idProducto: number) => ['admin', 'producto', idProducto, 'precios-cantidad'] as const
+const invalidar = (queryClient: ReturnType<typeof useQueryClient>, idProducto: number) => queryClient.invalidateQueries({ queryKey: key(idProducto) })
+export const useConfiguracionPrecioCantidad = (idProducto: number) => useQuery({ queryKey: key(idProducto), queryFn: () => getConfiguracionPrecioCantidad(idProducto), enabled: idProducto > 0 })
+export const useGuardarListaPrecio = (idProducto: number) => { const qc = useQueryClient(); return useMutation({ mutationFn: ({ idListaPrecio, body }: { idListaPrecio?: number; body: ListaPrecioPayload }) => idListaPrecio ? guardarListaPrecio(idProducto, idListaPrecio, body) : crearListaPrecio(idProducto, body), onSuccess: () => invalidar(qc, idProducto) }) }
+export const useEliminarListaPrecio = (idProducto: number) => { const qc = useQueryClient(); return useMutation({ mutationFn: (idListaPrecio: number) => eliminarListaPrecio(idProducto, idListaPrecio), onSuccess: () => invalidar(qc, idProducto) }) }
+export const useAsignarListaPrecio = (idProducto: number) => { const qc = useQueryClient(); return useMutation({ mutationFn: ({ idsVariante, idListaPrecio }: { idsVariante: number[]; idListaPrecio: number | null }) => asignarListaPrecio(idProducto, idsVariante, idListaPrecio), onSuccess: () => invalidar(qc, idProducto) }) }
+export const usePrevisualizarPrecioCantidad = () => useMutation({ mutationFn: ({ cantidad, reglas }: { cantidad: number; reglas: ReglaPrecioCantidadBorrador[] }) => previsualizarPrecioCantidad(cantidad, reglas) })

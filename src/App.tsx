@@ -18,6 +18,7 @@ const Contacto = lazy(() => import("./pages/Contacto/Contacto"));
 const Nosotros = lazy(() => import("./pages/Nosotros/Nosotros"));
 const Login = lazy(() => import("./pages/Login/Login"));
 const Registro = lazy(() => import("./pages/Registro/Registro"));
+const CompletarCuenta = lazy(() => import("./pages/CompletarCuenta/CompletarCuenta"));
 const Perfil = lazy(() => import("./pages/Perfil/Perfil"));
 const Checkout = lazy(() => import("./pages/Checkout/Checkout"));
 const Confirmacion = lazy(() => import("./pages/Checkout/Confirmacion"));
@@ -45,6 +46,7 @@ const CategoriasPage = lazy(() => import("./pages/admin/CategoriasPage"));
 const CategoriaFormPage = lazy(() => import("./pages/admin/CategoriaFormPage"));
 const InventarioPage = lazy(() => import("./pages/admin/InventarioPage"));
 const PedidosPage = lazy(() => import("./pages/admin/PedidosPage"));
+const EntregasPage = lazy(() => import("./pages/admin/EntregasPage"));
 
 // Fallback de carga consistente con el estilo del proyecto (spinner)
 function PageFallback() {
@@ -85,6 +87,7 @@ export default function App() {
             <Route path="/nosotros" element={<Nosotros />} />
             <Route path="/login" element={<Login />} />
             <Route path="/registro" element={<Registro />} />
+            <Route path="/completar-cuenta" element={<CompletarCuenta />} />
             <Route path="/perfil" element={<Perfil />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/checkout/confirmacion" element={<Confirmacion />} />
@@ -113,6 +116,7 @@ export default function App() {
               <Route path="categorias/:id/editar" element={<CategoriaFormPage />} />
               <Route path="inventario" element={<InventarioPage />} />
               <Route path="pedidos" element={<PedidosPage />} />
+              <Route path="entregas" element={<EntregasPage />} />
             </Route>
           </Routes>
         </Suspense>

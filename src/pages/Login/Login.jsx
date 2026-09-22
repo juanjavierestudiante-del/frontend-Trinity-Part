@@ -6,10 +6,12 @@ import Button from "../../components/ui/Button/Button";
 import Input from "../../components/ui/Input/Input";
 import Alert from "../../components/ui/Alert/Alert";
 import AuthShell from "../../components/ui/AuthShell/AuthShell";
+import GoogleButton from "../../components/ui/GoogleButton/GoogleButton";
 
 export default function Login() {
   const navigate = useNavigate();
   const login = useAuthStore((state) => state.login);
+  const googleLogin = useAuthStore((state) => state.googleLogin);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -36,6 +38,7 @@ export default function Login() {
       setError("Email o contraseña incorrectos.");
     })().catch(() => setError("Email o contraseña incorrectos.")).finally(() => setLoading(false));
   };
+  const handleGoogle = async (credential) => { try { const user = await googleLogin(credential); navigate(user.telefono ? '/perfil' : '/completar-cuenta'); } catch { setError('No se pudo iniciar sesión con Google.'); } };
 
   return (
     <AuthShell
@@ -94,6 +97,8 @@ export default function Login() {
             {error}
           </Alert>
         )}
+
+        <div className="space-y-3"><div className="flex items-center gap-3 text-xs text-muted before:h-px before:flex-1 before:bg-white/40 after:h-px after:flex-1 after:bg-white/40">o</div><GoogleButton onCredential={handleGoogle} disabled={loading} /></div>
 
         <Button type="submit" loading={loading} disabled={loading} className="w-full shadow-brand-lg" variant="primary" size="lg">
           <span className="inline-flex items-center gap-2">

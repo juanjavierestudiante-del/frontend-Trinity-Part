@@ -6,10 +6,12 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useAuthStore } from "../../store/auth.store";
 import AuthShell from "../../components/ui/AuthShell/AuthShell";
+import GoogleButton from "../../components/ui/GoogleButton/GoogleButton";
 
 export default function Registro() {
   const navigate = useNavigate();
   const register = useAuthStore((state) => state.register);
+  const googleLogin = useAuthStore((state) => state.googleLogin);
 
   const [formData, setFormData] = useState({
     nombre: "",
@@ -86,6 +88,7 @@ export default function Registro() {
       setIsSubmitting(false);
     }
   };
+  const handleGoogle = async (credential) => { try { const user = await googleLogin(credential); navigate(user.telefono ? '/perfil' : '/completar-cuenta'); } catch { setError('No se pudo iniciar sesión con Google.'); } };
 
   return (
     <AuthShell
@@ -184,6 +187,8 @@ export default function Registro() {
             {error}
           </Alert>
         )}
+
+        <div className="space-y-3"><div className="flex items-center gap-3 text-xs text-muted before:h-px before:flex-1 before:bg-white/40 after:h-px after:flex-1 after:bg-white/40">o</div><GoogleButton onCredential={handleGoogle} disabled={isSubmitting} /></div>
 
         <Button type="submit" loading={isSubmitting} disabled={isSubmitting} variant="primary" size="lg" className="flex w-full items-center justify-center gap-2 shadow-brand-lg">
           <UserPlus size={20} />

@@ -139,7 +139,7 @@ export default function AtributoSelector({ idVariante, idProducto, atributosAsig
 
         {idValorSeleccionado && (
           <Button size="xs" onClick={handleAsignar}>
-            <HiPlus className="w-3 h-3 mr-1" />
+            <HiPlus className="w-3 h-3" />
             Asignar
           </Button>
         )}

@@ -21,9 +21,6 @@ function getStockBadge(producto: Producto): { label: string; variant: string } |
   );
   if (todoAgotado) return { label: 'Sin stock', variant: 'danger' };
 
-  const tieneOferta = variantesActivas.some((v) => v.precioOferta != null);
-  if (tieneOferta) return { label: 'Oferta', variant: 'primary' };
-
   if (producto.destacado) return { label: 'Nuevo', variant: 'secondary' };
 
   return null;
@@ -35,12 +32,9 @@ const BADGE_STYLES: Record<string, string> = {
   danger: 'bg-red-500 text-white',
 }
 
-export default function ProductoCard({ producto, featured = false, badge: externalBadge, onAddToCart }: Props) {
+export default function ProductoCard({ producto, badge: externalBadge, onAddToCart }: Props) {
   const imagen = producto.imagenes.find((i) => i.principal);
-  const variantesActivas = producto.variantes.filter((v) => v.estado === 'Activo');
-  const precioMinimo = variantesActivas.length > 0
-    ? Math.min(...variantesActivas.map((v) => Number(v.precioOferta ?? v.precioVenta)))
-    : null;
+  const precioDesde = producto.precioDesde;
 
   const autoBadge = getStockBadge(producto);
   const badgeLabel = externalBadge ?? autoBadge?.label;
@@ -96,9 +90,9 @@ export default function ProductoCard({ producto, featured = false, badge: extern
 
         <div className="flex items-end justify-between mt-3 gap-2">
           <div>
-            {precioMinimo != null && (
+            {precioDesde != null && (
               <p className="text-lg font-black tracking-tight text-primary font-display">
-                Bs. {precioMinimo.toFixed(2)}
+                {producto.tieneVariacionPrecio ? 'Desde ' : ''}Bs. {Number(precioDesde).toFixed(2)}
               </p>
             )}
           </div>

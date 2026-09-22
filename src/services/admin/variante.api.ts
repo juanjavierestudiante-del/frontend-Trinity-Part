@@ -9,8 +9,6 @@ export interface VarianteBody {
   cantidadContenido?: number;
   sku: string;
   codigoBarras?: string;
-  precioVenta: number;
-  precioOferta?: number;
   peso?: number;
   estado?: 'Activo' | 'Inactivo';
 }

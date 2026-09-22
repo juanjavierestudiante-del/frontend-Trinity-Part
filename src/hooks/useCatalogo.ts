@@ -3,7 +3,7 @@
 // Los componentes llaman a ESTOS hooks, nunca a los servicios directamente.
 
 import { useQuery } from '@tanstack/react-query';
-import { getCategorias, getProductos, getProductoPorSlug } from '../services/public/catalogo.api';
+import { getCategorias, getProductos, getProductoPorSlug, previsualizarPrecioProducto } from '../services/public/catalogo.api';
 
 // ─── Categorías ───────────────────────────────────────────────────────────────
 
@@ -46,5 +46,14 @@ export const useProducto = (slug: string) => {
     queryFn: () => getProductoPorSlug(slug),
     enabled: !!slug,                // solo hace la petición si hay slug
     staleTime: 1000 * 60 * 5,     // frescos por 5 minutos (el detalle cambia poco)
+  });
+};
+
+export const usePrecioProducto = (idProducto?: number, idVariante?: number, cantidad?: number) => {
+  return useQuery({
+    queryKey: ['precio-producto', idProducto, idVariante, cantidad],
+    queryFn: () => previsualizarPrecioProducto(idProducto!, idVariante!, cantidad!),
+    enabled: Boolean(idProducto && idVariante && cantidad && cantidad > 0),
+    staleTime: 15_000,
   });
 };

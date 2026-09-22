@@ -28,3 +28,26 @@ export const getProductoPorSlug = async (slug: string): Promise<Producto> => {
   const { data } = await publicApi.get(`/productos/${slug}`);
   return data;
 };
+
+export interface PrecioProductoPreview {
+  lineas: Array<{
+    idVariante: number;
+    cantidad: number;
+    idListaPrecioEfectiva: number;
+    cantidadMinimaAplicada: number;
+    precioPorPresentacion: string;
+    subtotal: string;
+  }>;
+  total: string;
+}
+
+export const previsualizarPrecioProducto = async (
+  idProducto: number,
+  idVariante: number,
+  cantidad: number
+): Promise<PrecioProductoPreview> => {
+  const { data } = await publicApi.post(`/productos/${idProducto}/precio`, {
+    lineas: [{ idVariante, cantidad }],
+  });
+  return data;
+};

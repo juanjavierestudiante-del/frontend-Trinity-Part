@@ -22,7 +22,7 @@ interface Props {
 }
 
 export default function ImagenEditor({ idProducto, imagenes }: Props) {
-  const usuario = useAuthStore((state) => state.usuario)
+  const usuario = useAuthStore((state) => state.user)
   const isAdmin = usuario?.rol === 'ADMIN'
   const { mutate: subirMultiples } = useSubirMultiplesImagenesProducto(idProducto)
   const { mutate: eliminar } = useEliminarImagenProducto(idProducto)

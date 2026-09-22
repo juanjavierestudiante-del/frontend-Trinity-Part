@@ -153,7 +153,7 @@ function FilaCategoria({
 
 export default function CategoriasPage() {
   const navigate = useNavigate();
-  const usuario = useAuthStore((state) => state.usuario);
+  const usuario = useAuthStore((state) => state.user);
   const isAdmin = usuario?.rol === 'ADMIN';
   const { data: categorias, isLoading, isError } = useCategoriasAdmin();
   const { mutate: cambiarEstado, isPending } = useCambiarEstadoCategoria();
@@ -253,7 +253,7 @@ export default function CategoriasPage() {
           </Button>
           {isAdmin && (
             <Button onClick={() => navigate('/admin/categorias/nueva')}>
-              <HiPlus className="w-4 h-4 mr-2" />
+              <HiPlus className="w-4 h-4" />
               Nueva categoría
             </Button>
           )}

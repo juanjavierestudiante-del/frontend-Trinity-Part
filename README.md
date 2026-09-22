@@ -1,16 +1,41 @@
-# React + Vite
+# Trinity Party — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Tienda pública y panel administrativo en React 19, React Router DOM 7, Vite 8 y Tailwind CSS 3. Mezcla TypeScript/TSX con JavaScript/JSX; React Query 5 para consultas, Context para auth pública y Zustand para auth admin.
 
-Currently, two official plugins are available:
+Revisión: 2026-09-07, código local incluidos cambios sin commit.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Desarrollo
 
-## React Compiler
+Desde `frontend/`, instalar dependencias con `npm install` y configurar `VITE_API_URL` con la base del backend incluyendo `/api` (ejemplo local: `http://localhost:4000/api`). No existe `.env.example` ni proxy Vite configurado.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+npm run dev         # Vite, puerto predeterminado 5173
+npm run type-check  # tsc --noEmit
+npm run lint        # eslint .
+npm run build       # tsc --noEmit && vite build
+npm run preview     # vista local del build
+```
 
-## Expanding the ESLint configuration
+## Funcionalidades
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- Catálogo paginado, filtro por categoría, detalle con variantes e imágenes.
+- Login/registro, carrito autenticado, checkout con contacto, confirmación e historial propio.
+- Admin de productos, categorías, variantes, imágenes, inventario y pedidos.
+- Axios `publicApi`/`adminApi`; hooks de carrito en `src/hooks/useCarrito.ts`.
+- UI pública glass lilac, Bricolage Grotesque y DM Sans. Card admin usa variante solid donde se indica.
+
+Las rutas de gestión admin usan AdminLayout y ProtectedRoute; este acepta roles pero App no los configura. La API aplica permisos. Los helpers de auth sincronizan persistencia parcialmente; no garantizan actualización reactiva completa de Zustand y Context. El contador tiene una discrepancia de invalidación documentada en [carrito y pedidos](../docs/carrito-pedidos.md).
+
+## Build y documentación
+
+Docker compila con Node 22 Alpine y sirve mediante Nginx con fallback SPA. VITE_API_URL se incorpora en build, por lo que cambiarla requiere reconstrucción. No hay SSR/SSG configurado.
+
+- [Instrucciones del módulo](AGENTS.md)
+- [Arquitectura](../docs/architecture.md)
+- [API](../docs/api.md)
+- [UI](../docs/ui-guide.md)
+- [SEO](../docs/seo.md)
+- [Accesibilidad](../docs/accessibility.md)
+- [Deployment](../docs/deployment.md)
+
+Este directorio tiene repositorio Git propio y está ignorado por el repositorio padre.

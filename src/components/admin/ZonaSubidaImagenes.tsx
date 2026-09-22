@@ -208,7 +208,7 @@ export default function ZonaSubidaImagenes({
                 </span>
               ) : (
                 <>
-                  <HiPlus className="w-3 h-3 mr-1" />
+                  <HiPlus className="w-3 h-3" />
                   {uploadLabel}
                 </>
               )}

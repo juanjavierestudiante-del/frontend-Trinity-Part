@@ -1,9 +1,11 @@
 import { useParams } from 'react-router-dom'
-import { HiInformationCircle, HiPhotograph, HiCube, HiTag } from 'react-icons/hi'
+import { HiInformationCircle, HiPhotograph, HiCube, HiTag, HiShoppingBag, HiCurrencyDollar } from 'react-icons/hi'
 import { useProductoAdmin } from '../../hooks/admin/useProductosAdmin'
 import ImagenEditor from '../../components/admin/ImagenEditor'
 import VarianteEditor from '../../components/admin/VarianteEditor'
 import AtributosProductoTab from '../../components/admin/AtributosProductoTab'
+import MarketplaceProductoTab from '../../components/admin/MarketplaceProductoTab'
+import PreciosCantidadEditor from '../../components/admin/PreciosCantidadEditor'
 import ProductoFormPage from './ProductoFormPage'
 import Tabs, { TabItem } from '../../components/ui/Tabs/Tabs'
 import Loader from '../../components/ui/Loader/Loader'
@@ -45,8 +47,16 @@ export default function ProductoDetallePage() {
           </div>
         </TabItem>
 
+        <TabItem title="Precios por cantidad" icon={HiCurrencyDollar}>
+          <PreciosCantidadEditor idProducto={producto.idProducto} />
+        </TabItem>
+
         <TabItem title="Atributos" icon={HiTag}>
           <AtributosProductoTab producto={producto} />
+        </TabItem>
+
+        <TabItem title="Marketplace" icon={HiShoppingBag}>
+          <MarketplaceProductoTab producto={producto} />
         </TabItem>
       </Tabs>
     </div>

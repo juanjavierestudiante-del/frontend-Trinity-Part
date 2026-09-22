@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "skills": {
+    "mobile-responsive": {
+      "source": "AsadSumbul/mobile-responsive",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "3d3fadbf7447a2a5c328f0261f3cf1eaf9927a1e3a54ce102d932217dee22e69"
+    },
+    "web-design-guidelines": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/web-design-guidelines/SKILL.md",
+      "computedHash": "a6a44d5498f7e8f68289902f3dedfc6f38ae0cee1e96527c80724cf27f727c2a"
+    }
+  }
+}

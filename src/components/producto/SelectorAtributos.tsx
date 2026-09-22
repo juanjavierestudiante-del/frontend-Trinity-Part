@@ -21,6 +21,7 @@ interface Props {
   idAtributoPrincipal: number | null;
   varianteInicial: Variante | null;
   onResolverVariante: (variante: Variante | null) => void;
+  onSeleccionIncompleta?: (atributo: { idAtributo: number; nombre: string } | null) => void;
 }
 
 const contieneValor = (variante: Variante, idValor: number) =>
@@ -68,6 +69,7 @@ function OpcionAtributo({
   const estado = seleccionada
     ? 'border-primary bg-primary-light text-primary-dark shadow-brand'
     : 'border-white/50 bg-white/25 text-ink hover:border-primary/60 hover:bg-white/40';
+  const esFallbackColor = atributo.tipoVisualizacion === 'color' && !valor.visualValue;
 
   if (atributo.tipoVisualizacion === 'color' && valor.visualValue) {
     return (
@@ -87,10 +89,10 @@ function OpcionAtributo({
     );
   }
 
-  return <button type="button" onClick={onClick} disabled={disabled} aria-pressed={seleccionada} className={`${base} ${estado}`}>{valor.valor}</button>;
+  return <button type="button" onClick={onClick} disabled={disabled} aria-pressed={seleccionada} className={`${base} ${estado} ${esFallbackColor ? 'px-2 text-xs' : ''}`}>{valor.valor}</button>;
 }
 
-export default function SelectorAtributos({ variantes, idAtributoPrincipal, varianteInicial, onResolverVariante }: Props) {
+export default function SelectorAtributos({ variantes, idAtributoPrincipal, varianteInicial, onResolverVariante, onSeleccionIncompleta }: Props) {
   const variantesActivas = useMemo(() => variantes.filter((variante) => variante.estado === 'Activo'), [variantes]);
   const claveVariantes = variantesActivas.map((variante) => `${variante.idVariante}:${variante.varianteAtributo.map(({ valorAtributo }) => valorAtributo.idValor).join(',')}`).join('|');
   const [selecciones, setSelecciones] = useState<Record<number, number>>(() => obtenerSeleccionesDeVariante(varianteInicial ?? variantesActivas[0] ?? null));
@@ -131,9 +133,21 @@ export default function SelectorAtributos({ variantes, idAtributoPrincipal, vari
     [variantesActivas, selecciones]
   );
 
+  const atributoPendiente = useMemo(() => grupos.find((atributo) => {
+    if (selecciones[atributo.idAtributo]) return false;
+    const valoresDisponibles = new Set(
+      variantesActivas
+        .filter((variante) => coincideConSelecciones(variante, selecciones))
+        .filter((variante) => variante.varianteAtributo.some(({ valorAtributo }) => valorAtributo.atributo.idAtributo === atributo.idAtributo))
+        .map((variante) => variante.varianteAtributo.find(({ valorAtributo }) => valorAtributo.atributo.idAtributo === atributo.idAtributo)?.valorAtributo.idValor)
+    );
+    return valoresDisponibles.size > 1;
+  }), [grupos, selecciones, variantesActivas]);
+
   useEffect(() => {
     onResolverVariante(candidatas.length === 1 ? candidatas[0] : null);
-  }, [candidatas, onResolverVariante]);
+    onSeleccionIncompleta?.(candidatas.length === 1 ? null : atributoPendiente ? { idAtributo: atributoPendiente.idAtributo, nombre: atributoPendiente.nombre } : null);
+  }, [atributoPendiente, candidatas, onResolverVariante, onSeleccionIncompleta]);
 
   if (variantesActivas.length === 0) return <p className="text-sm text-muted">No hay presentaciones disponibles por el momento.</p>;
 
@@ -150,7 +164,7 @@ export default function SelectorAtributos({ variantes, idAtributoPrincipal, vari
   };
 
   return (
-    <div className="space-y-5">
+    <div id="selector-atributos" className="space-y-4">
       {grupos.map((atributo) => {
         const seleccionesSinAtributo = { ...selecciones };
         delete seleccionesSinAtributo[atributo.idAtributo];
@@ -162,21 +176,26 @@ export default function SelectorAtributos({ variantes, idAtributoPrincipal, vari
         const valorUnico = valoresRelevantes[0];
 
         if (unicoValor && atributo.idAtributo !== idAtributoPrincipal) {
-          return <div key={atributo.idAtributo}><p className="text-sm font-bold text-ink">{atributo.nombre}</p><p className="mt-1 text-sm text-muted">{valorUnico.valor}</p></div>;
+          return <div key={atributo.idAtributo} className="flex flex-wrap items-baseline gap-x-2 gap-y-0"><p className="text-sm font-bold text-ink">{atributo.nombre}</p><p className="text-sm text-muted">{valorUnico.valor}</p></div>;
         }
 
         return (
-          <fieldset key={atributo.idAtributo}>
+          <fieldset id={`atributo-${atributo.idAtributo}`} tabIndex={-1} key={atributo.idAtributo} className="scroll-mt-28 focus:outline-none">
             <legend className={`text-sm font-bold ${atributo.idAtributo === idAtributoPrincipal ? 'text-primary-dark' : 'text-ink'}`}>{atributo.nombre}</legend>
             {atributo.tipoVisualizacion === 'color' && selecciones[atributo.idAtributo] && <p className="mt-1 text-sm text-muted">{atributo.nombre}: {atributo.valores.find((valor) => valor.idValor === selecciones[atributo.idAtributo])?.valor}</p>}
-            <div className={`mt-3 flex flex-wrap gap-2 ${atributo.tipoVisualizacion === 'color' ? 'items-center' : ''}`}>
-              {valoresRelevantes.map((valor) => {
+            <div className={`mt-2 flex flex-wrap gap-2 ${atributo.tipoVisualizacion === 'color' ? 'items-center' : ''}`}>
+              {(atributo.tipoVisualizacion === 'color' ? valoresRelevantes.filter((valor) => valor.visualValue) : valoresRelevantes).map((valor) => {
                 const siguientes = { ...seleccionesSinAtributo, [atributo.idAtributo]: valor.idValor };
                 const esPosible = variantesActivas.some((variante) => coincideConSelecciones(variante, siguientes));
                 const representativa = variantesActivas.find((variante) => contieneValor(variante, valor.idValor) && variante.imagenes.length > 0);
                 return <OpcionAtributo key={valor.idValor} atributo={atributo} valor={valor} seleccionada={selecciones[atributo.idAtributo] === valor.idValor} disabled={!esPosible} imagen={representativa?.imagenes.find((imagen) => imagen.principal)?.url ?? representativa?.imagenes[0]?.url} onClick={() => seleccionar(atributo.idAtributo, valor.idValor)} />;
               })}
             </div>
+            {atributo.tipoVisualizacion === 'color' && valoresRelevantes.some((valor) => !valor.visualValue) && <div className="mt-2 flex flex-wrap gap-2">{valoresRelevantes.filter((valor) => !valor.visualValue).map((valor) => {
+              const siguientes = { ...seleccionesSinAtributo, [atributo.idAtributo]: valor.idValor };
+              const esPosible = variantesActivas.some((variante) => coincideConSelecciones(variante, siguientes));
+              return <OpcionAtributo key={valor.idValor} atributo={atributo} valor={valor} seleccionada={selecciones[atributo.idAtributo] === valor.idValor} disabled={!esPosible} onClick={() => seleccionar(atributo.idAtributo, valor.idValor)} />;
+            })}</div>}
           </fieldset>
         );
       })}

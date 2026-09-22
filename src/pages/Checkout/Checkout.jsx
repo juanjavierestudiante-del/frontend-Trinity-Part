@@ -1,265 +1,163 @@
-import { useState } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
-import { MapPin, Phone, User } from "lucide-react";
-import { useAuthStore } from "../../store/auth.store";
-import { useCarrito, useCrearPedido } from "../../hooks/useCarrito";
-import Input from "../../components/ui/Input/Input";
-import Textarea from "../../components/ui/Textarea/Textarea";
-import ToggleSwitch from "../../components/ui/ToggleSwitch/ToggleSwitch";
-import Button from "../../components/ui/Button/Button";
-import Card from "../../components/ui/Card/Card";
-import Alert from "../../components/ui/Alert/Alert";
-import StatusMessage from "../../components/ui/StatusMessage/StatusMessage";
+import { useEffect, useMemo, useState } from 'react';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { MapPin, Phone, Store, Truck, User } from 'lucide-react';
+import { useAuthStore } from '../../store/auth.store';
+import { useCarrito, useCrearPedido } from '../../hooks/useCarrito';
+import { obtenerConfiguracionEntrega, obtenerPuntosEntrega } from '../../services/public/entrega.api';
+import Input from '../../components/ui/Input/Input';
+import Textarea from '../../components/ui/Textarea/Textarea';
+import Button from '../../components/ui/Button/Button';
+import Card from '../../components/ui/Card/Card';
+import Alert from '../../components/ui/Alert/Alert';
+import StatusMessage from '../../components/ui/StatusMessage/StatusMessage';
 
 const PHONE_RE = /^(\+?591)?[\s-]?[67]\d{7}$/;
+const nombreCompleto = (user) => [user?.nombre, user?.apellido].filter(Boolean).join(' ').trim();
+const dinero = (monto) => `Bs. ${Number(monto || 0).toFixed(2)}`;
+
+function MetodoEntrega({ value, title, description, icon: Icon, checked, disabled, detail, onChange }) {
+  return (
+    <label className={`relative block rounded-xl border p-4 transition focus-within:outline-none focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 ${disabled ? 'cursor-not-allowed border-gray-200 bg-gray-50 opacity-60' : 'cursor-pointer border-primary/20 bg-white/45 hover:border-primary/50'} ${checked ? 'border-primary bg-primary-light/35 ring-2 ring-primary/20' : ''}`}>
+      <input type="radio" name="metodoEntrega" value={value} checked={checked} disabled={disabled} onChange={() => onChange(value)} className="peer sr-only" />
+      <span className="flex items-start gap-3">
+        <span className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${checked ? 'bg-primary text-white' : 'bg-white text-primary-dark'}`} aria-hidden="true"><Icon size={20} /></span>
+        <span className="min-w-0"><span className="block font-bold text-ink">{title}</span><span className="mt-0.5 block text-sm text-muted">{description}</span>{detail ? <span className="mt-2 block text-xs font-medium text-primary-dark">{detail}</span> : null}</span>
+      </span>
+    </label>
+  );
+}
+
+function SelectorPunto({ puntos, value, onChange, error }) {
+  return (
+    <fieldset aria-describedby={error ? 'punto-error' : undefined}>
+      <legend className="mb-2 text-sm font-semibold text-ink">Seleccioná un punto</legend>
+      <div className="grid gap-3 sm:grid-cols-2">
+        {puntos.map((punto) => (
+          <label key={punto.idPuntoEntrega} className={`cursor-pointer rounded-lg border p-4 transition hover:border-primary/50 focus-within:outline-none focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 ${value === punto.idPuntoEntrega ? 'border-primary bg-primary-light/30 ring-1 ring-primary' : 'border-gray-200 bg-white/60'}`}>
+            <input type="radio" name="idPuntoEntrega" value={punto.idPuntoEntrega} checked={value === punto.idPuntoEntrega} onChange={() => onChange(punto.idPuntoEntrega)} className="sr-only" />
+            <span className="block font-semibold text-ink">{punto.nombre}</span>
+            {punto.descripcion ? <span className="mt-1 block text-sm text-muted">{punto.descripcion}</span> : null}
+            {punto.referencia ? <span className="mt-2 block text-xs text-primary-dark">{punto.referencia}</span> : null}
+          </label>
+        ))}
+      </div>
+      {error ? <p id="punto-error" role="alert" className="mt-2 text-sm text-red-700">{error}</p> : null}
+    </fieldset>
+  );
+}
 
 export default function Checkout() {
   const user = useAuthStore((state) => state.user);
   const navigate = useNavigate();
-
   const { data, isLoading, isError } = useCarrito();
   const crearPedidoMutation = useCrearPedido();
-
-  const items = (data?.items || []).map((d) => ({
-    id: d.idDetalle,
-    idVariante: d.variante?.idVariante || d.idVariante,
-    nombre: d.variante?.producto?.nombre || d.variante?.sku || 'Producto',
-    cantidad: d.cantidad || 1,
-    precio: Number(d.variante?.precioOferta || d.variante?.precioVenta) || 0,
-    imagen: d.variante?.imagenes?.find(i => i.principal)?.url
-           ?? d.variante?.imagenes?.[0]?.url
-           ?? d.variante?.producto?.imagenes?.find(i => i.principal)?.url,
-    sku: d.variante?.sku,
-  }));
-
-  const [retiroEnTienda, setRetiroEnTienda] = useState(false);
-  const [form, setForm] = useState({
-    nombreContacto: "",
-    telefonoContacto: "",
-    direccionEntrega: "",
-    notas: "",
-  });
+  const puntosQuery = useQuery({ queryKey: ['entrega', 'puntos'], queryFn: obtenerPuntosEntrega, enabled: !!user, staleTime: 5 * 60_000 });
+  const configuracionQuery = useQuery({ queryKey: ['entrega', 'configuracion'], queryFn: obtenerConfiguracionEntrega, enabled: !!user, staleTime: 5 * 60_000 });
+  const items = (data?.items || []).map((detalle) => ({ id: detalle.idDetalle, idVariante: detalle.idVariante, nombre: detalle.producto?.nombre || detalle.sku || 'Producto', cantidad: detalle.cantidad || 1, precio: Number(detalle.precioPorPresentacion) || 0, subtotal: Number(detalle.subtotal) || 0 }));
+  const carritoSincronizando = (data?.items || []).some((detalle) => typeof detalle.idDetalle !== 'number');
+  const total = Number(data?.total) || 0;
+  const puntosEntrega = useMemo(() => (puntosQuery.data || []).filter((punto) => punto.tipo === 'PUNTO_ENTREGA'), [puntosQuery.data]);
+  const puntosRecojo = useMemo(() => (puntosQuery.data || []).filter((punto) => punto.tipo === 'RECOJO_TIENDA'), [puntosQuery.data]);
+  const minimoDelivery = Number(configuracionQuery.data?.montoMinimoDelivery ?? 0);
+  const deliveryHabilitado = Boolean(configuracionQuery.data?.deliveryHabilitado);
+  const deliveryDisponible = deliveryHabilitado && Number.isFinite(minimoDelivery) && total >= minimoDelivery;
+  const faltanteDelivery = Math.max(0, minimoDelivery - total);
+  const [metodoEntrega, setMetodoEntrega] = useState('');
+  const [idPuntoEntrega, setIdPuntoEntrega] = useState(null);
+  const [form, setForm] = useState(() => ({ nombreContacto: nombreCompleto(user), telefonoContacto: user?.telefono || '', deliveryZona: '', deliveryDireccion: '', deliveryReferencia: '', notas: '' }));
   const [errores, setErrores] = useState({});
-  const [errorSubmit, setErrorSubmit] = useState("");
+  const [errorSubmit, setErrorSubmit] = useState('');
 
-  const total = items.reduce((sum, item) => sum + item.cantidad * item.precio, 0);
+  useEffect(() => {
+    if (metodoEntrega || puntosQuery.isLoading || configuracionQuery.isLoading) return;
+    if (puntosEntrega.length) { setMetodoEntrega('PUNTO_ENTREGA'); setIdPuntoEntrega(puntosEntrega[0].idPuntoEntrega); }
+    else if (puntosRecojo.length) { setMetodoEntrega('RECOJO_TIENDA'); setIdPuntoEntrega(puntosRecojo[0].idPuntoEntrega); }
+  }, [metodoEntrega, puntosEntrega, puntosRecojo, puntosQuery.isLoading, configuracionQuery.isLoading]);
 
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
+  if (!user) return <Navigate to="/login" replace />;
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-    setErrores((prev) => ({ ...prev, [name]: "" }));
+  const cambiarMetodo = (metodo) => {
+    setMetodoEntrega(metodo);
+    setErrores((prev) => ({ ...prev, metodoEntrega: '', idPuntoEntrega: '', deliveryZona: '', deliveryDireccion: '' }));
+    if (metodo === 'PUNTO_ENTREGA') setIdPuntoEntrega(puntosEntrega[0]?.idPuntoEntrega ?? null);
+    if (metodo === 'RECOJO_TIENDA') setIdPuntoEntrega(puntosRecojo[0]?.idPuntoEntrega ?? null);
+    if (metodo === 'DELIVERY') setIdPuntoEntrega(null);
   };
-
+  const handleChange = (event) => { const { name, value } = event.target; setForm((prev) => ({ ...prev, [name]: value })); setErrores((prev) => ({ ...prev, [name]: '' })); };
   const validar = () => {
     const nuevosErrores = {};
-
-    if (!form.nombreContacto.trim()) {
-      nuevosErrores.nombreContacto = "El nombre de contacto es obligatorio";
-    } else if (form.nombreContacto.trim().length > 150) {
-      nuevosErrores.nombreContacto = "El nombre no puede superar los 150 caracteres";
-    }
-
+    if (!form.nombreContacto.trim()) nuevosErrores.nombreContacto = 'El nombre de contacto es obligatorio';
+    else if (form.nombreContacto.trim().length > 150) nuevosErrores.nombreContacto = 'El nombre no puede superar los 150 caracteres';
     const telefono = form.telefonoContacto.trim();
-    if (!telefono) {
-      nuevosErrores.telefonoContacto = "El celular es obligatorio";
-    } else if (!PHONE_RE.test(telefono)) {
-      nuevosErrores.telefonoContacto = "Ingresá un celular boliviano válido (ej: 71234567 o +591 71234567)";
+    if (!telefono) nuevosErrores.telefonoContacto = 'El celular es obligatorio';
+    else if (!PHONE_RE.test(telefono)) nuevosErrores.telefonoContacto = 'Ingresá un celular boliviano válido (ej: 71234567 o +59171234567)';
+    if (!metodoEntrega) nuevosErrores.metodoEntrega = 'Seleccioná un método de entrega';
+    if ((metodoEntrega === 'PUNTO_ENTREGA' || metodoEntrega === 'RECOJO_TIENDA') && !idPuntoEntrega) nuevosErrores.idPuntoEntrega = 'Seleccioná un punto disponible';
+    if (metodoEntrega === 'DELIVERY') {
+      if (!deliveryDisponible) nuevosErrores.metodoEntrega = 'Delivery no está disponible para este pedido';
+      if (!form.deliveryZona.trim()) nuevosErrores.deliveryZona = 'La zona es obligatoria'; else if (form.deliveryZona.trim().length > 150) nuevosErrores.deliveryZona = 'La zona no puede superar 150 caracteres';
+      if (!form.deliveryDireccion.trim()) nuevosErrores.deliveryDireccion = 'La dirección es obligatoria'; else if (form.deliveryDireccion.trim().length > 255) nuevosErrores.deliveryDireccion = 'La dirección no puede superar 255 caracteres';
+      if (form.deliveryReferencia.trim().length > 255) nuevosErrores.deliveryReferencia = 'La referencia no puede superar 255 caracteres';
     }
-
-    if (!retiroEnTienda && form.direccionEntrega.trim().length > 255) {
-      nuevosErrores.direccionEntrega = "La dirección no puede superar los 255 caracteres";
-    }
-
-    if (form.notas.trim().length > 1000) {
-      nuevosErrores.notas = "Las notas no pueden superar los 1000 caracteres";
-    }
-
+    if (form.notas.trim().length > 1000) nuevosErrores.notas = 'Las notas no pueden superar 1000 caracteres';
     setErrores(nuevosErrores);
-    return Object.keys(nuevosErrores).every((key) => !nuevosErrores[key]);
+    return Object.keys(nuevosErrores).length === 0;
   };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setErrorSubmit("");
-    if (!validar()) return;
-
-    const body = {
-      nombreContacto: form.nombreContacto.trim(),
-      telefonoContacto: form.telefonoContacto.trim(),
-      direccionEntrega: retiroEnTienda ? null : form.direccionEntrega.trim() || null,
-      notas: form.notas.trim() || null,
-    };
-
+  const mensajeErrorPedido = (error) => {
+    const respuesta = error?.response?.data;
+    const mensaje = respuesta?.error || '';
+    if (Array.isArray(respuesta?.detalles) && respuesta.detalles.length) return respuesta.detalles.map((detalle) => detalle.mensaje).join(', ');
+    if (/delivery disponible desde/i.test(mensaje)) return `El monto mínimo para delivery es ${mensaje.replace(/^.*desde\s*/i, '')}.`;
+    if (/delivery no está habilitado/i.test(mensaje)) return configuracionQuery.data?.mensajeDelivery || 'Delivery no disponible temporalmente.';
+    if (/punto/i.test(mensaje)) return 'Este punto ya no está disponible. Seleccioná otro.';
+    return mensaje || 'No se pudo crear el pedido';
+  };
+  const handleSubmit = (event) => {
+    event.preventDefault(); setErrorSubmit('');
+    if (carritoSincronizando || !validar() || puntosQuery.isLoading || configuracionQuery.isLoading || puntosQuery.isError || configuracionQuery.isError) return;
+    const contacto = { nombreContacto: form.nombreContacto.trim(), telefonoContacto: form.telefonoContacto.trim(), notas: form.notas.trim() || null };
+    const body = metodoEntrega === 'DELIVERY'
+      ? { ...contacto, metodoEntrega: 'DELIVERY', deliveryZona: form.deliveryZona.trim(), deliveryDireccion: form.deliveryDireccion.trim(), deliveryReferencia: form.deliveryReferencia.trim() || null }
+      : { ...contacto, metodoEntrega, idPuntoEntrega };
     crearPedidoMutation.mutate(body, {
-      onSuccess: (pedido) => {
-        navigate('/checkout/confirmacion', {
-          state: {
-            idPedido: pedido.idPedido,
-            total: Number(pedido.total) || total,
-            estado: pedido.estado,
-            items: items.map((item) => ({
-              idVariante: item.idVariante,
-              nombre: item.nombre,
-              cantidad: item.cantidad,
-              precioUnitario: item.precio,
-            })),
-          },
-        });
-      },
-      onError: (err) => {
-        const data = err?.response?.data;
-        if (Array.isArray(data?.detalles) && data.detalles.length > 0) {
-          setErrorSubmit(data.detalles.map((d) => d.mensaje).join(', '));
-        } else {
-          setErrorSubmit(data?.error || 'No se pudo crear el pedido');
-        }
-      },
+      onSuccess: (pedido) => navigate('/checkout/confirmacion', { state: { idPedido: pedido.idPedido, total: Number(pedido.total) || total, estado: pedido.estado, items: items.map((item) => ({ idVariante: item.idVariante, nombre: item.nombre, cantidad: item.cantidad, precioUnitario: item.precio })) } }),
+      onError: (error) => { setErrorSubmit(mensajeErrorPedido(error)); void puntosQuery.refetch(); void configuracionQuery.refetch(); },
     });
   };
+  const logisticaCargando = puntosQuery.isLoading || configuracionQuery.isLoading;
+  const logisticaError = puntosQuery.isError || configuracionQuery.isError;
+  const hayMetodoDisponible = puntosEntrega.length > 0 || puntosRecojo.length > 0 || deliveryDisponible;
 
   return (
-    <main className="min-h-screen">
-      <div className="max-w-5xl px-4 py-10 mx-auto">
-        <h1 className="mb-2 text-4xl font-black text-ink font-display">CHECKOUT</h1>
-        <p className="mb-8 text-muted">Completá tus datos para confirmar el pedido</p>
-
-        {isLoading ? (
-          <StatusMessage status="loading" message="Cargando pedido..." />
-        ) : isError ? (
-          <Alert type="danger">No se pudo cargar el carrito</Alert>
-        ) : items.length === 0 ? (
-          <Card variant="default" padding={false} className="p-6 text-center sm:p-12">
-            <p className="mb-4 text-2xl text-ink">Tu carrito está vacío</p>
-            <Link to="/catalogo" className="text-lg font-bold text-primary-dark hover:underline">
-              Continuar comprando
-            </Link>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-            <Card variant="default" padding="lg" className="lg:col-span-2">
-              <h2 className="mb-6 text-2xl font-bold text-ink font-display">
-                Datos de contacto
-              </h2>
-
-              <form onSubmit={handleSubmit} noValidate className="space-y-5">
-                <Input
-                  label="Nombre de contacto"
-                  type="text"
-                  name="nombreContacto"
-                  value={form.nombreContacto}
-                  onChange={handleChange}
-                  placeholder="Ej: María Fernández"
-                  icon={<User size={18} />}
-                  error={errores.nombreContacto}
-                  required
-                />
-
-                <Input
-                  label="Celular (WhatsApp)"
-                  type="text"
-                  name="telefonoContacto"
-                  value={form.telefonoContacto}
-                  onChange={handleChange}
-                  placeholder="Ej: 71234567"
-                  icon={<Phone size={18} />}
-                  error={errores.telefonoContacto}
-                  required
-                />
-
-                <div className="pt-2">
-                  <ToggleSwitch
-                    label="Retiro en tienda"
-                    checked={retiroEnTienda}
-                    onChange={setRetiroEnTienda}
-                  />
-                </div>
-
-                {!retiroEnTienda && (
-                  <Input
-                    label="Dirección de entrega"
-                    type="text"
-                    name="direccionEntrega"
-                    value={form.direccionEntrega}
-                    onChange={handleChange}
-                    placeholder="Calle, zona, referencia"
-                    icon={<MapPin size={18} />}
-                    error={errores.direccionEntrega}
-                  />
-                )}
-
-                <Textarea
-                  label="Notas (opcional)"
-                  name="notas"
-                  value={form.notas}
-                  onChange={handleChange}
-                  placeholder="Ej: Entregar en horario de tarde"
-                  rows={3}
-                  error={errores.notas}
-                />
-
-                {errorSubmit && (
-                  <Alert type="danger">{errorSubmit}</Alert>
-                )}
-
-                <Button
-                  type="submit"
-                  variant="primary"
-                  size="lg"
-                  className="w-full"
-                  loading={crearPedidoMutation.isPending}
-                >
-                  Confirmar pedido
-                </Button>
-              </form>
-            </Card>
-
-            <Card variant="highlight" padding="lg" className="h-fit sticky top-24">
-              <h3 className="mb-6 text-2xl font-bold text-ink font-display">
-                RESUMEN
-              </h3>
-
-              <div className="space-y-3">
-                {items.map((item) => (
-                  <div key={item.id} className="flex justify-between gap-4 text-sm">
-                    <span className="text-muted">
-                      {item.nombre} x{item.cantidad}
-                    </span>
-                    <span className="font-medium text-ink whitespace-nowrap">
-                      Bs. {(item.cantidad * item.precio).toFixed(2)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="my-6 pb-6 border-b border-white/40">
-                <div className="flex justify-between text-muted">
-                  <span>Envío:</span>
-                  <span>{retiroEnTienda ? "Retiro en tienda" : "Bs. 0.00"}</span>
-                </div>
-              </div>
-
-              <div className="flex justify-between items-center text-2xl font-black text-ink">
-                <span className="font-display">TOTAL:</span>
-                <span className="text-primary-dark">Bs. {total.toFixed(2)}</span>
-              </div>
-
-              <Button
-                as={Link}
-                to="/catalogo"
-                variant="outline"
-                size="lg"
-                className="mt-6 w-full border-2 border-primary text-primary hover:bg-primary-light"
-              >
-                Seguir comprando
-              </Button>
-            </Card>
-          </div>
-        )}
-      </div>
-    </main>
+    <main className="min-h-screen"><div className="max-w-5xl px-4 py-10 mx-auto">
+      <h1 className="mb-2 text-4xl font-black text-ink font-display">CHECKOUT</h1><p className="mb-8 text-muted">Elegí cómo recibir tu pedido y confirmá tus datos de contacto.</p>
+      {isLoading ? <StatusMessage status="loading" message="Cargando pedido..." /> : null}
+      {isError ? <Alert type="danger">No se pudo cargar el carrito</Alert> : null}
+      {!isLoading && !isError && items.length === 0 ? <Card variant="default" padding={false} className="p-6 text-center sm:p-12"><p className="mb-4 text-2xl text-ink">Tu carrito está vacío</p><Link to="/catalogo" className="text-lg font-bold text-primary-dark hover:underline">Continuar comprando</Link></Card> : null}
+      {!isLoading && !isError && items.length > 0 ? <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+        <Card variant="default" padding="lg" className="lg:col-span-2"><form onSubmit={handleSubmit} noValidate className="space-y-8">
+          <section aria-labelledby="contacto-title"><h2 id="contacto-title" className="mb-5 text-2xl font-bold text-ink font-display">Datos de contacto</h2><div className="space-y-5">
+            <Input label="Nombre de contacto" type="text" name="nombreContacto" value={form.nombreContacto} onChange={handleChange} placeholder="Ej: María Fernández" icon={<User size={18} />} error={errores.nombreContacto} autoComplete="name" required />
+            <Input label="Celular (WhatsApp)" type="tel" name="telefonoContacto" value={form.telefonoContacto} onChange={handleChange} placeholder="Ej: 71234567" icon={<Phone size={18} />} error={errores.telefonoContacto} autoComplete="tel" required />
+          </div></section>
+          <section aria-labelledby="entrega-title"><h2 id="entrega-title" className="mb-2 text-2xl font-bold text-ink font-display">¿Cómo querés recibir tu pedido?</h2><p className="mb-5 text-sm text-muted">El método y los datos de entrega se guardarán con este pedido.</p>
+            {logisticaCargando ? <StatusMessage status="loading" message="Cargando opciones de entrega..." className="py-6" /> : null}
+            {logisticaError ? <Alert type="danger">No se pudieron cargar las opciones de entrega. <button type="button" onClick={() => { void puntosQuery.refetch(); void configuracionQuery.refetch(); }} className="font-bold underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current">Reintentar</button></Alert> : null}
+            {!logisticaCargando && !logisticaError ? <><>{!hayMetodoDisponible ? <Alert type="warning" className="mb-4">No hay métodos de entrega disponibles por el momento.</Alert> : null}</><fieldset disabled={!hayMetodoDisponible} aria-describedby={errores.metodoEntrega ? 'metodo-entrega-error' : undefined}><legend className="sr-only">Método de entrega</legend><div className="grid gap-3 sm:grid-cols-3">
+              <MetodoEntrega value="PUNTO_ENTREGA" title="Punto de entrega" description="Recogé tu pedido en un punto acordado." icon={MapPin} checked={metodoEntrega === 'PUNTO_ENTREGA'} disabled={!puntosEntrega.length} onChange={cambiarMetodo} />
+              <MetodoEntrega value="RECOJO_TIENDA" title="Recojo en tienda" description="Recogé directamente con nosotros." icon={Store} checked={metodoEntrega === 'RECOJO_TIENDA'} disabled={!puntosRecojo.length} onChange={cambiarMetodo} />
+              <MetodoEntrega value="DELIVERY" title="Delivery" description="Entrega a domicilio a coordinar." icon={Truck} checked={metodoEntrega === 'DELIVERY'} disabled={!deliveryDisponible} detail={!deliveryHabilitado ? (configuracionQuery.data?.mensajeDelivery || 'Delivery no disponible temporalmente.') : !deliveryDisponible ? `Disponible desde ${dinero(minimoDelivery)}. Te faltan ${dinero(faltanteDelivery)}.` : `Disponible desde ${dinero(minimoDelivery)}.`} onChange={cambiarMetodo} />
+            </div></fieldset>{errores.metodoEntrega ? <p id="metodo-entrega-error" role="alert" className="mt-2 text-sm text-red-700">{errores.metodoEntrega}</p> : null}
+            <div className="mt-6">{metodoEntrega === 'PUNTO_ENTREGA' ? <SelectorPunto puntos={puntosEntrega} value={idPuntoEntrega} onChange={setIdPuntoEntrega} error={errores.idPuntoEntrega} /> : null}{metodoEntrega === 'RECOJO_TIENDA' ? <SelectorPunto puntos={puntosRecojo} value={idPuntoEntrega} onChange={setIdPuntoEntrega} error={errores.idPuntoEntrega} /> : null}{metodoEntrega === 'DELIVERY' ? <div className="space-y-5 rounded-xl border border-primary/20 bg-primary-light/20 p-4 sm:p-5"><Input label="Zona" type="text" name="deliveryZona" value={form.deliveryZona} onChange={handleChange} placeholder="Ej: Sopocachi" icon={<MapPin size={18} />} error={errores.deliveryZona} maxLength={150} required /><Input label="Dirección" type="text" name="deliveryDireccion" value={form.deliveryDireccion} onChange={handleChange} placeholder="Calle, número y edificio" icon={<MapPin size={18} />} error={errores.deliveryDireccion} maxLength={255} required /><Input label="Referencia (opcional)" type="text" name="deliveryReferencia" value={form.deliveryReferencia} onChange={handleChange} placeholder="Ej: Puerta azul" error={errores.deliveryReferencia} maxLength={255} /></div> : null}</div></> : null}
+          </section>
+          <Textarea label="Notas (opcional)" name="notas" value={form.notas} onChange={handleChange} placeholder="Indicaciones adicionales para tu pedido (opcional)" rows={3} error={errores.notas} maxLength={1000} />
+          {errorSubmit ? <Alert type="danger">{errorSubmit}</Alert> : null}
+          {carritoSincronizando ? <p role="status" className="text-sm text-muted">Actualizando carrito…</p> : null}
+          <Button type="submit" variant="primary" size="lg" className="w-full" loading={crearPedidoMutation.isPending} disabled={carritoSincronizando || logisticaCargando || logisticaError || !hayMetodoDisponible}>Confirmar pedido</Button>
+        </form></Card>
+        <Card variant="highlight" padding="lg" className="h-fit lg:sticky lg:top-24"><h3 className="mb-6 text-2xl font-bold text-ink font-display">RESUMEN</h3><div className="space-y-3">{items.map((item) => <div key={item.id} className="flex justify-between gap-4 text-sm"><span className="text-muted">{item.nombre} x{item.cantidad}</span><span className="font-medium text-ink whitespace-nowrap">{dinero(item.subtotal)}</span></div>)}</div><div className="my-6 pb-6 border-b border-white/40"><div className="flex justify-between gap-4 text-muted"><span>Entrega:</span><span className="text-right">{metodoEntrega === 'DELIVERY' ? 'A coordinar' : metodoEntrega === 'RECOJO_TIENDA' ? 'Recojo en tienda' : metodoEntrega === 'PUNTO_ENTREGA' ? 'Punto de entrega' : 'Elegí un método'}</span></div></div><div className="flex justify-between items-center text-2xl font-black text-ink"><span className="font-display">TOTAL:</span><span className="text-primary-dark">{dinero(total)}</span></div><Button as={Link} to="/catalogo" variant="outline" size="lg" className="mt-6 w-full border-2 border-primary text-primary hover:bg-primary-light">Seguir comprando</Button></Card>
+      </div> : null}
+    </div></main>
   );
 }

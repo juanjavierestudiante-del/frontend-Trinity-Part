@@ -7,7 +7,12 @@ import {
   usePedidosAdmin,
   useCambiarEstadoPedido,
 } from '../../hooks/admin/usePedidosAdmin';
-import type { EstadoPedido } from '../../services/admin/pedido.api';
+import type {
+  EstadoPedido,
+  MetodoEntregaPedido,
+  PedidoAdmin,
+  PedidoDetalleAdmin,
+} from '../../services/admin/pedido.api';
 import Badge from '../../components/ui/Badge/Badge';
 import Button from '../../components/ui/Button/Button';
 import Loader from '../../components/ui/Loader/Loader';
@@ -19,30 +24,6 @@ import TableCell from '../../components/ui/Table/TableCell';
 import TableHeadCell from '../../components/ui/Table/TableHeadCell';
 import Select from '../../components/ui/Select/Select';
 import Alert from '../../components/ui/Alert/Alert';
-
-interface PedidoDetalle {
-  idDetalle: number;
-  idVariante: number;
-  cantidad: number;
-  precioUnitario: number | string;
-  variante?: {
-    sku?: string;
-    producto?: { nombre?: string };
-  };
-}
-
-interface Pedido {
-  idPedido: number;
-  estado: EstadoPedido;
-  total: number | string;
-  fechaCreacion: string;
-  nombreContacto: string;
-  telefonoContacto: string;
-  direccionEntrega?: string | null;
-  notas?: string | null;
-  items?: PedidoDetalle[];
-  usuario?: { nombre?: string; email?: string };
-}
 
 const FILTROS: { key: EstadoPedido | 'TODOS'; label: string }[] = [
   { key: 'TODOS', label: 'Todos' },
@@ -68,6 +49,100 @@ function estadoLabel(estado: EstadoPedido) {
   }
 }
 
+const metodoEntregaLabel: Record<MetodoEntregaPedido, string> = {
+  PUNTO_ENTREGA: 'Punto de entrega',
+  RECOJO_TIENDA: 'Recojo en tienda',
+  DELIVERY: 'Delivery',
+};
+
+const metodoEntregaVariant: Record<MetodoEntregaPedido, string> = {
+  PUNTO_ENTREGA: 'info',
+  RECOJO_TIENDA: 'primary',
+  DELIVERY: 'success',
+};
+
+function MetodoEntregaBadge({ metodoEntrega }: { metodoEntrega?: MetodoEntregaPedido | null }) {
+  if (!metodoEntrega) {
+    return <Badge variant="gray">Anterior</Badge>;
+  }
+
+  return (
+    <Badge variant={metodoEntregaVariant[metodoEntrega]}>
+      {metodoEntregaLabel[metodoEntrega]}
+    </Badge>
+  );
+}
+
+function DetalleEntrega({ pedido }: { pedido: PedidoAdmin }) {
+  const punto = (
+    <>
+      <p className="text-sm text-gray-200">
+        <span className="font-medium text-gray-400">Punto: </span>
+        {pedido.puntoEntregaNombre || 'Punto no registrado'}
+      </p>
+      {pedido.puntoEntregaReferencia ? (
+        <p className="mt-1 text-sm text-gray-200">
+          <span className="font-medium text-gray-400">Referencia: </span>
+          {pedido.puntoEntregaReferencia}
+        </p>
+      ) : null}
+    </>
+  );
+
+  if (pedido.metodoEntrega === 'PUNTO_ENTREGA' || pedido.metodoEntrega === 'RECOJO_TIENDA') {
+    return (
+      <div>
+        <p className="mb-2 text-sm text-gray-200">
+          <span className="font-medium text-gray-400">Método: </span>
+          {metodoEntregaLabel[pedido.metodoEntrega]}
+        </p>
+        {punto}
+      </div>
+    );
+  }
+
+  if (pedido.metodoEntrega === 'DELIVERY') {
+    return (
+      <div>
+        <p className="mb-2 text-sm text-gray-200">
+          <span className="font-medium text-gray-400">Método: </span>
+          Delivery
+        </p>
+        <p className="text-sm text-gray-200">
+          <span className="font-medium text-gray-400">Zona: </span>
+          {pedido.deliveryZona || 'No registrada'}
+        </p>
+        <p className="mt-1 text-sm text-gray-200">
+          <span className="font-medium text-gray-400">Dirección: </span>
+          {pedido.deliveryDireccion || 'No registrada'}
+        </p>
+        {pedido.deliveryReferencia ? (
+          <p className="mt-1 text-sm text-gray-200">
+            <span className="font-medium text-gray-400">Referencia: </span>
+            {pedido.deliveryReferencia}
+          </p>
+        ) : null}
+        <p className="mt-1 text-sm text-gray-200">
+          <span className="font-medium text-gray-400">Teléfono: </span>
+          {pedido.telefonoContacto}
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <p className="text-sm text-gray-200">Entrega anterior / método no registrado</p>
+      {pedido.direccionEntrega ? (
+        <p className="mt-1 text-sm text-gray-200">
+          <span className="font-medium text-gray-400">Dirección registrada anteriormente: </span>
+          {pedido.direccionEntrega}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 export default function PedidosPage() {
   const { data: pedidos, isLoading, isError } = usePedidosAdmin();
   const { mutate: cambiarEstado, isPending, error: mutError } =
@@ -77,7 +152,7 @@ export default function PedidosPage() {
   const [expandido, setExpandido] = useState<Set<number>>(new Set());
   const [feedback, setFeedback] = useState<string | null>(null);
 
-  const pedidosTipados = ((pedidos?.items ?? []) as Pedido[]);
+  const pedidosTipados = pedidos?.items ?? [];
 
   const filtrados =
     filtro === 'TODOS'
@@ -165,6 +240,7 @@ export default function PedidosPage() {
             <TableHeadCell>Fecha</TableHeadCell>
             <TableHeadCell>Items</TableHeadCell>
             <TableHeadCell>Total</TableHeadCell>
+            <TableHeadCell>Entrega</TableHeadCell>
             <TableHeadCell>Estado</TableHeadCell>
             <TableHeadCell>Cambiar estado</TableHeadCell>
           </TableRow>
@@ -206,8 +282,8 @@ function FragmentPedido({
   estadoActual,
   isPending,
 }: {
-  pedido: Pedido;
-  items: PedidoDetalle[];
+  pedido: PedidoAdmin;
+  items: PedidoDetalleAdmin[];
   estaExpandido: boolean;
   onToggle: () => void;
   onChangeEstado: (estado: EstadoPedido) => void;
@@ -261,6 +337,10 @@ function FragmentPedido({
         </TableCell>
 
         <TableCell dark>
+          <MetodoEntregaBadge metodoEntrega={pedido.metodoEntrega} />
+        </TableCell>
+
+        <TableCell dark>
           <Badge variant={colorEstado[pedido.estado] || 'gray'}>
             {estadoLabel(pedido.estado)}
           </Badge>
@@ -287,7 +367,7 @@ function FragmentPedido({
 
       {estaExpandido && (
         <tr className="bg-gray-900/50">
-          <td colSpan={8} className="px-4 py-3">
+          <td colSpan={9} className="px-4 py-3">
             <div className="space-y-4">
               <div>
                 <h4 className="mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wide">
@@ -326,11 +406,7 @@ function FragmentPedido({
                   <h4 className="mb-1 text-xs font-semibold text-gray-400 uppercase tracking-wide">
                     Entrega
                   </h4>
-                  <p className="text-sm text-gray-200">
-                    {pedido.direccionEntrega
-                      ? pedido.direccionEntrega
-                      : 'Retiro en tienda'}
-                  </p>
+                  <DetalleEntrega pedido={pedido} />
                 </div>
                 <div>
                   <h4 className="mb-1 text-xs font-semibold text-gray-400 uppercase tracking-wide">

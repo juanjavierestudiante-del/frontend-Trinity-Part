@@ -21,7 +21,7 @@ const colorEstado: Record<string, string> = {
 
 export default function ProductosPage() {
   const navigate = useNavigate()
-  const usuario = useAuthStore((state) => state.usuario)
+  const usuario = useAuthStore((state) => state.user)
   const isAdmin = usuario?.rol === 'ADMIN'
   const { data: productos, isLoading, isError } = useProductosAdmin()
   const { mutate: eliminar } = useEliminarProducto()
@@ -83,21 +83,21 @@ export default function ProductosPage() {
                   <Button
                     size="sm"
                     variant="light"
+                    icon={HiPencil}
                     onClick={() => navigate(`/admin/productos/${producto.idProducto}/editar`)}
                     title="Editar"
                   >
-                    <HiPencil className="w-4 h-4" />
-                    <span>Editar</span>
+                    Editar
                   </Button>
                   {isAdmin && (
                     <Button
                       size="sm"
                       variant="danger"
+                      icon={HiTrash}
                       onClick={() => handleEliminar(producto.idProducto, producto.nombre)}
                       title="Eliminar"
                     >
-                      <HiTrash className="w-4 h-4" />
-                      <span>Eliminar</span>
+                      Eliminar
                     </Button>
                   )}
                 </div>

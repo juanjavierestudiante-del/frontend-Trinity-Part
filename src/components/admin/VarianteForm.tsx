@@ -18,7 +18,6 @@ interface Props {
 const formVacio = (idProducto: number): VarianteBody => ({
   idProducto,
   sku: '',
-  precioVenta: 0,
   cantidadContenido: 1,
   estado: 'Activo',
 })
@@ -70,30 +69,8 @@ export default function VarianteForm({
         />
       </div>
 
-      <div>
-        <Label className="block mb-1 text-base !text-primary-light" dark>Precio de venta</Label>
-        <Input
-          sizing="sm"
-          type="number"
-          step="0.01"
-          value={form.precioVenta}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => set('precioVenta', Number(e.target.value))}
-          required
-          dark
-        />
-      </div>
-
-      <div>
-        <Label className="block mb-1 text-base !text-primary-light" dark>Precio oferta</Label>
-        <Input
-          sizing="sm"
-          type="number"
-          step="0.01"
-          value={form.precioOferta || ''}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => set('precioOferta', e.target.value ? Number(e.target.value) : undefined)}
-          placeholder="Opcional"
-          dark
-        />
+      <div className="col-span-2 rounded-lg border border-primary/20 bg-primary/10 px-3 py-2 text-sm text-gray-200">
+        Los precios se administran desde <span className="font-semibold text-primary-light">Precios por cantidad</span>.
       </div>
 
       <div>

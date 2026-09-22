@@ -106,7 +106,7 @@ export default function Nav() {
               <Link
                 to="/carrito"
                 className="relative p-2.5 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300"
-                aria-label={`Carrito de compras (${cartCount} artículos)`}
+                aria-label={`Carrito de compras (${cartCount} variantes)`}
               >
                 <ShoppingCart className="w-5 h-5" />
                 <span className="absolute -top-1 -right-1 bg-secondary text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-primary">

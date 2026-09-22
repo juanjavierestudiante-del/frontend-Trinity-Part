@@ -1,0 +1,56 @@
+import { useEffect, useMemo, useState, type ChangeEvent } from 'react';
+import { HiPencil, HiPlus, HiRefresh } from 'react-icons/hi';
+import Alert from '../../components/ui/Alert/Alert';
+import Badge from '../../components/ui/Badge/Badge';
+import Button from '../../components/ui/Button/Button';
+import Card from '../../components/ui/Card/Card';
+import Input from '../../components/ui/Input/Input';
+import Loader from '../../components/ui/Loader/Loader';
+import Select from '../../components/ui/Select/Select';
+import Textarea from '../../components/ui/Textarea/Textarea';
+import { useActualizarConfiguracionEntrega, useActualizarPuntoEntrega, useConfiguracionEntregaAdmin, useCrearPuntoEntrega, usePuntosEntregaAdmin } from '../../hooks/admin/useEntregasAdmin';
+import type { PuntoEntregaAdmin, PuntoEntregaInput, TipoPuntoEntrega } from '../../services/admin/entrega.api';
+
+const vacio: PuntoEntregaInput = { nombre: '', descripcion: null, referencia: null, tipo: 'PUNTO_ENTREGA', activo: true, orden: 0 };
+const tipoLegible: Record<TipoPuntoEntrega, string> = { PUNTO_ENTREGA: 'Punto de entrega', RECOJO_TIENDA: 'Recojo en tienda' };
+
+function errorAmigable(error: any) {
+  const message = error?.response?.data?.error || '';
+  if (error?.response?.status === 409 && message.includes('recojo')) return 'Debe existir al menos un punto activo de recojo en tienda.';
+  if (error?.response?.status === 409) return 'Ya existe un punto de entrega con ese nombre.';
+  return message || 'No se pudo guardar el cambio. Intentá nuevamente.';
+}
+
+export default function EntregasPage() {
+  const puntos = usePuntosEntregaAdmin();
+  const configuracion = useConfiguracionEntregaAdmin();
+  const crear = useCrearPuntoEntrega();
+  const actualizar = useActualizarPuntoEntrega();
+  const actualizarConfiguracion = useActualizarConfiguracionEntrega();
+  const [editing, setEditing] = useState<PuntoEntregaAdmin | null | 'nuevo'>(null);
+  const [form, setForm] = useState<PuntoEntregaInput>(vacio);
+  const [filtro, setFiltro] = useState<'TODOS' | TipoPuntoEntrega | 'ACTIVOS' | 'INACTIVOS'>('TODOS');
+  const [feedback, setFeedback] = useState('');
+  const [error, setError] = useState('');
+  const [configForm, setConfigForm] = useState({ deliveryHabilitado: true, montoMinimoDelivery: '150', mensajeDelivery: '' });
+
+  useEffect(() => { if (configuracion.data) setConfigForm({ deliveryHabilitado: configuracion.data.deliveryHabilitado, montoMinimoDelivery: configuracion.data.montoMinimoDelivery, mensajeDelivery: configuracion.data.mensajeDelivery || '' }); }, [configuracion.data]);
+  const filtrados = useMemo(() => (puntos.data || []).filter((p) => filtro === 'TODOS' || (filtro === 'ACTIVOS' ? p.activo : filtro === 'INACTIVOS' ? !p.activo : p.tipo === filtro)), [puntos.data, filtro]);
+  const abrir = (punto?: PuntoEntregaAdmin) => { setError(''); setFeedback(''); setEditing(punto || 'nuevo'); setForm(punto ? { nombre: punto.nombre, descripcion: punto.descripcion, referencia: punto.referencia, tipo: punto.tipo, activo: punto.activo, orden: punto.orden } : { ...vacio, orden: (puntos.data?.length || 0) + 1 }); };
+  const guardarPunto = (event: React.FormEvent) => { event.preventDefault(); if (!form.nombre.trim()) return setError('El nombre es obligatorio.'); setError(''); const done = () => { setEditing(null); setFeedback(editing === 'nuevo' ? 'Punto de entrega creado.' : 'Punto de entrega actualizado.'); }; const fail = (e: any) => setError(errorAmigable(e)); if (editing === 'nuevo') crear.mutate({ ...form, nombre: form.nombre.trim(), descripcion: form.descripcion?.trim() || null, referencia: form.referencia?.trim() || null }, { onSuccess: done, onError: fail }); else if (editing) actualizar.mutate({ id: editing.idPuntoEntrega, body: { ...form, nombre: form.nombre.trim(), descripcion: form.descripcion?.trim() || null, referencia: form.referencia?.trim() || null } }, { onSuccess: done, onError: fail }); };
+  const cambiarEstado = (punto: PuntoEntregaAdmin) => { setError(''); actualizar.mutate({ id: punto.idPuntoEntrega, body: { activo: !punto.activo } }, { onSuccess: () => setFeedback(punto.activo ? 'Punto desactivado.' : 'Punto activado.'), onError: (e) => setError(errorAmigable(e)) }); };
+  const guardarConfig = (event: React.FormEvent) => { event.preventDefault(); const monto = Number(configForm.montoMinimoDelivery); if (!Number.isFinite(monto) || monto < 0) return setError('El monto mínimo debe ser cero o mayor.'); setError(''); actualizarConfiguracion.mutate({ deliveryHabilitado: configForm.deliveryHabilitado, montoMinimoDelivery: monto, mensajeDelivery: configForm.mensajeDelivery.trim() || null }, { onSuccess: (data) => { setConfigForm({ deliveryHabilitado: data.deliveryHabilitado, montoMinimoDelivery: data.montoMinimoDelivery, mensajeDelivery: data.mensajeDelivery || '' }); setFeedback('Configuración de delivery guardada.'); }, onError: (e) => setError(errorAmigable(e)) }); };
+  const cargando = puntos.isLoading || configuracion.isLoading;
+  if (cargando) return <div className="flex h-64 items-center justify-center"><Loader size="xl" showText={false} /></div>;
+  if (puntos.isError || configuracion.isError) return <Card variant="admin" padding="lg"><Alert type="danger">No se pudo cargar la configuración de entregas.</Alert><Button className="mt-4" onClick={() => { void puntos.refetch(); void configuracion.refetch(); }}><HiRefresh aria-hidden="true" />Reintentar</Button></Card>;
+
+  return <div className="space-y-6">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><div><h1 className="text-2xl font-bold text-gray-100">Entregas</h1><p className="mt-1 text-sm text-gray-400">Gestioná puntos de entrega y condiciones de delivery.</p></div><Button onClick={() => abrir()}><HiPlus aria-hidden="true" />Agregar punto</Button></div>
+    {feedback ? <Alert type="success" onDismiss={() => setFeedback('')}>{feedback}</Alert> : null}{error ? <Alert type="danger" onDismiss={() => setError('')}>{error}</Alert> : null}
+    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+      <Card variant="admin" padding="lg"><div className="mb-4 flex flex-wrap gap-2" role="group" aria-label="Filtrar puntos">{[['TODOS','Todos'],['PUNTO_ENTREGA','Puntos'],['RECOJO_TIENDA','Recojo'],['ACTIVOS','Activos'],['INACTIVOS','Inactivos']].map(([key,label]) => <Button key={key} size="sm" variant={filtro === key ? 'primary' : 'gray'} onClick={() => setFiltro(key as typeof filtro)}>{label}</Button>)}</div><div className="space-y-3">{filtrados.map((punto) => <div key={punto.idPuntoEntrega} className={`rounded-lg border border-gray-700 p-4 ${punto.activo ? 'bg-gray-800/60' : 'bg-gray-900/60 opacity-75'}`}><div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"><div className="min-w-0"><h2 className="font-semibold text-gray-100">{punto.nombre}</h2>{punto.descripcion ? <p className="mt-1 text-sm text-gray-400">{punto.descripcion}</p> : null}{punto.referencia ? <p className="mt-1 text-sm text-gray-400">Referencia: {punto.referencia}</p> : null}<div className="mt-3 flex flex-wrap gap-2"><Badge variant={punto.tipo === 'PUNTO_ENTREGA' ? 'info' : 'primary'}>{tipoLegible[punto.tipo]}</Badge><Badge variant={punto.activo ? 'success' : 'gray'}>{punto.activo ? 'Activo' : 'Inactivo'}</Badge><span className="text-xs text-gray-500">Orden {punto.orden}</span></div></div><div className="flex gap-2"><Button size="sm" variant="light" onClick={() => abrir(punto)} title={`Editar ${punto.nombre}`}><HiPencil aria-hidden="true" />Editar</Button><Button size="sm" variant={punto.activo ? 'danger' : 'success'} disabled={actualizar.isPending} onClick={() => cambiarEstado(punto)}>{punto.activo ? 'Desactivar' : 'Activar'}</Button></div></div></div>)}</div>{!filtrados.length ? <p className="py-8 text-center text-gray-400">No hay puntos para este filtro.</p> : null}</Card>
+      <Card variant="admin" padding="lg"><h2 className="text-lg font-bold text-gray-100">Configuración de delivery</h2><form className="mt-5 space-y-5" onSubmit={guardarConfig}><label className="flex cursor-pointer items-center gap-3 rounded-lg border border-gray-700 p-3 text-sm text-gray-200"><input type="checkbox" checked={configForm.deliveryHabilitado} onChange={(e: ChangeEvent<HTMLInputElement>) => setConfigForm((c) => ({ ...c, deliveryHabilitado: e.target.checked }))} className="h-5 w-5 accent-primary" />Delivery habilitado</label><Input dark label="Monto mínimo para delivery" name="montoMinimoDelivery" type="number" min="0" step="0.01" value={configForm.montoMinimoDelivery} onChange={(e: ChangeEvent<HTMLInputElement>) => setConfigForm((c) => ({ ...c, montoMinimoDelivery: e.target.value }))} endAdornment={<span className="text-xs text-gray-400">Bs.</span>} required /><Textarea dark label="Mensaje de delivery (opcional)" name="mensajeDelivery" rows={3} maxLength={255} value={configForm.mensajeDelivery} onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setConfigForm((c) => ({ ...c, mensajeDelivery: e.target.value }))} placeholder="Mensaje visible cuando delivery no esté disponible" /><Button type="submit" loading={actualizarConfiguracion.isPending} className="w-full">Guardar configuración</Button></form></Card>
+    </div>
+    {editing ? <Card variant="admin" padding="lg"><div className="mb-5 flex items-center justify-between"><h2 className="text-lg font-bold text-gray-100">{editing === 'nuevo' ? 'Agregar punto' : 'Editar punto'}</h2><Button variant="ghost" onClick={() => setEditing(null)}>Cancelar</Button></div><form className="grid gap-4 sm:grid-cols-2" onSubmit={guardarPunto}><Input dark label="Nombre" name="nombre" value={form.nombre} onChange={(e: ChangeEvent<HTMLInputElement>) => setForm((f) => ({ ...f, nombre: e.target.value }))} required maxLength={150} /><Select dark label="Tipo" name="tipo" value={form.tipo} onChange={(e: ChangeEvent<HTMLSelectElement>) => setForm((f) => ({ ...f, tipo: e.target.value as TipoPuntoEntrega }))}><option value="PUNTO_ENTREGA">Punto de entrega</option><option value="RECOJO_TIENDA">Recojo en tienda</option></Select><Input dark label="Orden" name="orden" type="number" min="0" value={form.orden} onChange={(e: ChangeEvent<HTMLInputElement>) => setForm((f) => ({ ...f, orden: Number(e.target.value) }))} required /><label className="flex items-center gap-3 self-end rounded-md border border-gray-700 px-3 py-2.5 text-sm text-gray-200"><input type="checkbox" checked={form.activo} onChange={(e: ChangeEvent<HTMLInputElement>) => setForm((f) => ({ ...f, activo: e.target.checked }))} className="h-5 w-5 accent-primary" />Activo</label><Textarea dark label="Descripción (opcional)" name="descripcion" rows={3} value={form.descripcion || ''} onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setForm((f) => ({ ...f, descripcion: e.target.value }))} maxLength={1000} className="sm:col-span-2" /><Input dark label="Referencia (opcional)" name="referencia" value={form.referencia || ''} onChange={(e: ChangeEvent<HTMLInputElement>) => setForm((f) => ({ ...f, referencia: e.target.value }))} maxLength={255} className="sm:col-span-2" /><div className="flex justify-end sm:col-span-2"><Button type="submit" loading={crear.isPending || actualizar.isPending}>Guardar punto</Button></div></form></Card> : null}
+  </div>;
+}

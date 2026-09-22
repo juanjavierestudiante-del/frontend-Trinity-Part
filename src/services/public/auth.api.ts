@@ -44,3 +44,10 @@ export const obtenerSesionActual = async (): Promise<AuthResponse> => {
 export const cerrarSesion = async () => {
   await publicApi.post('/auth/logout');
 };
+export const actualizarPerfil = async (body: {
+  nombre: string;
+  apellido: string | null;
+  telefono: string;
+}): Promise<AuthResponse> => (await publicApi.patch('/auth/profile', body)).data;
+export const loginGoogle = async (credential: string): Promise<AuthResponse> => (await publicApi.post('/auth/google', { credential })).data;
+export const completarPerfil = async (telefono: string): Promise<AuthResponse> => (await publicApi.patch('/auth/complete-profile', { telefono })).data;

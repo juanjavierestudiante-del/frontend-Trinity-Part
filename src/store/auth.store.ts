@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { cerrarSesion, loginPublico, obtenerSesionActual, registrarUsuario } from '../services/public/auth.api';
+import { actualizarPerfil, cerrarSesion, completarPerfil, loginGoogle, loginPublico, obtenerSesionActual, registrarUsuario } from '../services/public/auth.api';
 import { loginAdmin, type UsuarioAdmin } from '../services/admin/auth.api';
 
 export interface AuthUser {
@@ -26,6 +26,9 @@ interface AuthState {
   loginAdmin: (email: string, password: string) => Promise<AuthUser>;
   register: (input: { nombre: string; apellido: string; email: string; telefono: string; password: string }) => Promise<AuthUser>;
   logout: () => Promise<void>;
+  googleLogin: (credential: string) => Promise<AuthUser>;
+  completeProfile: (telefono: string) => Promise<AuthUser>;
+  updateProfile: (input: { nombre: string; apellido: string | null; telefono: string }) => Promise<AuthUser>;
 }
 
 let initializePromise: Promise<void> | null = null;
@@ -78,4 +81,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({ user: null, isAuthenticated: false, isLoading: false });
     }
   },
+  googleLogin: async (credential) => { const { usuario } = await loginGoogle(credential); set({ user: usuario, isAuthenticated: true, isLoading: false }); return usuario; },
+  completeProfile: async (telefono) => { const { usuario } = await completarPerfil(telefono); set({ user: usuario, isAuthenticated: true, isLoading: false }); return usuario; },
+  updateProfile: async (input) => { const { usuario } = await actualizarPerfil(input); set({ user: usuario, isAuthenticated: true, isLoading: false }); return usuario; },
 }));

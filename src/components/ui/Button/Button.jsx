@@ -61,7 +61,7 @@ export default function Button(props) {
       ) : Icon ? (
         <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
       ) : null}
-      {children && <span>{children}</span>}
+      {children}
     </Component>
   )
 }

@@ -18,7 +18,7 @@ interface Props {
 }
 
 export default function VarianteImagenes({ idVariante, idProducto, imagenes }: Props) {
-  const usuario = useAuthStore((state) => state.usuario)
+  const usuario = useAuthStore((state) => state.user)
   const isAdmin = usuario?.rol === 'ADMIN'
   const { mutate: subirMultiples } = useSubirMultiplesImagenesVariante(idProducto)
   const { mutate: eliminar } = useEliminarImagenVariante(idProducto)

@@ -23,15 +23,13 @@ export default function Carrito() {
     () =>
       (data?.items || []).map((d) => ({
         id: d.idDetalle,
-        idVariante: d.variante?.idVariante || d.idVariante,
-        nombre: d.variante?.producto?.nombre || d.variante?.sku || "Producto",
+        idVariante: d.idVariante,
+        nombre: d.producto?.nombre || d.sku || "Producto",
         cantidad: d.cantidad || 1,
-        precio: Number(d.variante?.precioOferta || d.variante?.precioVenta) || 0,
-        imagen:
-          d.variante?.imagenes?.find((i) => i.principal)?.url ??
-          d.variante?.imagenes?.[0]?.url ??
-          d.variante?.producto?.imagenes?.find((i) => i.principal)?.url,
-        sku: d.variante?.sku,
+        precio: Number(d.precioPorPresentacion) || 0,
+        subtotal: Number(d.subtotal) || 0,
+        imagen: d.producto?.imagen,
+        sku: d.sku,
         raw: d,
       })),
     [data]
@@ -55,7 +53,10 @@ export default function Carrito() {
     );
   };
 
-  const total = itemsCarrito.reduce((sum, item) => sum + item.cantidad * item.precio, 0);
+  const total = Number(data?.total) || 0;
+  const gruposConPrecioCombinado = (data?.gruposPrecio || []).filter((grupo) =>
+    grupo.idsVariantes?.length > 1 && grupo.cantidadMinimaAplicada > 1
+  );
 
   return (
     <div className="min-h-screen">
@@ -104,9 +105,11 @@ export default function Carrito() {
                           name: item.nombre,
                           quantity: item.cantidad,
                           price: item.precio,
+                          subtotal: item.subtotal,
                           image: item.imagen,
                           raw: item.raw,
                         }}
+                        pending={typeof item.id !== "number"}
                         onRemove={eliminarDetalle}
                         onQuantityChange={cambiarCantidad}
                       />
@@ -114,9 +117,19 @@ export default function Carrito() {
                   </tbody>
                 </table>
               </div>
+              {gruposConPrecioCombinado.length > 0 ? (
+                <div className="space-y-2 border-t border-primary/10 bg-primary-light/15 px-5 py-4 text-sm text-primary-dark">
+                  {gruposConPrecioCombinado.map((grupo) => (
+                    <p key={`${grupo.idProducto}-${grupo.idListaPrecioEfectiva}`}>
+                      <span className="font-semibold">Precio por cantidad aplicado:</span>{' '}
+                      {grupo.cantidadTotalGrupo} presentaciones combinadas. Desde {grupo.cantidadMinimaAplicada}: Bs. {Number(grupo.precioPorPresentacion).toFixed(2)} c/u.
+                    </p>
+                  ))}
+                </div>
+              ) : null}
             </Card>
 
-            <CartSummary total={total} />
+            <CartSummary total={total} sincronizando={itemsCarrito.some((item) => typeof item.id !== "number")} />
           </div>
         )}
       </div>
