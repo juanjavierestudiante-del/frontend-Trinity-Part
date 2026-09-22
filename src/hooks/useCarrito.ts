@@ -84,7 +84,6 @@ export const useAgregarAlCarrito = () => {
       await qc.cancelQueries({ queryKey: contadorKey(idUsuario) });
       const carritoAnterior = qc.getQueryData<CarritoData>(carritoKey(idUsuario));
       const contadorAnterior = qc.getQueryData<ContadorCarrito>(contadorKey(idUsuario));
-      const yaExistia = Boolean(carritoAnterior?.items?.some((item) => item.idVariante === idVariante));
       qc.setQueryData<CarritoData>(carritoKey(idUsuario), (carrito) => {
         // Sólo modificamos una vista que ya existe o una línea cuya información
         // mínima vino desde la PDP. Así /carrito puede abrirse de inmediato sin
@@ -103,7 +102,7 @@ export const useAgregarAlCarrito = () => {
         if (!optimisticItem) return carrito;
         return { ...carrito, items: [...items, { ...optimisticItem, cantidad }] };
       });
-      ajustarContador(qc, idUsuario, yaExistia ? 0 : 1);
+      ajustarContador(qc, idUsuario, cantidad);
       return {
         carritoAnterior,
         contadorAnterior,
@@ -138,9 +137,6 @@ export const useAgregarAlCarrito = () => {
             : item),
         };
       });
-      // Un alta puede cambiar el umbral y el precio de otras variantes de la
-      // misma lista. Reconciliamos toda la vista después de confirmar.
-      invalidarCarrito(qc, user?.id_usuario);
     },
   });
 };
@@ -152,13 +148,18 @@ export const useActualizarCantidadCarrito = () => {
 
   return useMutation({
     scope: { id: `carrito-cantidad-${idUsuario ?? 'anonimo'}` },
-    mutationFn: ({ idDetalle, cantidad }: { idDetalle: number; cantidad: number }) =>
-      actualizarCantidad(idDetalle, cantidad),
-    onMutate: async ({ idDetalle, cantidad }) => {
+    mutationFn: ({ idDetalle, cantidad }: { idDetalle: number; delta: number; cantidad?: number }) =>
+      actualizarCantidad(idDetalle, cantidad!),
+    onMutate: async (variables) => {
+      const { idDetalle, delta } = variables;
       await qc.cancelQueries({ queryKey: carritoKey(idUsuario) });
       await qc.cancelQueries({ queryKey: contadorKey(idUsuario) });
       const anterior = qc.getQueryData<CarritoData>(carritoKey(idUsuario));
       const contadorAnterior = qc.getQueryData<ContadorCarrito>(contadorKey(idUsuario));
+      const itemAnterior = anterior?.items?.find((item) => item.idDetalle === idDetalle);
+      const cantidadAnterior = itemAnterior?.cantidad ?? 1;
+      const cantidad = Math.max(1, cantidadAnterior + delta);
+      variables.cantidad = cantidad;
       qc.setQueryData<CarritoData>(carritoKey(idUsuario), (data) => {
         if (!data?.items) return data;
         return {
@@ -168,6 +169,7 @@ export const useActualizarCantidadCarrito = () => {
           ),
         };
       });
+      ajustarContador(qc, idUsuario, cantidad - cantidadAnterior);
       return { anterior, contadorAnterior };
     },
     onError: (_err, _vars, contexto) => {
@@ -178,7 +180,7 @@ export const useActualizarCantidadCarrito = () => {
         qc.setQueryData(contadorKey(idUsuario), contexto.contadorAnterior);
       }
     },
-    onSuccess: () => invalidarCarrito(qc, idUsuario),
+    onSuccess: () => qc.invalidateQueries({ queryKey: carritoKey(idUsuario) }),
   });
 };
 
@@ -195,6 +197,7 @@ export const useEliminarDelCarrito = () => {
       await qc.cancelQueries({ queryKey: contadorKey(idUsuario) });
       const anterior = qc.getQueryData<CarritoData>(carritoKey(idUsuario));
       const contadorAnterior = qc.getQueryData<ContadorCarrito>(contadorKey(idUsuario));
+      const cantidadEliminada = anterior?.items?.find((item) => item.idDetalle === idDetalle)?.cantidad ?? 0;
       qc.setQueryData<CarritoData>(carritoKey(idUsuario), (data) => {
         if (!data?.items) return data;
         return {
@@ -202,7 +205,7 @@ export const useEliminarDelCarrito = () => {
           items: data.items.filter((item) => item.idDetalle !== idDetalle),
         };
       });
-      ajustarContador(qc, idUsuario, -1);
+      ajustarContador(qc, idUsuario, -cantidadEliminada);
       return { anterior, contadorAnterior };
     },
     onError: (_err, _vars, contexto) => {
@@ -213,7 +216,6 @@ export const useEliminarDelCarrito = () => {
         qc.setQueryData(contadorKey(idUsuario), contexto.contadorAnterior);
       }
     },
-    onSuccess: () => invalidarCarrito(qc, idUsuario),
   });
 };
 

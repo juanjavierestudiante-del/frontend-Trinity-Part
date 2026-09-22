@@ -13,7 +13,7 @@ interface Props {
 }
 
 function getStockBadge(producto: Producto): { label: string; variant: string } | null {
-  const variantesActivas = producto.variantes.filter((v) => v.estado === 'Activo');
+  const variantesActivas = (producto.variantes ?? []).filter((v) => v.estado === 'Activo');
   if (variantesActivas.length === 0) return null;
 
   const todoAgotado = variantesActivas.every(
@@ -33,7 +33,7 @@ const BADGE_STYLES: Record<string, string> = {
 }
 
 export default function ProductoCard({ producto, badge: externalBadge, onAddToCart }: Props) {
-  const imagen = producto.imagenes.find((i) => i.principal);
+  const imagen = (producto.imagenes ?? []).find((i) => i.principal) ?? producto.imagenes?.[0];
   const precioDesde = producto.precioDesde;
 
   const autoBadge = getStockBadge(producto);
@@ -76,13 +76,13 @@ export default function ProductoCard({ producto, badge: externalBadge, onAddToCa
       </Link>
 
       {/* Contenido */}
-      <div className="p-4">
+      <div className="min-w-0 p-3 sm:p-4">
         <Link to={`/productos/${producto.slug}`} className="block">
-          <h3 className="text-base font-extrabold text-ink font-display leading-tight line-clamp-2">
+          <h3 className="min-w-0 text-sm font-extrabold sm:text-base text-ink font-display leading-tight line-clamp-2">
             {producto.nombre}
           </h3>
           {producto.descripcionCorta && (
-            <p className="mt-1.5 text-sm text-muted leading-5 line-clamp-2">
+            <p className="mt-1 text-xs sm:mt-1.5 sm:text-sm text-muted leading-5 line-clamp-2">
               {producto.descripcionCorta}
             </p>
           )}
@@ -91,7 +91,7 @@ export default function ProductoCard({ producto, badge: externalBadge, onAddToCa
         <div className="flex items-end justify-between mt-3 gap-2">
           <div>
             {precioDesde != null && (
-              <p className="text-lg font-black tracking-tight text-primary font-display">
+              <p className="text-base font-black sm:text-lg tracking-tight text-primary font-display">
                 {producto.tieneVariacionPrecio ? 'Desde ' : ''}Bs. {Number(precioDesde).toFixed(2)}
               </p>
             )}

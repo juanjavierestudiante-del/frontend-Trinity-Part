@@ -25,7 +25,7 @@ const prepararCheckout = async (
   await page.route('**/api/**', async (route) => {
     const path = new URL(route.request().url()).pathname;
     if (path.endsWith('/auth/me')) return route.fulfill({ json: { usuario } });
-    if (path.endsWith('/carrito')) return route.fulfill({ json: { items: [{ idDetalle: 1, idVariante: 1, cantidad: 1, variante: { idVariante: 1, sku: 'SKU-1', producto: { nombre: 'Producto de prueba' }, imagenes: [] } }] } });
+    if (path.endsWith('/carrito')) return route.fulfill({ json: { idCarrito: 1, items: [{ idDetalle: 1, idVariante: 1, cantidad: 1, precioPorPresentacion: String(total), subtotal: String(total), stock: 1, sku: 'SKU-1', producto: { idProducto: 1, nombre: 'Producto de prueba', slug: 'producto-de-prueba', imagen: null } }], total: String(total), gruposPrecio: [] } });
     if (path.endsWith('/entrega/puntos')) return route.fulfill({ json: puntos });
     if (path.endsWith('/entrega/configuracion')) return route.fulfill({ json: configuracion });
     if (path.endsWith('/pedidos')) return route.fulfill({ status: 201, json: pedido });

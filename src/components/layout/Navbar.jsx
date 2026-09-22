@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { Menu, X, Search, ShoppingCart, User, LogOut, Settings } from "lucide-react";
 import { useAuthStore } from "../../store/auth.store";
 import { useContadorCarrito } from "../../hooks/useCarrito";
@@ -7,12 +7,20 @@ import Button from "../ui/Button/Button";
 
 export default function Nav() {
   const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const logo = "https://res.cloudinary.com/dslh6rwix/image/upload/q_auto/f_auto/v1780528934/logo_eolnrp.png";
   const { data: contador } = useContadorCarrito();
   const cartCount = contador?.items ?? 0;
   const isAdmin = user?.rol === "ADMIN";
+
+  const submitSearch = (event) => {
+    event.preventDefault();
+    const query = search.trim();
+    if (query) navigate(`/catalogo?q=${encodeURIComponent(query)}`);
+  };
 
   const navLinks = [
     { to: "/", label: "Inicio" },
@@ -24,16 +32,16 @@ export default function Nav() {
   return (
     <nav className="sticky top-0 z-50 text-white border-b shadow-lg backdrop-blur-md bg-gradient-to-r from-primary/90 via-primary to-secondary/90 border-white/10">
       <div className="w-full px-4 mx-auto max-w-7xl">
-        <div className="grid items-center grid-cols-2 lg:grid-cols-3 h-[5.3rem]">
+        <div className="grid h-[5.3rem] grid-cols-2 items-center lg:grid-cols-3">
 
           {/* Logo */}
-          <div className="flex justify-start">
+          <div className="relative z-10 flex justify-start">
             <Link to="/" className="flex items-center gap-3 group">
               <div className="relative">
                 <div className="inset-0 transition duration-300 rounded-full opacity-75 bg-gradient-to-r from-secondary/80 to-primary-light blur group-hover:opacity-100"></div>
                 <img
                   src={logo}
-                  className="w-44"
+                  className="w-44 max-w-none"
                   alt="Trinity Party & Events"
                 />
               </div>
@@ -65,19 +73,23 @@ export default function Nav() {
           </div>
 
           {/* Acciones */}
-          <div className="flex items-center justify-end gap-2 sm:gap-3">
+          <div className="relative z-20 flex items-center justify-end gap-2 sm:gap-3">
             {/* Búsqueda desktop */}
-            <div className="relative hidden md:block group">
+            <form onSubmit={submitSearch} className="relative hidden md:block group">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/60 transition-colors group-focus-within:text-white" />
               <input
                 type="search"
                 placeholder="Buscar..."
                 aria-label="Buscar productos"
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
                 className="w-40 xl:w-48 pl-9 pr-3 py-2 text-sm text-white placeholder-white/60 rounded-full bg-white/15 border border-white/20 backdrop-blur-md transition-all duration-300 focus:bg-white/20 focus:border-white/40 focus:outline-none focus:ring-2 focus:ring-white/30 focus:w-56"
               />
-            </div>
+            </form>
 
             <Button
+              as={Link}
+              to="/catalogo"
               className="text-white hover:bg-white/15 md:hidden"
               variant="ghost"
               size="icon-lg"
@@ -89,16 +101,16 @@ export default function Nav() {
 
             {/* Panel Admin (solo para ADMIN) */}
             {isAdmin && (
-              <a
-                href="/admin"
+              <Link
+                to="/admin"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold transition-all duration-300 rounded-full bg-white/15 hover:bg-white/25 border border-white/20"
+                className="hidden lg:flex items-center gap-1.5 px-3 py-2 text-sm font-semibold transition-all duration-300 rounded-full bg-white/15 hover:bg-white/25 border border-white/20"
                 title="Panel Administrador"
               >
                 <Settings className="w-4 h-4" />
                 <span className="hidden xl:inline">Admin</span>
-              </a>
+              </Link>
             )}
 
             {/* Carrito */}
@@ -106,7 +118,7 @@ export default function Nav() {
               <Link
                 to="/carrito"
                 className="relative p-2.5 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300"
-                aria-label={`Carrito de compras (${cartCount} variantes)`}
+                aria-label={`Carrito de compras (${cartCount} artículos)`}
               >
                 <ShoppingCart className="w-5 h-5" />
                 <span className="absolute -top-1 -right-1 bg-secondary text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-primary">
@@ -117,7 +129,7 @@ export default function Nav() {
 
             {/* Usuario logueado */}
             {user ? (
-              <div className="flex items-center gap-2">
+              <div className="hidden items-center gap-2 lg:flex">
                 <Link
                   to="/perfil"
                   className="flex items-center gap-2 px-3 py-2 transition-all duration-300 rounded-full bg-white/10 hover:bg-white/20"
@@ -137,7 +149,7 @@ export default function Nav() {
                 </Button>
               </div>
             ) : (
-              <div className="flex items-center gap-2">
+              <div className="hidden items-center gap-2 lg:flex">
                 <Button
                   as={Link}
                   to="/login"
@@ -200,8 +212,8 @@ export default function Nav() {
 
               {/* Panel Admin en móvil */}
               {isAdmin && (
-                <a
-                  href="/admin"
+                <Link
+                  to="/admin"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 px-4 py-3 font-medium text-white transition-colors rounded-md hover:bg-white/10"
@@ -209,7 +221,7 @@ export default function Nav() {
                 >
                   <Settings className="w-4 h-4" />
                   Panel Admin
-                </a>
+                </Link>
               )}
 
               {/* Auth links en móvil */}
@@ -236,6 +248,17 @@ export default function Nav() {
                     Registrarse
                   </Button>
                 </>
+              )}
+
+              {user && (
+                <Link
+                  to="/perfil"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-2 rounded-md px-4 py-3 font-medium text-white transition-colors hover:bg-white/10"
+                >
+                  <User className="h-4 w-4" />
+                  Mi perfil
+                </Link>
               )}
 
               {user && (

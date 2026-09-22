@@ -7,15 +7,16 @@ import SelectorCantidad from './SelectorCantidad'
 import SelectorVariante from './SelectorVariante'
 import PrecioCantidadDisplay from './PrecioCantidadDisplay'
 
-export function ResumenProducto({ producto, variante, cantidad, precioPorPresentacion, subtotal, cantidadMinimaAplicada, reglasPrecio, className = '', mostrarDescripcion = true }) {
+export function ResumenProducto({ producto, variante, cantidad, precioPorPresentacion, subtotal, cantidadMinimaAplicada, reglasPrecio, stock, mostrarDisponibilidad = false, className = '', mostrarDescripcion = true }) {
   const mostrarResumen = producto.descripcionCorta && producto.descripcionCorta !== producto.descripcion
 
   return (
     <div className={`space-y-3 ${className}`}>
       <div>
         <p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-primary-dark">Producto</p>
-        <h1 className="text-3xl font-black leading-tight text-ink sm:text-4xl">{producto.nombre}</h1>
-        {mostrarDescripcion && mostrarResumen && <p className="mt-3 text-base leading-relaxed text-muted">{producto.descripcionCorta}</p>}
+        <h1 className="text-2xl font-black leading-tight text-ink sm:text-4xl">{producto.nombre}</h1>
+        {mostrarDescripcion && mostrarResumen && <p className="mt-2 text-sm leading-relaxed text-muted sm:mt-3 sm:text-base">{producto.descripcionCorta}</p>}
+        {mostrarDisponibilidad && variante && <p className={`mt-2 text-sm font-semibold ${stock > 0 ? 'text-emerald-700' : 'text-red-700'}`}>{stock > 0 ? `${stock} disponibles` : 'Agotado'}</p>}
       </div>
       {variante ? (
         <PrecioCantidadDisplay cantidad={cantidad} precioPorPresentacion={precioPorPresentacion} subtotal={subtotal} cantidadMinimaAplicada={cantidadMinimaAplicada} reglasPrecio={reglasPrecio} />
@@ -30,7 +31,7 @@ export default function BuyBox({ producto, variante, stock, cantidad, precioPorP
   const tieneSelectorAtributos = puedeUsarSelectorAtributos(producto.variantes)
 
   return (
-    <Card variant="highlight" accent="brand" padding="md" className="overflow-hidden">
+    <Card variant="highlight" accent="brand" padding="md" className="overflow-hidden sm:p-4">
       <div className="space-y-3">
         <ResumenProducto producto={producto} variante={variante} cantidad={cantidad} precioPorPresentacion={precioPorPresentacion} subtotal={subtotal} cantidadMinimaAplicada={cantidadMinimaAplicada} reglasPrecio={reglasPrecio} className="hidden lg:block" mostrarDescripcion={false} />
         {tieneSelectorAtributos ? (

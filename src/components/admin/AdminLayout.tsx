@@ -4,7 +4,7 @@ import SidebarItem from '../ui/Sidebar/SidebarItem'
 import SidebarItems from '../ui/Sidebar/SidebarItems'
 import SidebarItemGroup from '../ui/Sidebar/SidebarItemGroup'
 import SidebarLogo from '../ui/Sidebar/SidebarLogo'
-import { useNavigate, useLocation, Outlet } from 'react-router-dom'
+import { useNavigate, useLocation, Outlet, Link } from 'react-router-dom'
 import {
   HiChartPie,
   HiShoppingBag,
@@ -17,7 +17,11 @@ import {
 } from 'react-icons/hi'
 import { useAuthStore } from '../../store/auth.store'
 
-export default function AdminLayout() {
+interface Props {
+  children?: React.ReactNode
+}
+
+export default function AdminLayout({ children }: Props) {
   const navigate = useNavigate()
   const location = useLocation()
   const user = useAuthStore((state) => state.user)
@@ -31,16 +35,12 @@ export default function AdminLayout() {
     navigate('/admin/login')
   }
 
-  const handleNav = (path: string) => {
-    navigate(path)
-    setSidebarOpen(false)
-  }
-
   return (
     <div className="flex min-h-screen bg-gray-900">
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)}>
         <SidebarLogo
-          href="/admin/dashboard"
+          as={Link}
+          to="/admin/dashboard"
           img="https://res.cloudinary.com/dslh6rwix/image/upload/q_auto/f_auto/v1780528934/logo_eolnrp.png"
           imgAlt="Trinity Party"
         >
@@ -50,55 +50,61 @@ export default function AdminLayout() {
         <SidebarItems>
           <SidebarItemGroup>
             <SidebarItem
+              as={Link}
+              to="/admin/dashboard"
               icon={HiChartPie}
               active={isActive('/admin/dashboard')}
-              onClick={() => handleNav('/admin/dashboard')}
-              className="cursor-pointer"
+              onClick={() => setSidebarOpen(false)}
             >
               Dashboard
             </SidebarItem>
 
             <SidebarItem
+              as={Link}
+              to="/admin/productos"
               icon={HiShoppingBag}
               active={isActive('/admin/productos')}
-              onClick={() => handleNav('/admin/productos')}
-              className="cursor-pointer"
+              onClick={() => setSidebarOpen(false)}
             >
               Productos
             </SidebarItem>
 
             <SidebarItem
+              as={Link}
+              to="/admin/categorias"
               icon={HiTag}
               active={isActive('/admin/categorias')}
-              onClick={() => handleNav('/admin/categorias')}
-              className="cursor-pointer"
+              onClick={() => setSidebarOpen(false)}
             >
               Categorías
             </SidebarItem>
 
             <SidebarItem
+              as={Link}
+              to="/admin/inventario"
               icon={HiCube}
               active={isActive('/admin/inventario')}
-              onClick={() => handleNav('/admin/inventario')}
-              className="cursor-pointer"
+              onClick={() => setSidebarOpen(false)}
             >
               Inventario
             </SidebarItem>
 
             <SidebarItem
+              as={Link}
+              to="/admin/pedidos"
               icon={HiClipboardList}
               active={isActive('/admin/pedidos')}
-              onClick={() => handleNav('/admin/pedidos')}
-              className="cursor-pointer"
+              onClick={() => setSidebarOpen(false)}
             >
               Pedidos
             </SidebarItem>
 
             <SidebarItem
+              as={Link}
+              to="/admin/entregas"
               icon={HiTruck}
               active={isActive('/admin/entregas')}
-              onClick={() => handleNav('/admin/entregas')}
-              className="cursor-pointer"
+              onClick={() => setSidebarOpen(false)}
             >
               Entregas
             </SidebarItem>
@@ -134,8 +140,8 @@ export default function AdminLayout() {
           <span className="text-sm font-medium text-gray-200">Trinity Party</span>
         </div>
 
-        <main className="flex-1 p-3 sm:p-6 overflow-auto">
-          <Outlet />
+        <main className="min-w-0 flex-1 overflow-auto p-3 sm:p-6">
+          {children ?? <Outlet />}
         </main>
       </div>
     </div>

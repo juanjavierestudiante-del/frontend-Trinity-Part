@@ -17,9 +17,9 @@ export default function CartSummary({ total, sincronizando = false }) {
   };
 
   return (
-    <Card variant="highlight" padding="lg" className="h-fit sticky top-24">
-      <h3 className="text-2xl font-bold mb-6 font-display">RESUMEN</h3>
-      <div className="space-y-4 mb-6 pb-6 border-b">
+    <Card variant="highlight" padding="lg" className="h-fit p-4 sm:p-6 lg:sticky lg:top-24">
+      <h3 className="mb-4 text-xl font-bold sm:mb-6 sm:text-2xl font-display">RESUMEN</h3>
+      <div className="mb-5 space-y-3 border-b pb-5 sm:mb-6 sm:space-y-4 sm:pb-6">
         <div className="flex justify-between text-gray-700">
           <span>Subtotal:</span>
           <span>Bs. {subtotal.toFixed(2)}</span>
@@ -29,7 +29,7 @@ export default function CartSummary({ total, sincronizando = false }) {
           <span>Bs. 0.00</span>
         </div>
       </div>
-      <div className="flex justify-between text-2xl font-black mb-6">
+      <div className="flex justify-between mb-5 text-xl font-black sm:mb-6 sm:text-2xl">
         <span>TOTAL:</span>
         <span className="text-primary">Bs. {subtotal.toFixed(2)}</span>
       </div>

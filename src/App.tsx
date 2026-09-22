@@ -3,8 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import { useAuthStore } from "./store/auth.store";
 
-import Navbar from "./components/layout/Navbar";
-import Footer from "./components/layout/Footer";
+import PublicLayout from "./components/layout/PublicLayout";
 import Loader from "./components/ui/Loader/Loader";
 
 // ====================
@@ -47,6 +46,7 @@ const CategoriaFormPage = lazy(() => import("./pages/admin/CategoriaFormPage"));
 const InventarioPage = lazy(() => import("./pages/admin/InventarioPage"));
 const PedidosPage = lazy(() => import("./pages/admin/PedidosPage"));
 const EntregasPage = lazy(() => import("./pages/admin/EntregasPage"));
+const NotFound = lazy(() => import("./pages/NotFound/NotFound"));
 
 // Fallback de carga consistente con el estilo del proyecto (spinner)
 function PageFallback() {
@@ -69,32 +69,27 @@ export default function App() {
 
   return (
     <BrowserRouter>
-        <Navbar />
-
         <Suspense fallback={<PageFallback />}>
           <Routes>
-            {/* Home */}
-            <Route path="/" element={<Home />} />
+            <Route element={<PublicLayout />}>
+              <Route path="/" element={<Home />} />
+              <Route path="/catalogo" element={<Catalogo />} />
+              <Route path="/categoria/:slug" element={<Catalogo />} />
+              <Route path="/productos/:slug" element={<PaginaProducto />} />
+              <Route path="/carrito" element={<Carrito />} />
+              <Route path="/contactos" element={<Contacto />} />
+              <Route path="/nosotros" element={<Nosotros />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/registro" element={<Registro />} />
+              <Route path="/completar-cuenta" element={<CompletarCuenta />} />
+              <Route path="/perfil" element={<Perfil />} />
+              <Route path="/checkout" element={<Checkout />} />
+              <Route path="/checkout/confirmacion" element={<Confirmacion />} />
+              <Route path="*" element={<NotFound />} />
+            </Route>
 
-            {/* Catálogo */}
-            <Route path="/catalogo" element={<Catalogo />} />
-            <Route path="/categoria/:slug" element={<Catalogo />} />
-            <Route path="/productos/:slug" element={<PaginaProducto />} />
-
-            {/* Carrito, Cuenta */}
-            <Route path="/carrito" element={<Carrito />} />
-            <Route path="/contactos" element={<Contacto />} />
-            <Route path="/nosotros" element={<Nosotros />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/registro" element={<Registro />} />
-            <Route path="/completar-cuenta" element={<CompletarCuenta />} />
-            <Route path="/perfil" element={<Perfil />} />
-            <Route path="/checkout" element={<Checkout />} />
-            <Route path="/checkout/confirmacion" element={<Confirmacion />} />
-
-            {/* Admin: Login */}
             <Route path="/admin/login" element={<LoginPage />} />
-            <Route path="/admin/unauthorized" element={<UnauthorizedPage />} />
+            <Route path="/admin/unauthorized" element={<AdminLayout><UnauthorizedPage /></AdminLayout>} />
 
             {/* Admin: Rutas protegidas con layout */}
             <Route
@@ -117,11 +112,11 @@ export default function App() {
               <Route path="inventario" element={<InventarioPage />} />
               <Route path="pedidos" element={<PedidosPage />} />
               <Route path="entregas" element={<EntregasPage />} />
+              <Route path="*" element={<NotFound admin />} />
             </Route>
           </Routes>
         </Suspense>
 
-        <Footer />
     </BrowserRouter>
   );
 }

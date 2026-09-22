@@ -26,7 +26,7 @@ export default function PrecioCantidadDisplay({ cantidad, precioPorPresentacion,
             <div>
               <p className="inline-flex rounded-full bg-rose-100 px-2.5 py-1 text-xs font-extrabold uppercase tracking-wide text-rose-700">Precio por cantidad · desde {cantidadMinimaAplicada}</p>
               <div className="mt-1 flex flex-wrap items-end gap-x-3 gap-y-1">
-                <p className="font-display text-4xl font-black leading-none text-rose-600 sm:text-5xl">{dinero(precioPorPresentacion)}</p>
+                <p className="font-display text-3xl font-black leading-none text-rose-600 sm:text-5xl">{dinero(precioPorPresentacion)}</p>
                 <span className="pb-0.5 text-sm font-medium text-muted">por presentación</span>
               </div>
             </div>
@@ -35,7 +35,7 @@ export default function PrecioCantidadDisplay({ cantidad, precioPorPresentacion,
           <div className="flex flex-wrap items-end gap-x-3 gap-y-1">
             <div>
               <p className="text-sm font-semibold text-muted">Precio normal</p>
-              <p className="font-display text-4xl font-black leading-none text-primary-dark sm:text-5xl">{dinero(precioPorPresentacion)}</p>
+              <p className="font-display text-3xl font-black leading-none text-primary-dark sm:text-5xl">{dinero(precioPorPresentacion)}</p>
             </div>
             <span className="pb-0.5 text-sm font-medium text-muted">por presentación</span>
           </div>

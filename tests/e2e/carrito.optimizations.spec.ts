@@ -17,22 +17,43 @@ const detalle = (cantidad: number) => ({
   idDetalle: 1,
   idVariante: 1,
   cantidad,
-  precio: '10',
+  idListaPrecioEfectiva: 1,
+  precioPorPresentacion: '10.00',
+  subtotal: (cantidad * 10).toFixed(2),
   stock: 10,
   sku: 'SKU-1',
   producto: { idProducto: 1, nombre: 'Producto de prueba', slug: 'producto-de-prueba', imagen: null },
 });
 
+const respuestaCarrito = (cantidad: number) => ({
+  idCarrito: 1,
+  items: [detalle(cantidad)],
+  totalItems: 1,
+  total: (cantidad * 10).toFixed(2),
+  gruposPrecio: [{
+    idProducto: 1,
+    idListaPrecioEfectiva: 1,
+    cantidadTotalGrupo: cantidad,
+    cantidadMinimaAplicada: 1,
+    precioPorPresentacion: '10.00',
+    subtotalGrupo: (cantidad * 10).toFixed(2),
+    idsVariantes: [1],
+    idsDetalles: [1],
+  }],
+});
+
 async function prepararCarrito(page: Page, onPut: (cantidad: number) => Promise<void> | void) {
+  let cantidadActual = 1;
   await page.route('**/api/**', async (route) => {
     const request = route.request();
     const path = new URL(request.url()).pathname;
     if (path.endsWith('/auth/me')) return route.fulfill({ json: { usuario } });
     if (path.endsWith('/carrito/count')) return route.fulfill({ json: { items: 1 } });
-    if (path.endsWith('/carrito') && request.method() === 'GET') return route.fulfill({ json: { items: [detalle(1)] } });
+    if (path.endsWith('/carrito') && request.method() === 'GET') return route.fulfill({ json: respuestaCarrito(cantidadActual) });
     if (path.endsWith('/carrito/items/1') && request.method() === 'PUT') {
       const { cantidad } = request.postDataJSON();
       await onPut(cantidad);
+      cantidadActual = cantidad;
       return route.fulfill({ json: { idDetalle: 1, idVariante: 1, cantidad } });
     }
     return route.fulfill({ status: 404, json: { error: 'No encontrado' } });
@@ -42,15 +63,17 @@ async function prepararCarrito(page: Page, onPut: (cantidad: number) => Promise<
 }
 
 async function prepararCarritoConCantidad(page: Page, cantidadInicial: number, onPut: (cantidad: number) => Promise<void> | void) {
+  let cantidadActual = cantidadInicial;
   await page.route('**/api/**', async (route) => {
     const request = route.request();
     const path = new URL(request.url()).pathname;
     if (path.endsWith('/auth/me')) return route.fulfill({ json: { usuario } });
     if (path.endsWith('/carrito/count')) return route.fulfill({ json: { items: cantidadInicial } });
-    if (path.endsWith('/carrito') && request.method() === 'GET') return route.fulfill({ json: { items: [detalle(cantidadInicial)] } });
+    if (path.endsWith('/carrito') && request.method() === 'GET') return route.fulfill({ json: respuestaCarrito(cantidadActual) });
     if (path.endsWith('/carrito/items/1') && request.method() === 'PUT') {
       const { cantidad } = request.postDataJSON();
       await onPut(cantidad);
+      cantidadActual = cantidad;
       return route.fulfill({ json: { idDetalle: 1, idVariante: 1, cantidad } });
     }
     return route.fulfill({ status: 404, json: { error: 'No encontrado' } });
@@ -127,6 +150,7 @@ test('agregar confirma y actualiza badge antes de que responda un POST lento', a
     categoria: { idCategoria: 1, nombre: 'Fiesta', slug: 'fiesta', imagenUrl: null, subcategorias: [] },
     estado: 'Activo',
     rating: 4,
+    listaPrecios: [{ idListaPrecio: 1, nombre: 'Principal', principal: true, reglas: [{ idReglaPrecio: 1, nombre: 'Normal', cantidadMinima: 1, precioPorPresentacion: '10.00', principal: true, activo: true, orden: 0 }] }],
     variantes: [{
       idVariante: 1,
       sku: 'SKU-1',
@@ -146,6 +170,10 @@ test('agregar confirma y actualiza badge antes de que responda un POST lento', a
     if (path.endsWith('/auth/me')) return route.fulfill({ json: { usuario } });
     if (path.endsWith('/carrito/count')) return route.fulfill({ json: { items: 0 } });
     if (path.endsWith('/productos/producto-prueba')) return route.fulfill({ json: producto });
+    if (path.endsWith('/productos/1/precio') && request.method() === 'POST') {
+      const linea = request.postDataJSON().lineas[0];
+      return route.fulfill({ json: { lineas: [{ ...linea, idListaPrecioEfectiva: 1, cantidadMinimaAplicada: 1, precioPorPresentacion: '10.00', subtotal: (linea.cantidad * 10).toFixed(2) }], total: (linea.cantidad * 10).toFixed(2) } });
+    }
     if (path.endsWith('/carrito/items') && request.method() === 'POST') {
       await new Promise((resolve) => setTimeout(resolve, 2_000));
       return route.fulfill({ status: 201, json: { idDetalle: 1, idVariante: 1, cantidad: 1 } });
@@ -154,7 +182,7 @@ test('agregar confirma y actualiza badge antes de que responda un POST lento', a
   });
 
   await page.goto('/productos/producto-prueba');
-  await page.getByRole('button', { name: 'Agregar al carrito' }).first().click();
+  await page.getByRole('button', { name: /^Agregar/ }).first().click();
 
   await expect(page.getByRole('button', { name: 'Producto agregado al carrito' }).first()).toBeVisible();
   await expect(page.getByLabel('Carrito de compras (1 artículos)')).toBeVisible();
@@ -167,6 +195,7 @@ test('agregar confirma y actualiza badge antes de que responda un POST lento', a
 test('error al agregar revierte badge y botón después del feedback optimista', async ({ page }) => {
   const producto = {
     idProducto: 1, idAtributoPrincipal: null, atributoPrincipal: null, nombre: 'Producto de prueba', slug: 'producto-prueba', descripcionCorta: null, descripcion: null, destacado: false, imagenes: [], categoria: { idCategoria: 1, nombre: 'Fiesta', slug: 'fiesta', imagenUrl: null, subcategorias: [] }, estado: 'Activo', rating: 4,
+    listaPrecios: [{ idListaPrecio: 1, nombre: 'Principal', principal: true, reglas: [{ idReglaPrecio: 1, nombre: 'Normal', cantidadMinima: 1, precioPorPresentacion: '10.00', principal: true, activo: true, orden: 0 }] }],
     variantes: [{ idVariante: 1, sku: 'SKU-1', cantidadContenido: 1, estado: 'Activo', inventario: { stockActual: 10, stockMinimo: 0 }, imagenes: [], varianteAtributo: [], marca: null, unidad: null }],
   };
   await page.route('**/api/**', async (route) => {
@@ -175,6 +204,10 @@ test('error al agregar revierte badge y botón después del feedback optimista',
     if (path.endsWith('/auth/me')) return route.fulfill({ json: { usuario } });
     if (path.endsWith('/carrito/count')) return route.fulfill({ json: { items: 0 } });
     if (path.endsWith('/productos/producto-prueba')) return route.fulfill({ json: producto });
+    if (path.endsWith('/productos/1/precio') && request.method() === 'POST') {
+      const linea = request.postDataJSON().lineas[0];
+      return route.fulfill({ json: { lineas: [{ ...linea, idListaPrecioEfectiva: 1, cantidadMinimaAplicada: 1, precioPorPresentacion: '10.00', subtotal: (linea.cantidad * 10).toFixed(2) }], total: (linea.cantidad * 10).toFixed(2) } });
+    }
     if (path.endsWith('/carrito/items') && request.method() === 'POST') {
       await new Promise((resolve) => setTimeout(resolve, 150));
       return route.fulfill({ status: 400, json: { error: 'Stock insuficiente' } });
@@ -182,10 +215,10 @@ test('error al agregar revierte badge y botón después del feedback optimista',
     return route.fulfill({ status: 404, json: { error: 'No encontrado' } });
   });
   await page.goto('/productos/producto-prueba');
-  await page.getByRole('button', { name: 'Agregar al carrito' }).first().click();
+  await page.getByRole('button', { name: /^Agregar/ }).first().click();
   await expect(page.getByRole('button', { name: 'Producto agregado al carrito' }).first()).toBeVisible();
   await expect(page.getByText('Stock insuficiente')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Agregar al carrito' }).first()).toBeVisible();
+  await expect(page.getByRole('button', { name: /^Agregar/ }).first()).toBeVisible();
   await expect(page.getByLabel('Carrito de compras (0 artículos)')).toBeVisible();
 });
 
@@ -205,7 +238,7 @@ test('un DELETE lento oculta el item y actualiza badge inmediatamente', async ({
     const path = new URL(request.url()).pathname;
     if (path.endsWith('/auth/me')) return route.fulfill({ json: { usuario } });
     if (path.endsWith('/carrito/count')) return route.fulfill({ json: { items: 1 } });
-    if (path.endsWith('/carrito') && request.method() === 'GET') return route.fulfill({ json: { items: [detalle(1)] } });
+    if (path.endsWith('/carrito') && request.method() === 'GET') return route.fulfill({ json: respuestaCarrito(1) });
     if (path.endsWith('/carrito/items/1') && request.method() === 'DELETE') {
       await new Promise((resolve) => setTimeout(resolve, 2_000));
       return route.fulfill({ status: 204 });

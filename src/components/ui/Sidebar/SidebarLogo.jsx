@@ -1,9 +1,11 @@
 export default function SidebarLogo(props) {
-  const { href, img, imgAlt, children } = props
+  const { as: Component = 'a', href, to, img, imgAlt, children, ...rest } = props
 
   return (
-    <a
-      href={href}
+    <Component
+      {...(href ? { href } : {})}
+      {...(to ? { to } : {})}
+      {...rest}
       className="flex items-center gap-3 px-4 py-4 border-b border-gray-700"
     >
       {img && (
@@ -12,6 +14,6 @@ export default function SidebarLogo(props) {
       {children && (
         <span className="text-lg font-bold text-white">{children}</span>
       )}
-    </a>
+    </Component>
   )
 }

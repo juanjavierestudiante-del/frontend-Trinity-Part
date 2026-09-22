@@ -65,7 +65,7 @@ function OpcionAtributo({
   imagen?: string;
   onClick: () => void;
 }) {
-  const base = 'inline-flex min-h-10 items-center justify-center gap-2 rounded-md border px-3 py-2 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-45';
+  const base = 'inline-flex min-h-11 sm:min-h-10 items-center justify-center gap-2 rounded-md border px-3 py-2 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-45';
   const estado = seleccionada
     ? 'border-primary bg-primary-light text-primary-dark shadow-brand'
     : 'border-white/50 bg-white/25 text-ink hover:border-primary/60 hover:bg-white/40';
@@ -73,7 +73,7 @@ function OpcionAtributo({
 
   if (atributo.tipoVisualizacion === 'color' && valor.visualValue) {
     return (
-      <button type="button" onClick={onClick} disabled={disabled} aria-pressed={seleccionada} aria-label={`${atributo.nombre}: ${valor.valor}`} title={valor.valor} className={`h-10 w-10 rounded-full border-2 p-1 ${seleccionada ? 'border-primary ring-2 ring-primary/25 ring-offset-2 ring-offset-primary-light' : 'border-white/70'} disabled:cursor-not-allowed disabled:opacity-45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2`}>
+      <button type="button" onClick={onClick} disabled={disabled} aria-pressed={seleccionada} aria-label={`${atributo.nombre}: ${valor.valor}`} title={valor.valor} className={`h-11 w-11 sm:h-10 sm:w-10 rounded-full border-2 p-1 ${seleccionada ? 'border-primary ring-2 ring-primary/25 ring-offset-2 ring-offset-primary-light' : 'border-white/70'} disabled:cursor-not-allowed disabled:opacity-45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2`}>
         <span className="flex h-full w-full items-center justify-center rounded-full border border-black/15" style={{ backgroundColor: valor.visualValue }}>
           {seleccionada && <Check className="h-4 w-4 text-white drop-shadow" aria-hidden="true" />}
         </span>

@@ -20,6 +20,7 @@ export const useCategorias = () => {
 interface FiltrosProductos {
   categoria?: string;
   q?: string; // búsqueda en tiempo real
+  page?: number;
 }
 
 export const useProductos = (filtros?: FiltrosProductos) => {
