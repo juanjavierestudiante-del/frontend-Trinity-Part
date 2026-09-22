@@ -5,12 +5,15 @@ export default function SidebarItem(props) {
     active = false,
     onClick,
     className = '',
+    as: Component = 'button',
+    ...rest
   } = props
 
   return (
-    <button
-      type="button"
+    <Component
+      {...(Component === 'button' ? { type: 'button' } : {})}
       onClick={onClick}
+      {...rest}
       className={`flex w-full min-w-0 items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm font-medium leading-5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
         active
           ? 'bg-primary/20 text-primary-light'
@@ -19,6 +22,6 @@ export default function SidebarItem(props) {
     >
       {Icon && <Icon className="h-5 w-5 shrink-0" />}
       <span className="min-w-0 truncate">{children}</span>
-    </button>
+    </Component>
   )
 }

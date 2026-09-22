@@ -56,7 +56,7 @@ async function preparar(page: Page, onPedido?: (body: Record<string, unknown>) =
     const path = new URL(request.url()).pathname;
     if (path.endsWith('/auth/me')) return route.fulfill({ json: { usuario } });
     if (path.endsWith('/productos') && request.method() === 'GET') return route.fulfill({ json: { items: [producto, { ...producto, idProducto: 902, nombre: 'Producto E2E Uniforme', slug: 'producto-e2e-uniforme', precioDesde: '20.00', tieneVariacionPrecio: false }], total: 2, page: 1, limit: 20, totalPages: 1 } });
-    if (path.endsWith('/carrito/count')) return route.fulfill({ json: { items: 3 } });
+    if (path.endsWith('/carrito/count')) return route.fulfill({ json: { items: 7 } });
     if (path.endsWith('/carrito') && request.method() === 'GET') return route.fulfill({ json: carrito(verde) });
     if (path.endsWith('/entrega/puntos')) return route.fulfill({ json: [{ idPuntoEntrega: 1, nombre: 'Punto E2E', descripcion: null, referencia: null, tipo: 'PUNTO_ENTREGA', orden: 1 }] });
     if (path.endsWith('/entrega/configuracion')) return route.fulfill({ json: { deliveryHabilitado: false, montoMinimoDelivery: '150.00', mensajeDelivery: null } });
@@ -88,7 +88,7 @@ test('el carrito explica el umbral compartido y lo recalcula para todas las lín
   await expect(page.getByText(/5 presentaciones combinadas/)).toBeVisible();
   await expect(page.getByText('Bs. 18.00 por presentación')).toHaveCount(2);
   await expect(page.getByText('Bs. 25.00 por presentación')).toBeVisible();
-  await expect(page.getByLabel('Carrito de compras (3 variantes)')).toBeVisible();
+  await expect(page.getByLabel('Carrito de compras (7 artículos)')).toBeVisible();
 
   await page.getByLabel('Disminuir cantidad').nth(1).click();
   await expect(page.getByText('Bs. 20.00 por presentación')).toHaveCount(2);

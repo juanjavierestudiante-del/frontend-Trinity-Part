@@ -17,6 +17,7 @@ export const getCategorias = async (): Promise<Categoria[]> => {
 export const getProductos = async (params?: {
   categoria?: string; // slug de la categoría (ej: "globos")
   q?: string;         // texto de búsqueda (ej: "globo rojo")
+  page?: number;       // página solicitada cuando el API devuelve resultados paginados
 }): Promise<ResultadoPaginado<Producto>> => {
   const { data } = await publicApi.get('/productos', { params });
   return data;
