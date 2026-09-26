@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ChevronDown } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import { useProducto, usePrecioProducto } from '../../hooks/useCatalogo';
 import type { ImagenProducto, ImagenVariante, Producto, Variante } from '../../types/catalogo.types';
@@ -7,7 +8,6 @@ import Card from '../../components/ui/Card/Card';
 import Seo from '../../components/seo/Seo';
 import ProductoGaleria from '../../components/producto/ProductoGaleria';
 import BuyBox, { ResumenProducto } from '../../components/producto/BuyBox';
-import BarraCompraMovil from '../../components/producto/BarraCompraMovil';
 import { useAuthStore } from '../../store/auth.store';
 import { useAgregarAlCarrito } from '../../hooks/useCarrito';
 import Alert from '../../components/ui/Alert/Alert';
@@ -166,17 +166,20 @@ export default function PaginaProducto() {
   };
 
   return (
-    <div className="min-h-screen px-4 py-8 pb-[calc(6.5rem+env(safe-area-inset-bottom))] sm:py-10 md:pb-10">
+    <div className="min-h-screen px-4 py-4 sm:py-10">
       <Seo title={`${productoSeguro.nombre} | Trinity Party & Events`} description={productoSeguro.descripcionCorta ?? productoSeguro.descripcion ?? undefined} jsonLd={jsonLdProduct} />
       <div className="mx-auto max-w-7xl">
         {error ? <Alert type="danger" className="mb-5" onDismiss={() => setError('')}>{error}</Alert> : null}
-        <div className="mb-6 lg:hidden"><ResumenProducto producto={productoSeguro} variante={varianteSeleccionada} cantidad={cantidad} precioPorPresentacion={precioLinea?.precioPorPresentacion} subtotal={precioLinea?.subtotal} cantidadMinimaAplicada={precioLinea?.cantidadMinimaAplicada} reglasPrecio={listaEfectiva?.reglas} stock={stock} mostrarDisponibilidad /></div>
-        <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(22rem,0.98fr)] lg:gap-x-10 lg:gap-y-10">
-          <ProductoGaleria imagenes={imagenes} nombre={productoSeguro.nombre} />
+        {/* Cambios móviles: imagen, resumen, compra y contenido progresivo en una columna. */}
+        <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(22rem,0.98fr)] lg:gap-x-10 lg:gap-y-10">
+          <ProductoGaleria key={imagenes.map((imagen) => `${imagen.idImagen}:${imagen.url}`).join('|')} imagenes={imagenes} nombre={productoSeguro.nombre} />
+          <div className="lg:hidden">
+            <ResumenProducto producto={productoSeguro} variante={varianteSeleccionada} cantidad={cantidad} precioPorPresentacion={precioLinea?.precioPorPresentacion} subtotal={precioLinea?.subtotal} cantidadMinimaAplicada={precioLinea?.cantidadMinimaAplicada} reglasPrecio={listaEfectiva?.reglas} stock={stock} modoMovil />
+          </div>
           <aside className="lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:sticky lg:top-24 lg:self-start">
             <BuyBox producto={productoSeguro} variante={varianteSeleccionada} stock={stock} cantidad={cantidad} precioPorPresentacion={precioLinea?.precioPorPresentacion} subtotal={precioLinea?.subtotal} cantidadMinimaAplicada={precioLinea?.cantidadMinimaAplicada} reglasPrecio={listaEfectiva?.reglas} onCantidadChange={handleCantidad} onSeleccionarVariante={seleccionarVariante} onSeleccionIncompleta={setAtributoPendiente} atributoPendiente={atributoPendiente} onSolicitarAtributo={solicitarAtributo} onAgregarAlCarrito={handleAgregarAlCarrito} agregado={agregado} usuario={user} />
           </aside>
-          <div className="space-y-6 lg:col-start-1 lg:row-start-2">
+          <div className="hidden space-y-6 lg:col-start-1 lg:row-start-2 lg:block">
             <Card variant="subtle" padding="lg">
               <h2 className="text-2xl font-bold text-ink">Descripción</h2>
               <p className="mt-4 whitespace-pre-line leading-relaxed text-muted">{productoSeguro.descripcion || productoSeguro.descripcionCorta || 'Sin descripción adicional.'}</p>
@@ -192,9 +195,45 @@ export default function PaginaProducto() {
               </dl>
             </Card>
           </div>
+          <div className="divide-y divide-white/55 lg:hidden">
+            <details className="group">
+              <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 py-3 text-sm font-bold text-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset">
+                <span>Descripción</span>
+                <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" aria-hidden="true" />
+              </summary>
+              <p className="whitespace-pre-line pb-4 text-sm leading-relaxed text-muted">{productoSeguro.descripcion || productoSeguro.descripcionCorta || 'Sin descripción adicional.'}</p>
+            </details>
+            <details className="group">
+              <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 py-3 text-sm font-bold text-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset">
+                <span>Detalles del producto</span>
+                <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" aria-hidden="true" />
+              </summary>
+              <dl className="divide-y divide-white/45 pb-3 text-sm">
+                {varianteSeleccionada && <div className="flex justify-between gap-4 py-3"><dt className="text-muted">Presentación</dt><dd className="text-right font-semibold text-ink">{varianteSeleccionada.cantidadContenido} {varianteSeleccionada.unidad?.nombre ?? varianteSeleccionada.unidad?.abreviatura ?? 'presentación'}</dd></div>}
+                {material && <div className="flex justify-between gap-4 py-3"><dt className="text-muted">Material</dt><dd className="text-right font-semibold text-ink">{material}</dd></div>}
+                {tamano && <div className="flex justify-between gap-4 py-3"><dt className="text-muted">Tamaño</dt><dd className="text-right font-semibold text-ink">{tamano}</dd></div>}
+                {productoSeguro.categoria?.nombre && <div className="flex justify-between gap-4 py-3"><dt className="text-muted">Categoría</dt><dd className="text-right font-semibold text-ink">{productoSeguro.categoria.nombre}</dd></div>}
+                {varianteSeleccionada?.sku && <div className="flex justify-between gap-4 py-3"><dt className="text-muted">SKU</dt><dd className="text-right font-semibold text-ink">{varianteSeleccionada.sku}</dd></div>}
+              </dl>
+            </details>
+            {listaEfectiva?.reglas && listaEfectiva.reglas.length > 1 && (
+              <details className="group">
+                <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 py-3 text-sm font-bold text-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset">
+                  <span>Ver precios por cantidad</span>
+                  <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" aria-hidden="true" />
+                </summary>
+                <div className="flex flex-wrap gap-2 pb-4">
+                  {[...listaEfectiva.reglas].sort((a, b) => a.cantidadMinima - b.cantidadMinima || a.orden - b.orden).map((regla) => (
+                    <span key={regla.idReglaPrecio} className="rounded-lg border border-white/60 bg-white/55 px-2.5 py-1.5 text-xs font-bold text-primary-dark">
+                      {regla.cantidadMinima}+ · Bs. {Number(regla.precioPorPresentacion).toFixed(2)}
+                    </span>
+                  ))}
+                </div>
+              </details>
+            )}
+          </div>
         </div>
       </div>
-      <BarraCompraMovil variante={varianteSeleccionada} stock={stock} cantidad={cantidad} subtotal={precioLinea?.subtotal} precioPorPresentacion={precioLinea?.precioPorPresentacion} usuario={user} atributoPendiente={atributoPendiente} onAgregarAlCarrito={handleAgregarAlCarrito} onElegirAtributo={solicitarAtributo} agregado={agregado} />
     </div>
   );
 }

@@ -2,7 +2,7 @@ import { CheckCircle2, ChevronDown } from 'lucide-react'
 
 const dinero = (valor) => `Bs. ${Number(valor).toFixed(2)}`
 
-export default function PrecioCantidadDisplay({ cantidad, precioPorPresentacion, subtotal, cantidadMinimaAplicada, reglasPrecio = [] }) {
+export default function PrecioCantidadDisplay({ cantidad, precioPorPresentacion, subtotal, cantidadMinimaAplicada, reglasPrecio = [], compacto = false, mostrarReglas = true }) {
   if (precioPorPresentacion == null) {
     return <p className="text-lg font-semibold text-muted">Calculando precio…</p>
   }
@@ -11,6 +11,17 @@ export default function PrecioCantidadDisplay({ cantidad, precioPorPresentacion,
   const normal = reglas.find((regla) => regla.cantidadMinima === 1)
   const aplicaPrecioCantidad = cantidadMinimaAplicada > 1
   const siguiente = reglas.find((regla) => regla.cantidadMinima > cantidad)
+
+  // Cambios móviles: el precio queda directo y sin subtítulos extra.
+  if (compacto) {
+    return (
+      <section aria-label="Precio del producto">
+        <p aria-live="polite" className={`font-display text-3xl font-black leading-none ${aplicaPrecioCantidad ? 'text-rose-600' : 'text-primary-dark'}`}>
+          {dinero(precioPorPresentacion)}
+        </p>
+      </section>
+    )
+  }
 
   return (
     <section aria-label="Precio por cantidad" className="space-y-3">
@@ -46,7 +57,7 @@ export default function PrecioCantidadDisplay({ cantidad, precioPorPresentacion,
         </div>
       </div>
 
-      {reglas.length > 1 ? (
+      {mostrarReglas && reglas.length > 1 ? (
         <details className="group rounded-xl border border-primary/15 bg-white/45">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-2.5 text-sm font-bold text-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset">
             <span>Ver precios por cantidad</span>
