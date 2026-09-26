@@ -6,7 +6,7 @@ import Seo from "../../components/seo/Seo";
 
 export default function Home() {
   return (
-    <main className="min-h-screen">
+    <div className="min-h-screen">
       <Seo
         title="Trinity Party & Events | Artículos para Fiestas"
         description="Decoraciones, regalos, cotillones y artículos para fiestas y celebraciones inolvidables."
@@ -15,6 +15,6 @@ export default function Home() {
       <Categories />
       <FeaturedProducts />
       <Promotions />
-    </main>
+    </div>
   );
 }

@@ -1,3 +1,4 @@
+import { useId } from "react"
 export default function Textarea(props) {
   const {
     label,
@@ -14,7 +15,8 @@ export default function Textarea(props) {
     ...rest
   } = props
 
-  const textareaId = id || name
+  const generatedId = useId()
+  const textareaId = id || name || generatedId
   const errorId = error && textareaId ? `${textareaId}-error` : undefined
 
   return (

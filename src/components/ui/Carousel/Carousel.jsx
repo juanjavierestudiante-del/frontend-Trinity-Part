@@ -20,7 +20,7 @@ export default function Carousel({ children, className = '' }) {
       aria-roledescription="carrusel"
       aria-label="Galería de imágenes"
     >
-      <div className="overflow-hidden rounded-card" aria-live="polite">
+      <div className="overflow-hidden rounded-card" aria-live="polite" aria-atomic="true">
         {items[currentIndex]}
       </div>
 
@@ -29,7 +29,7 @@ export default function Carousel({ children, className = '' }) {
           <button
             type="button"
             onClick={() => goTo(currentIndex - 1)}
-            className="absolute left-2 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 p-2 text-white opacity-100 transition-opacity hover:bg-black/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-white sm:opacity-0 sm:group-hover:opacity-100"
+            className="absolute left-2 top-1/2 flex h-11 w-11 -translate-y-1/2 touch-manipulation items-center justify-center rounded-full bg-black/40 p-2 text-white opacity-100 transition-opacity hover:bg-black/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-white sm:opacity-0 sm:group-hover:opacity-100"
             aria-label="Imagen anterior"
           >
             <HiChevronLeft className="h-5 w-5" aria-hidden="true" />
@@ -37,7 +37,7 @@ export default function Carousel({ children, className = '' }) {
           <button
             type="button"
             onClick={() => goTo(currentIndex + 1)}
-            className="absolute right-2 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 p-2 text-white opacity-100 transition-opacity hover:bg-black/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-white sm:opacity-0 sm:group-hover:opacity-100"
+            className="absolute right-2 top-1/2 flex h-11 w-11 -translate-y-1/2 touch-manipulation items-center justify-center rounded-full bg-black/40 p-2 text-white opacity-100 transition-opacity hover:bg-black/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-white sm:opacity-0 sm:group-hover:opacity-100"
             aria-label="Imagen siguiente"
           >
             <HiChevronRight className="h-5 w-5" aria-hidden="true" />

@@ -2,8 +2,8 @@ import Loader from '../Loader/Loader'
 
 const STATUS_CONFIG = {
   loading: {
-    icon: <Loader size="lg" />,
-    text: 'Cargando...',
+    icon: <Loader size="lg" showText={false} />,
+    text: 'Cargando…',
   },
   error: {
     iconClass: 'text-red-400',
@@ -27,12 +27,12 @@ export default function StatusMessage({ status = 'loading', message, className =
   const config = STATUS_CONFIG[status] || STATUS_CONFIG.loading
 
   return (
-    <div className={`flex flex-col items-center justify-center py-16 text-center ${className}`}>
+    <div className={`flex flex-col items-center justify-center py-16 text-center ${className}`} role={status === 'error' ? 'alert' : status === 'loading' ? 'status' : undefined} aria-live={status === 'loading' ? 'polite' : undefined}>
       <div className="mb-4">
-        {status === 'loading' ? config.icon : config.icon}
+        {config.icon}
       </div>
       <p className={`text-sm font-medium ${status === 'error' ? 'text-red-600' : status === 'empty' ? 'text-gray-500' : 'text-muted'}`}>
-        {message || (status === 'loading' ? 'Cargando...' : status === 'error' ? 'Algo salió mal' : 'No hay resultados')}
+        {message || (status === 'loading' ? 'Cargando…' : status === 'error' ? 'Algo salió mal' : 'No hay resultados')}
       </p>
     </div>
   )

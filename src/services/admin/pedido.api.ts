@@ -6,14 +6,29 @@ export type MetodoEntregaPedido =
   | 'RECOJO_TIENDA'
   | 'DELIVERY';
 
+export interface ValorAtributoPedido {
+  idValor: number;
+  idAtributo: number;
+  valor: string;
+}
+
 export interface PedidoDetalleAdmin {
   idDetalle: number;
   idVariante: number;
   cantidad: number;
   precioUnitario: number | string;
+  nombreProductoSnapshot?: string | null;
+  skuSnapshot?: string | null;
+  nombreAtributoPrincipalSnapshot?: string | null;
+  valorAtributoPrincipalSnapshot?: string | null;
   variante?: {
     sku?: string;
-    producto?: { nombre?: string };
+    producto?: {
+      idProducto?: number;
+      nombre?: string;
+      idAtributoPrincipal?: number | null;
+    };
+    varianteAtributo?: { valorAtributo?: ValorAtributoPedido }[];
   };
 }
 

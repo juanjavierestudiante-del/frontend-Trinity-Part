@@ -2,13 +2,21 @@
 // Usa FormData porque son archivos, no JSON.
 
 import adminApi from '../axios.admin';
+import type { ImagenProducto, ImagenVariante } from '../../types/catalogo.types';
+
+interface ResultadoSubidaMultiple<TImagen extends ImagenProducto | ImagenVariante> {
+  imagenes: TImagen[];
+  fallidas: { archivo: string; error: string }[];
+  totalExitosas: number;
+  totalFallidas: number;
+}
 
 // Sube imagen de un producto
 export const subirImagenProducto = async (
   idProducto: number,
   archivo: File,
   principal = false
-) => {
+): Promise<ImagenProducto> => {
   const form = new FormData();
   form.append('imagen', archivo);
   form.append('principal', String(principal));
@@ -26,7 +34,7 @@ export const subirImagenVariante = async (
   idVariante: number,
   archivo: File,
   principal = false
-) => {
+): Promise<ImagenVariante> => {
   const form = new FormData();
   form.append('imagen', archivo);
   form.append('principal', String(principal));
@@ -48,12 +56,7 @@ export const eliminarImagenProducto = async (idImagen: number): Promise<void> =>
 export const subirMultiplesImagenesProducto = async (
   idProducto: number,
   archivos: File[]
-): Promise<{
-  imagenes: any[];
-  fallidas: { archivo: string; error: string }[];
-  totalExitosas: number;
-  totalFallidas: number;
-}> => {
+): Promise<ResultadoSubidaMultiple<ImagenProducto>> => {
   const form = new FormData();
   for (const archivo of archivos) {
     form.append('imagenes', archivo);
@@ -68,7 +71,7 @@ export const subirMultiplesImagenesProducto = async (
 };
 
 // Marcar una imagen de producto como principal
-export const marcarImagenPrincipalProducto = async (idImagen: number): Promise<any> => {
+export const marcarImagenPrincipalProducto = async (idImagen: number): Promise<unknown> => {
   const { data } = await adminApi.patch(`/admin/imagenes/producto/${idImagen}/principal`);
   return data;
 };
@@ -82,12 +85,7 @@ export const eliminarImagenVariante = async (idImagen: number): Promise<void> =>
 export const subirMultiplesImagenesVariante = async (
   idVariante: number,
   archivos: File[]
-): Promise<{
-  imagenes: any[];
-  fallidas: { archivo: string; error: string }[];
-  totalExitosas: number;
-  totalFallidas: number;
-}> => {
+): Promise<ResultadoSubidaMultiple<ImagenVariante>> => {
   const form = new FormData();
   for (const archivo of archivos) {
     form.append('imagenes', archivo);
@@ -102,7 +100,7 @@ export const subirMultiplesImagenesVariante = async (
 };
 
 // Marcar una imagen de variante como principal
-export const marcarImagenPrincipal = async (idImagen: number): Promise<any> => {
+export const marcarImagenPrincipal = async (idImagen: number): Promise<unknown> => {
   const { data } = await adminApi.patch(`/admin/imagenes/variante/${idImagen}/principal`);
   return data;
 };

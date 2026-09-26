@@ -23,7 +23,7 @@ interface UseImageUploadOptions {
   maxFiles?: number
   maxSizeMB?: number
   acceptedTypes?: string[]
-  onUpload: (archivos: File[]) => Promise<any> | void
+  onUpload: (archivos: File[]) => Promise<unknown> | void
   autoUpload?: boolean
   onFilesSelected?: (archivos: File[]) => void
 }
@@ -46,6 +46,7 @@ export function useImageUpload({
   const inputRef = useRef<HTMLInputElement>(null)
   const isHoveringRef = useRef(false)
   const mountedRef = useRef(true)
+  const clearErrorsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const [previews, setPreviews] = useState<PreviewFile[]>([])
   const [isUploading, setIsUploading] = useState(false)
@@ -106,8 +107,10 @@ export function useImageUpload({
 
       if (errores.length > 0) {
         setErrors(errores)
-        setTimeout(() => {
+        if (clearErrorsTimerRef.current) clearTimeout(clearErrorsTimerRef.current)
+        clearErrorsTimerRef.current = setTimeout(() => {
           if (mountedRef.current) setErrors([])
+          clearErrorsTimerRef.current = null
         }, 5000)
       }
 
@@ -158,6 +161,7 @@ export function useImageUpload({
 
   useEffect(() => {
     return () => {
+      if (clearErrorsTimerRef.current) clearTimeout(clearErrorsTimerRef.current)
       setPreviews((prev) => {
         prev.forEach((p) => URL.revokeObjectURL(p.previewUrl))
         return []

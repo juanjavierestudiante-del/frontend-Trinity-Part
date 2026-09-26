@@ -13,6 +13,7 @@ import type {
   PedidoAdmin,
   PedidoDetalleAdmin,
 } from '../../services/admin/pedido.api';
+import ItemPedidoRow from '../../components/pedidos/ItemPedidoRow';
 import Badge from '../../components/ui/Badge/Badge';
 import Button from '../../components/ui/Button/Button';
 import Loader from '../../components/ui/Loader/Loader';
@@ -76,12 +77,12 @@ function MetodoEntregaBadge({ metodoEntrega }: { metodoEntrega?: MetodoEntregaPe
 function DetalleEntrega({ pedido }: { pedido: PedidoAdmin }) {
   const punto = (
     <>
-      <p className="text-sm text-gray-200">
+      <p className="text-sm text-gray-200 break-words">
         <span className="font-medium text-gray-400">Punto: </span>
         {pedido.puntoEntregaNombre || 'Punto no registrado'}
       </p>
       {pedido.puntoEntregaReferencia ? (
-        <p className="mt-1 text-sm text-gray-200">
+        <p className="mt-1 text-sm text-gray-200 break-words">
           <span className="font-medium text-gray-400">Referencia: </span>
           {pedido.puntoEntregaReferencia}
         </p>
@@ -108,16 +109,16 @@ function DetalleEntrega({ pedido }: { pedido: PedidoAdmin }) {
           <span className="font-medium text-gray-400">Método: </span>
           Delivery
         </p>
-        <p className="text-sm text-gray-200">
+        <p className="text-sm text-gray-200 break-words">
           <span className="font-medium text-gray-400">Zona: </span>
           {pedido.deliveryZona || 'No registrada'}
         </p>
-        <p className="mt-1 text-sm text-gray-200">
+        <p className="mt-1 text-sm text-gray-200 break-words">
           <span className="font-medium text-gray-400">Dirección: </span>
           {pedido.deliveryDireccion || 'No registrada'}
         </p>
         {pedido.deliveryReferencia ? (
-          <p className="mt-1 text-sm text-gray-200">
+          <p className="mt-1 text-sm text-gray-200 break-words">
             <span className="font-medium text-gray-400">Referencia: </span>
             {pedido.deliveryReferencia}
           </p>
@@ -134,7 +135,7 @@ function DetalleEntrega({ pedido }: { pedido: PedidoAdmin }) {
     <div>
       <p className="text-sm text-gray-200">Entrega anterior / método no registrado</p>
       {pedido.direccionEntrega ? (
-        <p className="mt-1 text-sm text-gray-200">
+        <p className="mt-1 text-sm text-gray-200 break-words">
           <span className="font-medium text-gray-400">Dirección registrada anteriormente: </span>
           {pedido.direccionEntrega}
         </p>
@@ -190,7 +191,7 @@ export default function PedidosPage() {
   }
 
   return (
-    <div>
+    <div className="w-full min-w-0 max-w-full">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <h1 className="text-2xl font-bold text-gray-100">Pedidos</h1>
       </div>
@@ -231,40 +232,50 @@ export default function PedidosPage() {
         </Alert>
       )}
 
-      <Table dark>
-        <TableHead dark>
-          <TableRow dark>
-            <TableHeadCell>{''}</TableHeadCell>
-            <TableHeadCell>N° Pedido</TableHeadCell>
-            <TableHeadCell>Cliente</TableHeadCell>
-            <TableHeadCell>Fecha</TableHeadCell>
-            <TableHeadCell>Items</TableHeadCell>
-            <TableHeadCell>Total</TableHeadCell>
-            <TableHeadCell>Entrega</TableHeadCell>
-            <TableHeadCell>Estado</TableHeadCell>
-            <TableHeadCell>Cambiar estado</TableHeadCell>
-          </TableRow>
-        </TableHead>
+      {/*
+        Contenedor con scroll horizontal (funciona con el dedo en móvil).
+        - w-full + max-w-full + min-w-0: no se estira con el contenido.
+        - [&_table]:w-max: la tabla toma el ancho de su contenido y el
+          contenedor hace scroll, en lugar de comprimir las columnas.
+      */}
+      <div
+        className="w-full min-w-0 max-w-full overflow-x-auto overscroll-x-contain rounded-lg border border-gray-700 [-webkit-overflow-scrolling:touch] [touch-action:pan-x_pan-y]"
+      >
+        <div className="w-full sm:w-max sm:min-w-full [&_table]:w-full [&_table]:table-fixed sm:[&_table]:w-max sm:[&_table]:min-w-full [&_th]:whitespace-nowrap [&_th]:px-2 [&_td]:px-2 sm:[&_th]:px-4 sm:[&_td]:px-4 sm:[&_td]:whitespace-nowrap">
+          <Table dark>
+            <TableHead dark>
+              <TableRow dark>
+                <TableHeadCell className="w-[10%] px-1 lg:w-auto">{''}</TableHeadCell>
+                <TableHeadCell className="hidden lg:table-cell">N° Pedido</TableHeadCell>
+                <TableHeadCell className="w-[40%] px-1 lg:w-auto lg:px-4">Cliente</TableHeadCell>
+                <TableHeadCell className="hidden lg:table-cell">Fecha</TableHeadCell>
+                <TableHeadCell className="w-[23%] px-1 lg:w-auto lg:px-4">Total</TableHeadCell>
+                <TableHeadCell className="hidden lg:table-cell">Entrega</TableHeadCell>
+                <TableHeadCell className="w-[27%] px-1 lg:w-auto lg:px-4">Estado</TableHeadCell>
+              </TableRow>
+            </TableHead>
 
-        <TableBody dark>
-          {filtrados.map((pedido) => {
-            const estaExpandido = expandido.has(pedido.idPedido);
-            const items = pedido.items ?? [];
-            return (
-              <FragmentPedido
-                key={pedido.idPedido}
-                pedido={pedido}
-                items={items}
-                estaExpandido={estaExpandido}
-                onToggle={() => toggleExpandir(pedido.idPedido)}
-                onChangeEstado={(estado) => handleCambiarEstado(pedido.idPedido, estado)}
-                estadoActual={pedido.estado}
-                isPending={isPending}
-              />
-            );
-          })}
-        </TableBody>
-      </Table>
+            <TableBody dark>
+              {filtrados.map((pedido) => {
+                const estaExpandido = expandido.has(pedido.idPedido);
+                const items = pedido.items ?? [];
+                return (
+                  <FragmentPedido
+                    key={pedido.idPedido}
+                    pedido={pedido}
+                    items={items}
+                    estaExpandido={estaExpandido}
+                    onToggle={() => toggleExpandir(pedido.idPedido)}
+                    onChangeEstado={(estado) => handleCambiarEstado(pedido.idPedido, estado)}
+                    estadoActual={pedido.estado}
+                    isPending={isPending}
+                  />
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
 
       {filtrados.length === 0 && (
         <p className="py-12 text-center text-gray-500">No hay pedidos con este estado.</p>
@@ -293,7 +304,7 @@ function FragmentPedido({
   return (
     <>
       <TableRow dark hoverable>
-        <TableCell dark className="w-8">
+        <TableCell dark className="w-8 px-2">
           <Button
             size="sm"
             variant="ghost"
@@ -309,16 +320,16 @@ function FragmentPedido({
           </Button>
         </TableCell>
 
-        <TableCell dark>
+        <TableCell dark className="hidden lg:table-cell">
           <div className="font-medium text-gray-100">#{pedido.idPedido}</div>
         </TableCell>
 
         <TableCell dark>
           <div className="text-gray-100">{pedido.nombreContacto}</div>
-          <div className="text-xs text-gray-500">{pedido.telefonoContacto}</div>
+          <div className="hidden text-xs text-gray-500 sm:block">{pedido.telefonoContacto}</div>
         </TableCell>
 
-        <TableCell dark>
+        <TableCell dark className="hidden lg:table-cell">
           <span className="text-gray-300 whitespace-nowrap">
             {new Date(pedido.fechaCreacion).toLocaleDateString('es-BO')}
           </span>
@@ -330,27 +341,30 @@ function FragmentPedido({
           </div>
         </TableCell>
 
-        <TableCell dark>{items.length} item(s)</TableCell>
-
-        <TableCell dark className="font-semibold text-gray-100">
-          Bs. {Number(pedido.total).toFixed(2)}
+        {/* Total + cantidad de items en una sola columna */}
+        <TableCell dark>
+          <div className="font-semibold text-gray-100 whitespace-nowrap">
+            Bs. {Number(pedido.total).toFixed(2)}
+          </div>
+          <div className="text-xs text-gray-500">{items.length} item(s)</div>
         </TableCell>
 
-        <TableCell dark>
+        <TableCell dark className="hidden lg:table-cell">
           <MetodoEntregaBadge metodoEntrega={pedido.metodoEntrega} />
         </TableCell>
 
+        {/* Estado + cambio de estado en una sola columna */}
         <TableCell dark>
-          <Badge variant={colorEstado[pedido.estado] || 'gray'}>
-            {estadoLabel(pedido.estado)}
-          </Badge>
-        </TableCell>
-
-        <TableCell dark>
-          <div className="w-36">
+          <div className="flex w-full min-w-0 flex-col gap-1.5 xl:min-w-[9rem]">
+            <div>
+              <Badge variant={colorEstado[pedido.estado] || 'gray'}>
+                {estadoLabel(pedido.estado)}
+              </Badge>
+            </div>
             <Select
               dark
               sizing="sm"
+              className="hidden sm:block"
               value={estadoActual}
               disabled={isPending}
               onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
@@ -365,54 +379,55 @@ function FragmentPedido({
         </TableCell>
       </TableRow>
 
+      <tr className="sm:hidden">
+        <td colSpan={7} className="px-2 pb-3 pt-0">
+          <Select
+            dark
+            sizing="sm"
+            value={estadoActual}
+            disabled={isPending}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+              onChangeEstado(e.target.value as EstadoPedido)
+            }
+          >
+            <option value="PENDIENTE">Pendiente</option>
+            <option value="CONFIRMADO">Confirmado</option>
+            <option value="CANCELADO">Cancelado</option>
+          </Select>
+        </td>
+      </tr>
+
       {estaExpandido && (
         <tr className="bg-gray-900/50">
-          <td colSpan={9} className="px-4 py-3">
-            <div className="space-y-4">
+          <td colSpan={7} className="px-4 py-3 !whitespace-normal">
+            {/*
+              El detalle se queda pegado a la izquierda y con el ancho de la
+              pantalla, para que no se estire junto con la tabla al hacer scroll.
+            */}
+            <div className="sticky left-0 w-[calc(100vw-4rem)] max-w-[56rem] space-y-4">
               <div>
                 <h4 className="mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wide">
                   Productos
                 </h4>
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="text-left text-xs text-gray-500">
-                      <th className="py-1 pr-2 font-medium">Producto</th>
-                      <th className="py-1 pr-2 font-medium">Cantidad</th>
-                      <th className="py-1 font-medium">Precio unitario</th>
-                      <th className="py-1 pl-2 font-medium text-right">Subtotal</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-700/50">
-                    {items.map((det) => (
-                      <tr key={det.idDetalle}>
-                        <td className="py-1.5 pr-2 text-gray-200">
-                          {det.variante?.producto?.nombre || det.variante?.sku || 'Producto'}
-                        </td>
-                        <td className="py-1.5 pr-2 text-gray-400">{det.cantidad}</td>
-                        <td className="py-1.5 text-gray-300">
-                          Bs. {Number(det.precioUnitario).toFixed(2)}
-                        </td>
-                        <td className="py-1.5 pl-2 text-gray-200 text-right">
-                          Bs. {(Number(det.precioUnitario) * det.cantidad).toFixed(2)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                <div className="space-y-3">
+                  {items.map((det) => (
+                    <ItemPedidoRow key={det.idDetalle} detalle={det} />
+                  ))}
+                </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
+                <div className="min-w-0 !whitespace-normal">
                   <h4 className="mb-1 text-xs font-semibold text-gray-400 uppercase tracking-wide">
                     Entrega
                   </h4>
                   <DetalleEntrega pedido={pedido} />
                 </div>
-                <div>
+                <div className="min-w-0 !whitespace-normal">
                   <h4 className="mb-1 text-xs font-semibold text-gray-400 uppercase tracking-wide">
                     Notas
                   </h4>
-                  <p className="text-sm text-gray-200">
+                  <p className="text-sm text-gray-200 break-words">
                     {pedido.notas ? pedido.notas : '—'}
                   </p>
                 </div>

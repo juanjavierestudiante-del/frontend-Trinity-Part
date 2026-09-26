@@ -44,15 +44,25 @@ export default function Button(props) {
 
   const isNativeButton = Component === 'button'
   const isDisabled = disabled || loading
-  const base = `inline-flex shrink-0 items-center justify-center gap-2 border border-transparent text-center font-semibold leading-none whitespace-nowrap transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${radiusClass} ${sizeClass}`
+  const base = `inline-flex min-w-0 max-w-full shrink-0 touch-manipulation items-center justify-center gap-2 border border-transparent text-center font-semibold leading-none whitespace-nowrap transition-[background-color,border-color,color,box-shadow,opacity,transform] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${radiusClass} ${sizeClass}`
+
+  const handleClick = (event) => {
+    if (isDisabled && !isNativeButton) {
+      event.preventDefault()
+      event.stopPropagation()
+      return
+    }
+    onClick?.(event)
+  }
 
   return (
     <Component
       {...(isNativeButton ? { type } : {})}
-      onClick={onClick}
+      onClick={handleClick}
       {...(isNativeButton ? { disabled: isDisabled } : {})}
       aria-disabled={isDisabled || undefined}
       aria-busy={loading || undefined}
+      {...(!isNativeButton && isDisabled ? { tabIndex: -1 } : {})}
       className={`${base} ${variantClass} ${className}`}
       {...rest}
     >

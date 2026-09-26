@@ -1,20 +1,125 @@
-import { useState } from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X, Search, ShoppingCart, User, LogOut, Settings } from "lucide-react";
 import { useAuthStore } from "../../store/auth.store";
 import { useContadorCarrito } from "../../hooks/useCarrito";
 import Button from "../ui/Button/Button";
 
+const MOBILE_NAV_BREAKPOINT = 768;
+const SCROLL_THRESHOLD = 8;
+const TOP_SCROLL_OFFSET = 32;
+
 export default function Nav() {
   const [open, setOpen] = useState(false);
+  const [hiddenRouteKey, setHiddenRouteKey] = useState(null);
+  const navRef = useRef(null);
+  const lastScrollY = useRef(0);
+  const navVisibleRef = useRef(true);
+  const keyboardFocusRef = useRef(false);
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const logo = "https://res.cloudinary.com/dslh6rwix/image/upload/q_auto/f_auto/v1780528934/logo_eolnrp.png";
   const { data: contador } = useContadorCarrito();
   const cartCount = contador?.items ?? 0;
   const isAdmin = user?.rol === "ADMIN";
+  const navVisible = hiddenRouteKey !== location.key;
+
+  useEffect(() => {
+    lastScrollY.current = window.scrollY;
+    navVisibleRef.current = true;
+  }, [location.key]);
+
+  useEffect(() => {
+    let frameId = null;
+
+    const showNavbar = () => {
+      if (!navVisibleRef.current) {
+        navVisibleRef.current = true;
+        setHiddenRouteKey(null);
+      }
+    };
+
+    const hideNavbar = () => {
+      if (navVisibleRef.current) {
+        navVisibleRef.current = false;
+        setHiddenRouteKey(location.key);
+      }
+    };
+
+    const handleKeydown = (event) => {
+      if (event.key === "Tab") keyboardFocusRef.current = true;
+    };
+
+    const handlePointerDown = () => {
+      keyboardFocusRef.current = false;
+    };
+
+    const handleResize = () => {
+      lastScrollY.current = window.scrollY;
+      if (window.innerWidth >= MOBILE_NAV_BREAKPOINT) showNavbar();
+    };
+
+    const handleScroll = () => {
+      if (frameId !== null) return;
+
+      frameId = window.requestAnimationFrame(() => {
+        frameId = null;
+        const currentScrollY = window.scrollY;
+
+        if (window.innerWidth >= MOBILE_NAV_BREAKPOINT) {
+          lastScrollY.current = currentScrollY;
+          showNavbar();
+          return;
+        }
+
+        const hasNavbarFocus = keyboardFocusRef.current && navRef.current?.contains(document.activeElement);
+        if (open || hasNavbarFocus || currentScrollY <= TOP_SCROLL_OFFSET) {
+          lastScrollY.current = currentScrollY;
+          showNavbar();
+          return;
+        }
+
+        const scrollDelta = currentScrollY - lastScrollY.current;
+        if (Math.abs(scrollDelta) < SCROLL_THRESHOLD) return;
+
+        if (scrollDelta > 0) hideNavbar();
+        else showNavbar();
+        lastScrollY.current = currentScrollY;
+      });
+    };
+
+    handleResize();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("keydown", handleKeydown);
+    window.addEventListener("pointerdown", handlePointerDown);
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("keydown", handleKeydown);
+      window.removeEventListener("pointerdown", handlePointerDown);
+      if (frameId !== null) window.cancelAnimationFrame(frameId);
+    };
+  }, [open, location.key]);
+
+  const toggleMenu = () => {
+    if (!open && !navVisibleRef.current) {
+      navVisibleRef.current = true;
+      setHiddenRouteKey(null);
+    }
+    setOpen(!open);
+  };
+
+  const handleNavbarFocus = () => {
+    if (keyboardFocusRef.current && !navVisibleRef.current) {
+      navVisibleRef.current = true;
+      setHiddenRouteKey(null);
+    }
+  };
 
   const submitSearch = (event) => {
     event.preventDefault();
@@ -30,7 +135,11 @@ export default function Nav() {
   ];
 
   return (
-    <nav className="sticky top-0 z-50 text-white border-b shadow-lg backdrop-blur-md bg-gradient-to-r from-primary/90 via-primary to-secondary/90 border-white/10">
+    <nav
+      ref={navRef}
+      onFocusCapture={handleNavbarFocus}
+      className={["sticky top-0 z-50 border-b border-white/10 bg-gradient-to-r from-primary/90 via-primary to-secondary/90 text-white shadow-lg backdrop-blur-md transition-transform duration-200 motion-reduce:transition-none", navVisible ? "translate-y-0" : "-translate-y-[calc(100%+2rem)]", "md:translate-y-0"].join(" ")}
+    >
       <div className="w-full px-4 mx-auto max-w-7xl">
         <div className="grid h-[5.3rem] grid-cols-2 items-center lg:grid-cols-3">
 
@@ -176,7 +285,7 @@ export default function Nav() {
             {/* Menú móvil toggle */}
             <div className="ml-1 lg:hidden">
               <Button
-                onClick={() => setOpen(!open)}
+                onClick={toggleMenu}
                 className="text-white hover:bg-white/15"
                 variant="ghost"
                 size="icon-lg"

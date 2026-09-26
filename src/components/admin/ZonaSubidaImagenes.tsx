@@ -89,7 +89,7 @@ export default function ZonaSubidaImagenes({
             >
               <img
                 src={img.url}
-                alt="imagen"
+                alt={showPrincipalBadge && img.principal ? "Imagen principal del producto" : "Imagen del producto"}
                 className="object-cover w-full h-full"
               />
 
@@ -100,11 +100,12 @@ export default function ZonaSubidaImagenes({
                 </span>
               )}
 
-              <div className="absolute inset-0 flex items-center justify-center gap-1 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="absolute inset-0 flex items-center justify-center gap-1 bg-black/50 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
                 {showPrincipalBadge && onMarkPrincipal && !img.principal && (
                   <button
                     type="button"
                     onClick={() => onMarkPrincipal(img.id)}
+                    aria-label="Marcar como principal"
                     className="p-1 text-white bg-blue-500 rounded-full hover:bg-blue-600"
                     title="Hacer principal"
                   >
@@ -116,6 +117,7 @@ export default function ZonaSubidaImagenes({
                   <button
                     type="button"
                     onClick={() => setEliminarId(img.id)}
+                    aria-label="Eliminar imagen"
                     className="p-1 text-white bg-red-500 rounded-full hover:bg-red-600"
                     title="Eliminar"
                   >
@@ -248,6 +250,7 @@ function PreviewThumb({ preview, onRemove }: { preview: PreviewFile; onRemove: (
       <button
         type="button"
         onClick={onRemove}
+        aria-label="Quitar imagen seleccionada"
         className="absolute top-1 right-1 p-0.5 text-white bg-red-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
         title="Quitar"
       >

@@ -9,7 +9,7 @@ export default function PublicLayout() {
         Saltar al contenido principal
       </a>
       <Navbar />
-      <main id="main-content" className="min-w-0 flex-1">
+      <main id="main-content" className="min-w-0 flex-1" tabIndex={-1}>
         <Outlet />
       </main>
       <Footer />

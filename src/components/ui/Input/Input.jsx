@@ -1,3 +1,5 @@
+import { useId } from 'react'
+
 const SIZE_CLASSES = {
   sm: 'px-3 py-1.5 text-xs',
   md: 'px-3 py-2 text-sm',
@@ -21,6 +23,7 @@ export default function Input(props) {
     dark = false,
     tone = 'default',
     endAdornment,
+    helperText,
     ...rest
   } = props
 
@@ -42,8 +45,11 @@ export default function Input(props) {
       ? 'text-gray-400'
       : 'text-gray-400'
 
-  const inputId = id || name
-  const errorId = error && inputId ? `${inputId}-error` : undefined
+  const generatedId = useId()
+  const inputId = id || name || generatedId
+  const errorId = error ? inputId + "-error" : undefined
+  const helperId = helperText ? inputId + "-helper" : undefined
+  const describedBy = [helperId, errorId].filter(Boolean).join(" ") || undefined
   return (
     <div className={`w-full ${className}`}>
       {label ? (
@@ -57,7 +63,7 @@ export default function Input(props) {
 
       <div className="relative">
         {icon ? (
-          <div className={`absolute left-3 top-2.5 ${iconClass}`}>
+          <div aria-hidden="true" className={`absolute left-3 top-2.5 ${iconClass}`}>
             {icon}
           </div>
         ) : null}
@@ -68,14 +74,16 @@ export default function Input(props) {
           onChange={onChange}
           placeholder={placeholder}
           type={type}
+          required={required}
           aria-invalid={!!error}
-          aria-describedby={errorId}
+          aria-describedby={describedBy}
           className={`block w-full rounded-md border px-3 ${sizeClass} focus:outline-none focus:ring-2 ${inputClass} ${icon ? 'pl-10' : ''} ${endAdornment ? 'pr-12' : ''} ${error ? 'border-red-500' : ''}`}
           {...rest}
         />
         {endAdornment ? <div className="absolute right-1 top-1/2 -translate-y-1/2">{endAdornment}</div> : null}
       </div>
 
+      {helperText ? <p id={helperId} className="mt-1 text-sm text-muted">{helperText}</p> : null}
       {error ? <p id={errorId} role="alert" className="mt-1 text-sm text-red-700">{error}</p> : null}
     </div>
   )

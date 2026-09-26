@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import type { Categoria } from '../../types/catalogo.types';
 import Card from '../ui/Card/Card';
+import { cloudinaryUrl } from '../../utils/cloudinary';
 
 interface Props {
   categoria: Categoria;
@@ -13,8 +14,10 @@ export default function CategoriaCard({ categoria }: Props) {
         <div className="flex items-center justify-center overflow-hidden bg-gradient-to-br from-primary-light via-primary-light/70 to-secondary/30 aspect-[16/9]">
           {categoria.imagenUrl ? (
             <img
-              src={categoria.imagenUrl}
+              src={cloudinaryUrl(categoria.imagenUrl, 'w_400,q_auto,f_auto')}
               alt={categoria.nombre}
+              loading="lazy"
+              decoding="async"
               className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
             />
           ) : (

@@ -166,7 +166,7 @@ export default function PaginaProducto() {
   };
 
   return (
-    <main className="min-h-screen px-4 py-8 pb-[calc(6.5rem+env(safe-area-inset-bottom))] sm:py-10 md:pb-10">
+    <div className="min-h-screen px-4 py-8 pb-[calc(6.5rem+env(safe-area-inset-bottom))] sm:py-10 md:pb-10">
       <Seo title={`${productoSeguro.nombre} | Trinity Party & Events`} description={productoSeguro.descripcionCorta ?? productoSeguro.descripcion ?? undefined} jsonLd={jsonLdProduct} />
       <div className="mx-auto max-w-7xl">
         {error ? <Alert type="danger" className="mb-5" onDismiss={() => setError('')}>{error}</Alert> : null}
@@ -195,6 +195,6 @@ export default function PaginaProducto() {
         </div>
       </div>
       <BarraCompraMovil variante={varianteSeleccionada} stock={stock} cantidad={cantidad} subtotal={precioLinea?.subtotal} precioPorPresentacion={precioLinea?.precioPorPresentacion} usuario={user} atributoPendiente={atributoPendiente} onAgregarAlCarrito={handleAgregarAlCarrito} onElegirAtributo={solicitarAtributo} agregado={agregado} />
-    </main>
+    </div>
   );
 }

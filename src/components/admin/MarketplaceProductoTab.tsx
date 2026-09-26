@@ -13,6 +13,7 @@ import {
 import Alert from '../ui/Alert/Alert'
 import Button from '../ui/Button/Button'
 import Card from '../ui/Card/Card'
+import { cloudinaryUrl } from '../../utils/cloudinary'
 
 interface Props {
   producto: Producto
@@ -31,91 +32,166 @@ export default function MarketplaceProductoTab({ producto }: Props) {
   const [loadingPreview, setLoadingPreview] = useState(false)
   const [preparing, setPreparing] = useState(false)
   const pollTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const mountedRef = useRef(false)
+  const operationRef = useRef(0)
+  const pollingRef = useRef(false)
+  const loadControllerRef = useRef<AbortController | null>(null)
+  const previewControllerRef = useRef<AbortController | null>(null)
+  const pollControllerRef = useRef<AbortController | null>(null)
+  const prepareControllerRef = useRef<AbortController | null>(null)
+
+  const clearPolling = () => {
+    pollingRef.current = false
+    if (pollTimer.current) clearTimeout(pollTimer.current)
+    pollTimer.current = null
+    pollControllerRef.current?.abort()
+    pollControllerRef.current = null
+  }
+
+  const isAbortError = (error: unknown) => error instanceof Error && error.name === "AbortError"
+
+  useEffect(() => {
+    mountedRef.current = true
+    return () => {
+      mountedRef.current = false
+      operationRef.current += 1
+      clearPolling()
+      loadControllerRef.current?.abort()
+      previewControllerRef.current?.abort()
+      prepareControllerRef.current?.abort()
+    }
+  }, [])
 
   useEffect(() => {
     let cancelled = false
+    const controller = new AbortController()
+    const operation = ++operationRef.current
+    loadControllerRef.current?.abort()
+    loadControllerRef.current = controller
     const load = async () => {
       setLoadingCategories(true)
       setMarketplaceCategory('')
       setPreview(null)
       setError('')
       try {
-        await getMarketplaceHealth()
-        const [categoryResponse, nextStatus] = await Promise.all([getMarketplaceCategories(), getMarketplaceStatus()])
-        if (cancelled) return
+        await getMarketplaceHealth(controller.signal)
+        const [categoryResponse, nextStatus] = await Promise.all([getMarketplaceCategories(controller.signal), getMarketplaceStatus(controller.signal)])
+        if (cancelled || !mountedRef.current || controller.signal.aborted || operation !== operationRef.current) return
         setConnected(true)
         setCategories(categoryResponse.categories)
         setStatus(nextStatus)
       } catch (requestError) {
-        if (cancelled) return
+        if (cancelled || !mountedRef.current || controller.signal.aborted || operation !== operationRef.current) return
         setConnected(false)
         setCategories([])
         setStatus(idleStatus)
         setError(messageFor(requestError))
       } finally {
-        if (!cancelled) setLoadingCategories(false)
+        if (!cancelled && mountedRef.current && !controller.signal.aborted) setLoadingCategories(false)
       }
     }
     void load()
     return () => {
       cancelled = true
-      if (pollTimer.current) clearTimeout(pollTimer.current)
+      if (loadControllerRef.current === controller) loadControllerRef.current = null
+      controller.abort()
+      prepareControllerRef.current?.abort()
+      prepareControllerRef.current = null
+      if (mountedRef.current) setPreparing(false)
+      clearPolling()
     }
   }, [producto.idProducto])
 
   useEffect(() => {
     let cancelled = false
+    previewControllerRef.current?.abort()
     if (!connected || !marketplaceCategory) {
-      setPreview(null)
+      if (mountedRef.current) setPreview(null)
       return () => { cancelled = true }
     }
+    const controller = new AbortController()
+    previewControllerRef.current = controller
     const loadPreview = async () => {
       setLoadingPreview(true)
       setError('')
       try {
-        const nextPreview = await getMarketplacePreview(producto, marketplaceCategory)
-        if (!cancelled) setPreview(nextPreview)
+        const nextPreview = await getMarketplacePreview(producto, marketplaceCategory, controller.signal)
+        if (!cancelled && mountedRef.current && !controller.signal.aborted) setPreview(nextPreview)
       } catch (requestError) {
+        if (cancelled || isAbortError(requestError) || !mountedRef.current || controller.signal.aborted) return
         if (!cancelled) {
           setPreview(null)
           setError(messageFor(requestError))
         }
       } finally {
-        if (!cancelled) setLoadingPreview(false)
+        if (!cancelled && mountedRef.current && !controller.signal.aborted) setLoadingPreview(false)
       }
     }
     void loadPreview()
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+      if (previewControllerRef.current === controller) previewControllerRef.current = null
+      controller.abort()
+    }
   }, [connected, marketplaceCategory, producto])
 
+  const schedulePoll = () => {
+    if (!mountedRef.current || !pollingRef.current) return
+    if (pollTimer.current) clearTimeout(pollTimer.current)
+    pollTimer.current = setTimeout(() => {
+      pollTimer.current = null
+      void pollStatus()
+    }, 1_000)
+  }
+
   const pollStatus = async (): Promise<void> => {
+    if (!mountedRef.current || !pollingRef.current) return
+    pollControllerRef.current?.abort()
+    const controller = new AbortController()
+    pollControllerRef.current = controller
     try {
-      const nextStatus = await getMarketplaceStatus()
+      const nextStatus = await getMarketplaceStatus(controller.signal)
+      if (!mountedRef.current || !pollingRef.current || controller.signal.aborted || pollControllerRef.current !== controller) return
       setStatus(nextStatus)
-      if (nextStatus.status === 'preparing') {
-        pollTimer.current = setTimeout(() => void pollStatus(), 1_000)
+      if (nextStatus.status === "preparing") {
+        schedulePoll()
         return
       }
+      pollingRef.current = false
       setPreparing(false)
-      if (nextStatus.status === 'error') setError(nextStatus.message ?? 'No se pudo preparar Facebook.')
+      if (nextStatus.status === "error") setError(nextStatus.message ?? "No se pudo preparar Facebook.")
     } catch (requestError) {
+      if (!mountedRef.current || controller.signal.aborted || isAbortError(requestError)) return
+      pollingRef.current = false
       setPreparing(false)
       setConnected(false)
       setError(messageFor(requestError))
+    } finally {
+      if (pollControllerRef.current === controller) pollControllerRef.current = null
     }
   }
 
   const prepare = async () => {
-    if (!marketplaceCategory) return
-    setError('')
+    if (!marketplaceCategory || !mountedRef.current) return
+    clearPolling()
+    setError("")
     setPreparing(true)
+    const controller = new AbortController()
+    const operation = operationRef.current
+    prepareControllerRef.current?.abort()
+    prepareControllerRef.current = controller
     try {
-      const nextStatus = await prepareMarketplace(producto, marketplaceCategory)
+      const nextStatus = await prepareMarketplace(producto, marketplaceCategory, controller.signal)
+      if (!mountedRef.current || controller.signal.aborted || operation !== operationRef.current || prepareControllerRef.current !== controller) return
       setStatus(nextStatus)
-      pollTimer.current = setTimeout(() => void pollStatus(), 1_000)
+      pollingRef.current = true
+      schedulePoll()
     } catch (requestError) {
+      if (!mountedRef.current || controller.signal.aborted || isAbortError(requestError)) return
       setPreparing(false)
       setError(messageFor(requestError))
+    } finally {
+      if (prepareControllerRef.current === controller) prepareControllerRef.current = null
     }
   }
 
@@ -207,7 +283,14 @@ export default function MarketplaceProductoTab({ producto }: Props) {
               <div className="flex items-center gap-2 text-gray-100"><HiPhotograph className="h-5 w-5 text-primary-light" /><h3 className="font-semibold">Imágenes a enviar</h3></div>
               <div className="mt-4 grid grid-cols-2 gap-3">
                 {preview.images.map((image, index) => (
-                  <img key={image} src={image} alt={`${preview.title} ${index + 1}`} className="aspect-square w-full rounded-lg border border-gray-700 object-cover" />
+                  <img
+                    key={image}
+                    src={image.startsWith("blob:") || image.startsWith("data:") ? image : cloudinaryUrl(image, "w_320,q_auto,f_auto")}
+                    alt={`${preview.title} ${index + 1}`}
+                    loading="lazy"
+                    decoding="async"
+                    className="aspect-square w-full rounded-lg border border-gray-700 object-cover"
+                  />
                 ))}
               </div>
               {!preview.images.length && <p className="mt-3 text-sm text-gray-400">Este producto no tiene imágenes para enviar.</p>}

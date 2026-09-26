@@ -53,8 +53,8 @@ export default function ProductosPage() {
         <TableHead dark>
           <TableRow dark>
             <TableHeadCell>Nombre</TableHeadCell>
-            <TableHeadCell>Categoría</TableHeadCell>
-            <TableHeadCell>Variantes</TableHeadCell>
+            <TableHeadCell className="hidden md:table-cell">Categoría</TableHeadCell>
+            <TableHeadCell className="hidden md:table-cell">Variantes</TableHeadCell>
             <TableHeadCell>Estado</TableHeadCell>
             <TableHeadCell>Acciones</TableHeadCell>
           </TableRow>
@@ -64,13 +64,14 @@ export default function ProductosPage() {
           {productos?.map((producto) => (
             <TableRow key={producto.idProducto} dark hoverable>
               <TableCell dark className="font-medium">
-                <div className="text-gray-100">{producto.nombre}</div>
-                <div className="text-xs text-gray-500">{producto.slug}</div>
+                <div className="max-w-[10rem] truncate text-gray-100 sm:max-w-none">{producto.nombre}</div>
+                <div className="hidden text-xs text-gray-500 sm:block">{producto.slug}</div>
+                <div className="mt-1 text-xs text-gray-400 md:hidden">{producto.categoria.nombre} · {producto.variantes.length} variantes</div>
               </TableCell>
 
-              <TableCell dark>{producto.categoria.nombre}</TableCell>
+              <TableCell dark className="hidden md:table-cell">{producto.categoria.nombre}</TableCell>
 
-              <TableCell dark>{producto.variantes.length} variantes</TableCell>
+              <TableCell dark className="hidden md:table-cell">{producto.variantes.length} variantes</TableCell>
 
               <TableCell dark>
                 <Badge variant={colorEstado[producto.estado] || 'gray'}>
@@ -79,25 +80,29 @@ export default function ProductosPage() {
               </TableCell>
 
               <TableCell dark>
-                <div className="flex gap-1 sm:gap-2">
+                <div className="flex items-center gap-1 sm:gap-2">
                   <Button
-                    size="sm"
+                    size="icon"
                     variant="light"
                     icon={HiPencil}
+                    aria-label={"Editar " + producto.nombre}
+                    className="min-h-11 min-w-11 sm:h-9 sm:w-auto sm:min-h-0 sm:min-w-0 sm:px-3"
                     onClick={() => navigate(`/admin/productos/${producto.idProducto}/editar`)}
                     title="Editar"
                   >
-                    Editar
+                    <span className="hidden sm:inline">Editar</span>
                   </Button>
                   {isAdmin && (
                     <Button
-                      size="sm"
+                      size="icon"
                       variant="danger"
                       icon={HiTrash}
+                      aria-label={"Eliminar " + producto.nombre}
+                      className="min-h-11 min-w-11 sm:h-9 sm:w-auto sm:min-h-0 sm:min-w-0 sm:px-3"
                       onClick={() => handleEliminar(producto.idProducto, producto.nombre)}
                       title="Eliminar"
                     >
-                      Eliminar
+                      <span className="hidden sm:inline">Eliminar</span>
                     </Button>
                   )}
                 </div>

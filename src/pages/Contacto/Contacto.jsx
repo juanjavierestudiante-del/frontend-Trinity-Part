@@ -1,7 +1,4 @@
 import { Mail, Phone, MapPin } from "lucide-react";
-import Input from "../../components/ui/Input/Input";
-import Button from "../../components/ui/Button/Button";
-import Textarea from "../../components/ui/Textarea/Textarea";
 import Card from "../../components/ui/Card/Card";
 import Seo from "../../components/seo/Seo";
 
@@ -101,21 +98,9 @@ export default function Contacto() {
           </div>
 
           <Card variant="default" padding="md">
-            <h2 className="text-2xl font-bold mb-6 text-ink font-display">
-              Envíanos un mensaje
-            </h2>
-            <form className="space-y-4">
-              <Input placeholder="Tu nombre" />
-              <Input placeholder="tu@email.com" type="email" />
-              <Textarea
-                label="Mensaje"
-                rows={4}
-                placeholder="Tu mensaje aquí..."
-              />
-              <Button type="submit" className="w-full" variant="primary">
-                Enviar
-              </Button>
-            </form>
+            <h2 className="text-2xl font-bold mb-6 text-ink font-display">¿Hablamos?</h2>
+            <p className="text-muted">No tenemos un formulario de contacto conectado todavía. Escríbenos directamente y te responderemos por el canal que prefieras.</p>
+            <a href="mailto:trinitypartyandevents@gmail.com" className="mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-md bg-primary px-4 py-2.5 font-semibold text-white transition-colors hover:bg-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">Escribir por correo</a>
           </Card>
         </div>
       </div>

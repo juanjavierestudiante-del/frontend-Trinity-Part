@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { MapPin, Phone, Store, Truck, User } from 'lucide-react';
@@ -68,12 +68,9 @@ export default function Checkout() {
   const [form, setForm] = useState(() => ({ nombreContacto: nombreCompleto(user), telefonoContacto: user?.telefono || '', deliveryZona: '', deliveryDireccion: '', deliveryReferencia: '', notas: '' }));
   const [errores, setErrores] = useState({});
   const [errorSubmit, setErrorSubmit] = useState('');
+  const metodoActivo = metodoEntrega || (puntosEntrega.length ? "PUNTO_ENTREGA" : puntosRecojo.length ? "RECOJO_TIENDA" : "");
+  const idPuntoActivo = idPuntoEntrega ?? (metodoActivo === "PUNTO_ENTREGA" ? puntosEntrega[0]?.idPuntoEntrega : metodoActivo === "RECOJO_TIENDA" ? puntosRecojo[0]?.idPuntoEntrega : null);
 
-  useEffect(() => {
-    if (metodoEntrega || puntosQuery.isLoading || configuracionQuery.isLoading) return;
-    if (puntosEntrega.length) { setMetodoEntrega('PUNTO_ENTREGA'); setIdPuntoEntrega(puntosEntrega[0].idPuntoEntrega); }
-    else if (puntosRecojo.length) { setMetodoEntrega('RECOJO_TIENDA'); setIdPuntoEntrega(puntosRecojo[0].idPuntoEntrega); }
-  }, [metodoEntrega, puntosEntrega, puntosRecojo, puntosQuery.isLoading, configuracionQuery.isLoading]);
 
   if (!user) return <Navigate to="/login" replace />;
 
@@ -92,9 +89,9 @@ export default function Checkout() {
     const telefono = form.telefonoContacto.trim();
     if (!telefono) nuevosErrores.telefonoContacto = 'El celular es obligatorio';
     else if (!PHONE_RE.test(telefono)) nuevosErrores.telefonoContacto = 'Ingresá un celular boliviano válido (ej: 71234567 o +59171234567)';
-    if (!metodoEntrega) nuevosErrores.metodoEntrega = 'Seleccioná un método de entrega';
-    if ((metodoEntrega === 'PUNTO_ENTREGA' || metodoEntrega === 'RECOJO_TIENDA') && !idPuntoEntrega) nuevosErrores.idPuntoEntrega = 'Seleccioná un punto disponible';
-    if (metodoEntrega === 'DELIVERY') {
+    if (!metodoActivo) nuevosErrores.metodoEntrega = 'Seleccioná un método de entrega';
+    if ((metodoActivo === 'PUNTO_ENTREGA' || metodoActivo === 'RECOJO_TIENDA') && !idPuntoActivo) nuevosErrores.idPuntoEntrega = 'Seleccioná un punto disponible';
+    if (metodoActivo === 'DELIVERY') {
       if (!deliveryDisponible) nuevosErrores.metodoEntrega = 'Delivery no está disponible para este pedido';
       if (!form.deliveryZona.trim()) nuevosErrores.deliveryZona = 'La zona es obligatoria'; else if (form.deliveryZona.trim().length > 150) nuevosErrores.deliveryZona = 'La zona no puede superar 150 caracteres';
       if (!form.deliveryDireccion.trim()) nuevosErrores.deliveryDireccion = 'La dirección es obligatoria'; else if (form.deliveryDireccion.trim().length > 255) nuevosErrores.deliveryDireccion = 'La dirección no puede superar 255 caracteres';
@@ -117,9 +114,9 @@ export default function Checkout() {
     event.preventDefault(); setErrorSubmit('');
     if (carritoSincronizando || !validar() || puntosQuery.isLoading || configuracionQuery.isLoading || puntosQuery.isError || configuracionQuery.isError) return;
     const contacto = { nombreContacto: form.nombreContacto.trim(), telefonoContacto: form.telefonoContacto.trim(), notas: form.notas.trim() || null };
-    const body = metodoEntrega === 'DELIVERY'
+    const body = metodoActivo === 'DELIVERY'
       ? { ...contacto, metodoEntrega: 'DELIVERY', deliveryZona: form.deliveryZona.trim(), deliveryDireccion: form.deliveryDireccion.trim(), deliveryReferencia: form.deliveryReferencia.trim() || null }
-      : { ...contacto, metodoEntrega, idPuntoEntrega };
+      : { ...contacto, metodoEntrega: metodoActivo, idPuntoEntrega: idPuntoActivo };
     crearPedidoMutation.mutate(body, {
       onSuccess: (pedido) => navigate('/checkout/confirmacion', { state: { idPedido: pedido.idPedido, total: Number(pedido.total) || total, estado: pedido.estado, items: items.map((item) => ({ idVariante: item.idVariante, nombre: item.nombre, cantidad: item.cantidad, precioUnitario: item.precio })) } }),
       onError: (error) => { setErrorSubmit(mensajeErrorPedido(error)); void puntosQuery.refetch(); void configuracionQuery.refetch(); },
@@ -130,13 +127,13 @@ export default function Checkout() {
   const hayMetodoDisponible = puntosEntrega.length > 0 || puntosRecojo.length > 0 || deliveryDisponible;
 
   return (
-    <main className="min-h-screen"><div className="max-w-5xl px-4 py-6 sm:py-10 mx-auto">
+    <div className="min-h-screen"><div className="max-w-5xl px-4 py-6 sm:py-10 mx-auto">
       <h1 className="mb-2 text-3xl font-black text-ink font-display sm:text-4xl">CHECKOUT</h1><p className="mb-6 text-sm text-muted sm:mb-8 sm:text-base">Elegí cómo recibir tu pedido y confirmá tus datos de contacto.</p>
       {isLoading ? <StatusMessage status="loading" message="Cargando pedido..." /> : null}
       {isError ? <Alert type="danger">No se pudo cargar el carrito</Alert> : null}
       {!isLoading && !isError && items.length === 0 ? <Card variant="default" padding={false} className="p-6 text-center sm:p-12"><p className="mb-4 text-2xl text-ink">Tu carrito está vacío</p><Link to="/catalogo" className="text-lg font-bold text-primary-dark hover:underline">Continuar comprando</Link></Card> : null}
       {!isLoading && !isError && items.length > 0 ? <div className="grid grid-cols-1 gap-6 sm:gap-8 lg:grid-cols-3">
-        <Card variant="default" padding="lg" className="p-4 sm:p-6 lg:col-span-2"><form onSubmit={handleSubmit} noValidate className="space-y-6 sm:space-y-8">
+        <Card variant="default" padding="lg" className="min-w-0 p-4 sm:p-6 lg:col-span-2"><form onSubmit={handleSubmit} noValidate className="space-y-6 sm:space-y-8">
           <section aria-labelledby="contacto-title"><h2 id="contacto-title" className="mb-5 text-xl font-bold text-ink font-display sm:text-2xl">Datos de contacto</h2><div className="space-y-5">
             <Input label="Nombre de contacto" type="text" sizing="lg" name="nombreContacto" value={form.nombreContacto} onChange={handleChange} placeholder="Ej: María Fernández" icon={<User size={18} />} error={errores.nombreContacto} autoComplete="name" required />
             <Input label="Celular (WhatsApp)" type="tel" sizing="lg" inputMode="tel" name="telefonoContacto" value={form.telefonoContacto} onChange={handleChange} placeholder="Ej: 71234567" icon={<Phone size={18} />} error={errores.telefonoContacto} autoComplete="tel" required />
@@ -145,19 +142,19 @@ export default function Checkout() {
             {logisticaCargando ? <StatusMessage status="loading" message="Cargando opciones de entrega..." className="py-6" /> : null}
             {logisticaError ? <Alert type="danger">No se pudieron cargar las opciones de entrega. <button type="button" onClick={() => { void puntosQuery.refetch(); void configuracionQuery.refetch(); }} className="font-bold underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current">Reintentar</button></Alert> : null}
             {!logisticaCargando && !logisticaError ? <><>{!hayMetodoDisponible ? <Alert type="warning" className="mb-4">No hay métodos de entrega disponibles por el momento.</Alert> : null}</><fieldset disabled={!hayMetodoDisponible} aria-describedby={errores.metodoEntrega ? 'metodo-entrega-error' : undefined}><legend className="sr-only">Método de entrega</legend><div className="grid gap-3 sm:grid-cols-3">
-              <MetodoEntrega value="PUNTO_ENTREGA" title="Punto de entrega" description="Recogé tu pedido en un punto acordado." icon={MapPin} checked={metodoEntrega === 'PUNTO_ENTREGA'} disabled={!puntosEntrega.length} onChange={cambiarMetodo} />
-              <MetodoEntrega value="RECOJO_TIENDA" title="Recojo en tienda" description="Recogé directamente con nosotros." icon={Store} checked={metodoEntrega === 'RECOJO_TIENDA'} disabled={!puntosRecojo.length} onChange={cambiarMetodo} />
-              <MetodoEntrega value="DELIVERY" title="Delivery" description="Entrega a domicilio a coordinar." icon={Truck} checked={metodoEntrega === 'DELIVERY'} disabled={!deliveryDisponible} detail={!deliveryHabilitado ? (configuracionQuery.data?.mensajeDelivery || 'Delivery no disponible temporalmente.') : !deliveryDisponible ? `Disponible desde ${dinero(minimoDelivery)}. Te faltan ${dinero(faltanteDelivery)}.` : `Disponible desde ${dinero(minimoDelivery)}.`} onChange={cambiarMetodo} />
+              <MetodoEntrega value="PUNTO_ENTREGA" title="Punto de entrega" description="Recogé tu pedido en un punto acordado." icon={MapPin} checked={metodoActivo === 'PUNTO_ENTREGA'} disabled={!puntosEntrega.length} onChange={cambiarMetodo} />
+              <MetodoEntrega value="RECOJO_TIENDA" title="Recojo en tienda" description="Recogé directamente con nosotros." icon={Store} checked={metodoActivo === 'RECOJO_TIENDA'} disabled={!puntosRecojo.length} onChange={cambiarMetodo} />
+              <MetodoEntrega value="DELIVERY" title="Delivery" description="Entrega a domicilio a coordinar." icon={Truck} checked={metodoActivo === 'DELIVERY'} disabled={!deliveryDisponible} detail={!deliveryHabilitado ? (configuracionQuery.data?.mensajeDelivery || 'Delivery no disponible temporalmente.') : !deliveryDisponible ? `Disponible desde ${dinero(minimoDelivery)}. Te faltan ${dinero(faltanteDelivery)}.` : `Disponible desde ${dinero(minimoDelivery)}.`} onChange={cambiarMetodo} />
             </div></fieldset>{errores.metodoEntrega ? <p id="metodo-entrega-error" role="alert" className="mt-2 text-sm text-red-700">{errores.metodoEntrega}</p> : null}
-            <div className="mt-6">{metodoEntrega === 'PUNTO_ENTREGA' ? <SelectorPunto puntos={puntosEntrega} value={idPuntoEntrega} onChange={setIdPuntoEntrega} error={errores.idPuntoEntrega} /> : null}{metodoEntrega === 'RECOJO_TIENDA' ? <SelectorPunto puntos={puntosRecojo} value={idPuntoEntrega} onChange={setIdPuntoEntrega} error={errores.idPuntoEntrega} /> : null}{metodoEntrega === 'DELIVERY' ? <div className="space-y-5 rounded-xl border border-primary/20 bg-primary-light/20 p-3 sm:p-5"><Input label="Zona" type="text" sizing="lg" name="deliveryZona" value={form.deliveryZona} onChange={handleChange} placeholder="Ej: Sopocachi" icon={<MapPin size={18} />} error={errores.deliveryZona} maxLength={150} required /><Input label="Dirección" type="text" sizing="lg" name="deliveryDireccion" value={form.deliveryDireccion} onChange={handleChange} placeholder="Calle, número y edificio" icon={<MapPin size={18} />} error={errores.deliveryDireccion} maxLength={255} required /><Input label="Referencia (opcional)" type="text" sizing="lg" name="deliveryReferencia" value={form.deliveryReferencia} onChange={handleChange} placeholder="Ej: Puerta azul" error={errores.deliveryReferencia} maxLength={255} /></div> : null}</div></> : null}
+            <div className="mt-6">{metodoActivo === 'PUNTO_ENTREGA' ? <SelectorPunto puntos={puntosEntrega} value={idPuntoActivo} onChange={setIdPuntoEntrega} error={errores.idPuntoEntrega} /> : null}{metodoActivo === 'RECOJO_TIENDA' ? <SelectorPunto puntos={puntosRecojo} value={idPuntoActivo} onChange={setIdPuntoEntrega} error={errores.idPuntoEntrega} /> : null}{metodoActivo === 'DELIVERY' ? <div className="space-y-5 rounded-xl border border-primary/20 bg-primary-light/20 p-3 sm:p-5"><Input label="Zona" type="text" sizing="lg" name="deliveryZona" value={form.deliveryZona} onChange={handleChange} placeholder="Ej: Sopocachi" icon={<MapPin size={18} />} error={errores.deliveryZona} maxLength={150} required /><Input label="Dirección" type="text" sizing="lg" name="deliveryDireccion" value={form.deliveryDireccion} onChange={handleChange} placeholder="Calle, número y edificio" icon={<MapPin size={18} />} error={errores.deliveryDireccion} maxLength={255} required /><Input label="Referencia (opcional)" type="text" sizing="lg" name="deliveryReferencia" value={form.deliveryReferencia} onChange={handleChange} placeholder="Ej: Puerta azul" error={errores.deliveryReferencia} maxLength={255} /></div> : null}</div></> : null}
           </section>
           <Textarea label="Notas (opcional)" name="notas" value={form.notas} onChange={handleChange} placeholder="Indicaciones adicionales para tu pedido (opcional)" rows={3} error={errores.notas} maxLength={1000} />
           {errorSubmit ? <Alert type="danger">{errorSubmit}</Alert> : null}
           {carritoSincronizando ? <p role="status" className="text-sm text-muted">Actualizando carrito…</p> : null}
           <Button type="submit" variant="primary" size="lg" className="w-full" loading={crearPedidoMutation.isPending} disabled={carritoSincronizando || logisticaCargando || logisticaError || !hayMetodoDisponible}>Confirmar pedido</Button>
         </form></Card>
-        <Card variant="highlight" padding="lg" className="h-fit p-4 sm:p-6 lg:sticky lg:top-24"><h3 className="mb-4 text-xl font-bold text-ink font-display sm:mb-6 sm:text-2xl">RESUMEN</h3><div className="space-y-3">{items.map((item) => <div key={item.id} className="flex justify-between gap-4 text-sm"><span className="text-muted">{item.nombre} x{item.cantidad}</span><span className="font-medium text-ink whitespace-nowrap">{dinero(item.subtotal)}</span></div>)}</div><div className="my-5 border-b border-white/40 pb-5 sm:my-6 sm:pb-6"><div className="flex justify-between gap-4 text-muted"><span>Entrega:</span><span className="text-right">{metodoEntrega === 'DELIVERY' ? 'A coordinar' : metodoEntrega === 'RECOJO_TIENDA' ? 'Recojo en tienda' : metodoEntrega === 'PUNTO_ENTREGA' ? 'Punto de entrega' : 'Elegí un método'}</span></div></div><div className="flex items-center justify-between text-xl font-black text-ink sm:text-2xl"><span className="font-display">TOTAL:</span><span className="text-primary-dark">{dinero(total)}</span></div><Button as={Link} to="/catalogo" variant="outline" size="lg" className="mt-6 w-full border-2 border-primary text-primary hover:bg-primary-light">Seguir comprando</Button></Card>
+        <Card variant="highlight" padding="lg" className="h-fit min-w-0 p-4 sm:p-6 lg:sticky lg:top-24"><h3 className="mb-4 text-xl font-bold text-ink font-display sm:mb-6 sm:text-2xl">RESUMEN</h3><div className="space-y-3">{items.map((item) => <div key={item.id} className="flex min-w-0 items-start justify-between gap-3 text-sm"><span className="min-w-0 break-words text-muted">{item.nombre} <span className="whitespace-nowrap">x{item.cantidad}</span></span><span className="shrink-0 whitespace-nowrap font-medium text-ink">{dinero(item.subtotal)}</span></div>)}</div><div className="my-5 border-b border-white/40 pb-5 sm:my-6 sm:pb-6"><div className="flex justify-between gap-4 text-muted"><span>Entrega:</span><span className="text-right">{metodoActivo === 'DELIVERY' ? 'A coordinar' : metodoActivo === 'RECOJO_TIENDA' ? 'Recojo en tienda' : metodoActivo === 'PUNTO_ENTREGA' ? 'Punto de entrega' : 'Elegí un método'}</span></div></div><div className="flex items-center justify-between text-xl font-black text-ink sm:text-2xl"><span className="font-display">TOTAL:</span><span className="text-primary-dark">{dinero(total)}</span></div><Button as={Link} to="/catalogo" variant="outline" size="lg" className="mt-6 w-full border-2 border-primary text-primary hover:bg-primary-light">Seguir comprando</Button></Card>
       </div> : null}
-    </div></main>
+    </div></div>
   );
 }

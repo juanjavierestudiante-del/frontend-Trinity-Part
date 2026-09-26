@@ -8,10 +8,10 @@ function ImagenProducto({ item, className }) {
 
 function ControlesCantidad({ item, onQuantityChange, pending, mobile = false }) {
   return (
-    <div className="flex items-center justify-center gap-1.5">
-      <Button onClick={() => onQuantityChange(item.id, -1)} disabled={pending} variant="ghost" size="icon-sm" className={mobile ? "min-h-11 min-w-11 sm:min-h-9 sm:min-w-9" : ""} aria-label="Disminuir cantidad" title="Disminuir cantidad"><Minus size={16} aria-hidden="true" /></Button>
+    <div className="flex items-center justify-start gap-1.5">
+      <Button onClick={() => onQuantityChange(item.id, -1)} disabled={pending} variant="ghost" size="icon-sm" className={mobile ? "min-h-11 min-w-11 max-[374px]:min-h-10 max-[374px]:min-w-10 sm:min-h-9 sm:min-w-9" : ""} aria-label="Disminuir cantidad" title="Disminuir cantidad"><Minus size={16} aria-hidden="true" /></Button>
       <output aria-label={`Cantidad de ${item.name}`} className="w-8 text-center font-semibold text-ink">{item.quantity}</output>
-      <Button onClick={() => onQuantityChange(item.id, 1)} disabled={pending} variant="ghost" size="icon-sm" className={mobile ? "min-h-11 min-w-11 sm:min-h-9 sm:min-w-9" : ""} aria-label="Aumentar cantidad" title="Aumentar cantidad"><Plus size={16} aria-hidden="true" /></Button>
+      <Button onClick={() => onQuantityChange(item.id, 1)} disabled={pending} variant="ghost" size="icon-sm" className={mobile ? "min-h-11 min-w-11 max-[374px]:min-h-10 max-[374px]:min-w-10 sm:min-h-9 sm:min-w-9" : ""} aria-label="Aumentar cantidad" title="Aumentar cantidad"><Plus size={16} aria-hidden="true" /></Button>
     </div>
   );
 }
@@ -27,9 +27,9 @@ export default function CartItem({ item, onRemove, onQuantityChange, pending = f
               <div className="min-w-0"><h2 className="line-clamp-2 break-words font-display text-base font-bold leading-tight text-ink">{item.name}</h2><p className="mt-1 text-xs text-muted">Bs. {Number(item.price).toFixed(2)} por presentación</p></div>
               <Button onClick={() => onRemove(item.id)} disabled={pending} variant="ghost" size="icon" className="min-h-11 min-w-11 shrink-0 text-red-600 hover:bg-red-50" aria-label={`Eliminar ${item.name}`} title="Eliminar artículo"><Trash2 size={19} aria-hidden="true" /></Button>
             </div>
-            <div className="mt-3 flex items-center justify-between gap-3 border-t border-primary/10 pt-2.5">
+            <div className="mt-3 flex flex-col items-stretch gap-2 border-t border-primary/10 pt-2.5 min-[375px]:flex-row min-[375px]:items-center min-[375px]:justify-between min-[375px]:gap-3">
               <ControlesCantidad item={item} onQuantityChange={onQuantityChange} pending={pending} mobile />
-              <div className="min-w-0 text-right"><p className="text-xs text-muted">Subtotal</p><p className="whitespace-nowrap font-display text-lg font-black text-primary-dark">Bs. {Number(item.subtotal).toFixed(2)}</p></div>
+              <div className="min-w-0 text-left min-[375px]:text-right"><p className="text-xs text-muted">Subtotal</p><p className="whitespace-nowrap font-display text-lg font-black text-primary-dark">Bs. {Number(item.subtotal).toFixed(2)}</p></div>
             </div>
           </div>
         </div>

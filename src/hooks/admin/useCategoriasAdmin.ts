@@ -10,7 +10,7 @@ import {
   subirImagenCategoria,
   eliminarImagenCategoria,
 } from '../../services/admin/categoria.api';
-import type { Categoria } from '../../types/catalogo.types';
+
 
 // ── Queries ────────────────────────────────────────────────────────
 
@@ -37,7 +37,7 @@ export const useCrearCategoria = () => {
 export const useActualizarCategoria = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, body }: { id: number; body: any }) => actualizarCategoria(id, body),
+    mutationFn: ({ id, body }: { id: number; body: Parameters<typeof actualizarCategoria>[1] }) => actualizarCategoria(id, body),
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['admin', 'categorias'] });
       qc.invalidateQueries({ queryKey: ['admin', 'categoria', variables.id] });

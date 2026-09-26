@@ -3,6 +3,7 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import { ChevronLeft, ChevronRight, SlidersHorizontal } from "lucide-react";
 import { useProductos } from "../../hooks/useCatalogo";
 import ProductoCard from "../../components/catalogo/ProductoCard";
+import ProductoCardSkeleton from "../../components/catalogo/ProductoCardSkeleton";
 import MenuCategorias from "../../components/catalogo/MenuCategorias";
 import BuscadorProductos from "../../components/catalogo/BuscadorProductos";
 import StatusMessage from "../../components/ui/StatusMessage/StatusMessage";
@@ -55,7 +56,7 @@ export default function Catalogo() {
   const hasShortQuery = busqueda.length === 1;
 
   return (
-    <main className="min-h-screen px-4 py-7 sm:py-10">
+    <div className="min-h-screen px-4 py-7 sm:py-10">
       <Seo
         title={"Catálogo | Trinity Party & Events"}
         description="Descubre todos nuestros productos: decoraciones, regalos, cotillones y artículos para fiestas y celebraciones."
@@ -106,7 +107,7 @@ export default function Catalogo() {
           <section className="min-w-0 flex-1" aria-label="Resultados del catálogo">
             {productos.isLoading && (
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-6 xl:grid-cols-3" aria-label="Cargando productos">
-                {Array.from({ length: 6 }, (_, index) => <div key={index} className="animate-pulse overflow-hidden rounded-card border border-white/40 bg-white/25"><div className="aspect-[4/5] bg-primary-light/35" /><div className="space-y-2 p-3 sm:p-4"><div className="h-4 rounded bg-primary-light/40" /><div className="h-4 w-2/3 rounded bg-primary-light/30" /><div className="h-5 w-1/2 rounded bg-primary-light/40" /></div></div>)}
+                {Array.from({ length: 6 }, (_, index) => <ProductoCardSkeleton key={index} />)}
               </div>
             )}
             {productos.isError && (
@@ -127,6 +128,6 @@ export default function Catalogo() {
           </section>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

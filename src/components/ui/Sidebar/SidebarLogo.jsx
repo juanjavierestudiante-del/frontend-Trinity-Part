@@ -6,7 +6,7 @@ export default function SidebarLogo(props) {
       {...(href ? { href } : {})}
       {...(to ? { to } : {})}
       {...rest}
-      className="flex items-center gap-3 px-4 py-4 border-b border-gray-700"
+      className="flex min-h-16 items-center gap-3 border-b border-gray-700 px-4 py-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
     >
       {img && (
         <img src={img} alt={imgAlt || ''} className="h-8 w-auto" />

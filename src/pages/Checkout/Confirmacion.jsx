@@ -48,7 +48,7 @@ export default function Confirmacion() {
   const enlaceWhatsApp = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(mensaje)}`;
 
   return (
-    <main className="min-h-screen">
+    <div className="min-h-screen">
       <div className="max-w-md px-4 py-16 mx-auto">
         <Card variant="elevated" padding={false} className="p-6 text-center sm:p-8">
           <div className="inline-flex items-center justify-center w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-primary to-secondary text-white">
@@ -110,6 +110,6 @@ export default function Confirmacion() {
           </Button>
         </Card>
       </div>
-    </main>
+    </div>
   );
 }

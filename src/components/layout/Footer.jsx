@@ -98,9 +98,7 @@ export default function Footer() {
           <div className="text-sm text-center text-white/80">
             <p>
               &copy; 2026 Trinity Party & Events. Todos los derechos reservados. |
-              <button type="button" className="ml-2 hover:text-white">
-                Política de privacidad
-              </button>
+              <span className="ml-2">Política de privacidad próximamente</span>
             </p>
           </div>
         </div>

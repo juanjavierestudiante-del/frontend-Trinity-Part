@@ -14,6 +14,7 @@ import Loader from '../../components/ui/Loader/Loader';
 import ConfirmDialog from '../../components/ui/ConfirmDialog/ConfirmDialog';
 import type { Categoria } from '../../types/catalogo.types';
 import Card from '../../components/ui/Card/Card';
+import { cloudinaryUrl } from '../../utils/cloudinary';
 
 // ── Fila de categoría en el árbol ──────────────────────────────────
 
@@ -51,20 +52,24 @@ function FilaCategoria({
         {tieneHijos ? (
           <button
             type="button"
+            aria-label={estaExpandido ? `Contraer ${categoria.nombre}` : `Expandir ${categoria.nombre}`}
+            aria-expanded={estaExpandido}
             onClick={() => onToggle(categoria.idCategoria)}
-            className="flex h-8 w-8 shrink-0 items-center justify-center text-gray-400 hover:text-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="flex h-11 w-11 shrink-0 touch-manipulation items-center justify-center sm:h-8 sm:w-8 text-gray-400 hover:text-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             {estaExpandido ? '▾' : '▸'}
           </button>
         ) : (
-          <span className="w-5 h-5 shrink-0" />
+          <span className="h-11 w-11 shrink-0 sm:h-5 sm:w-5" />
         )}
 
         {/* Imagen miniatura */}
         {categoria.imagenUrl ? (
           <img
-            src={categoria.imagenUrl}
+            src={cloudinaryUrl(categoria.imagenUrl, 'w_160,q_auto,f_auto')}
             alt={categoria.nombre}
+            loading="lazy"
+            decoding="async"
             className="w-8 h-8 rounded object-cover shrink-0"
           />
         ) : (
@@ -97,8 +102,10 @@ function FilaCategoria({
         <div className="flex gap-1 shrink-0">
           {isAdmin && (
             <Button
-              size="icon-sm"
+              size="icon"
               variant="light"
+              aria-label={`Editar ${categoria.nombre}`}
+              className="min-h-11 min-w-11 sm:h-8 sm:w-8 sm:min-h-0 sm:min-w-0"
               onClick={() => navigate(`/admin/categorias/${categoria.idCategoria}/editar`)}
               title="Editar"
             >
@@ -108,8 +115,10 @@ function FilaCategoria({
 
           {isAdmin && (esInactivo ? (
             <Button
-              size="icon-sm"
+              size="icon"
               variant="success"
+              aria-label={`Reactivar ${categoria.nombre}`}
+              className="min-h-11 min-w-11 sm:h-8 sm:w-8 sm:min-h-0 sm:min-w-0"
               onClick={() => onReactivar(categoria)}
               title="Reactivar"
             >
@@ -117,8 +126,10 @@ function FilaCategoria({
             </Button>
           ) : (
             <Button
-              size="icon-sm"
+              size="icon"
               variant="danger"
+              aria-label={`Inactivar ${categoria.nombre}`}
+              className="min-h-11 min-w-11 sm:h-8 sm:w-8 sm:min-h-0 sm:min-w-0"
               onClick={() => onInactivar(categoria, categoria.subcategorias?.length || 0)}
               title="Inactivar"
             >

@@ -7,6 +7,7 @@ import {
   useEliminarVariante,
 } from "../../hooks/admin/useVariantes"
 import { useAuthStore } from "../../store/auth.store"
+import type { Variante } from "../../types/catalogo.types"
 import VarianteForm from "./VarianteForm"
 import VarianteImagenes from "./VarianteImagenes"
 import AtributoSelector from "./AtributoSelector"
@@ -15,6 +16,16 @@ import Badge from "../ui/Badge/Badge"
 import Loader from "../ui/Loader/Loader"
 import Card from "../ui/Card/Card"
 
+type AtributoAsignadoAdmin = {
+  idValor: number
+  valorAtributo: { valor: string; atributo: { nombre: string } }
+}
+
+type VarianteAdmin = Omit<Variante, 'varianteAtributo' | 'inventario'> & {
+  codigoBarras?: string
+  inventario?: { stockActual?: number; stockMinimo?: number } | null
+  varianteAtributo: AtributoAsignadoAdmin[]
+}
 interface Props {
   idProducto: number
 }
@@ -34,13 +45,14 @@ export default function VarianteEditor({ idProducto }: Props) {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-3">
+      <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm font-medium text-gray-300">
           Variantes ({variantes?.length || 0})
         </p>
         {isAdmin && (
           <Button
-            size="xs"
+            size="sm"
+            className="min-h-11 sm:min-h-0"
             onClick={() =>
               setFormAbierto(formAbierto === "nuevo" ? null : "nuevo")
             }
@@ -65,15 +77,15 @@ export default function VarianteEditor({ idProducto }: Props) {
       )}
 
       <div className="flex flex-col gap-3">
-        {variantes?.map((variante: any) => (
+        {variantes?.map((variante: VarianteAdmin) => (
           <Card
             key={variante.idVariante}
             variant="admin"
             padding="sm"
           >
-            <div className="flex items-start justify-between mb-2">
-              <div>
-                <span className="font-mono text-sm font-medium text-gray-200">
+            <div className="mb-2 flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <span className="block break-all font-mono text-sm font-medium text-gray-200">
                   {variante.sku}
                 </span>
                 <div className="flex flex-wrap gap-2 mt-1">
@@ -84,8 +96,8 @@ export default function VarianteEditor({ idProducto }: Props) {
                   />
                   <Badge
                     variant={
-                      variante.inventario?.stockActual >
-                      variante.inventario?.stockMinimo
+                      (variante.inventario?.stockActual ?? 0) >
+                      (variante.inventario?.stockMinimo ?? 0)
                         ? "success"
                         : "danger"
                     }
@@ -104,8 +116,10 @@ export default function VarianteEditor({ idProducto }: Props) {
 
               <div className="flex gap-1">
                 <Button
-                  size="xs"
+                  size="icon"
                   variant="light"
+                  aria-label={`Editar variante ${variante.sku}`}
+                  className="min-h-11 min-w-11 sm:h-8 sm:w-8 sm:min-h-0 sm:min-w-0"
                   onClick={() =>
                     setFormAbierto(
                       formAbierto === variante.idVariante
@@ -120,8 +134,10 @@ export default function VarianteEditor({ idProducto }: Props) {
 
                 {isAdmin && (
                   <Button
-                    size="xs"
+                    size="icon"
                     variant="danger"
+                    aria-label={`Eliminar variante ${variante.sku}`}
+                    className="min-h-11 min-w-11 sm:h-8 sm:w-8 sm:min-h-0 sm:min-w-0"
                     onClick={() => {
                       if (confirm(`¿Eliminar variante ${variante.sku}?`))
                         eliminar(variante.idVariante)

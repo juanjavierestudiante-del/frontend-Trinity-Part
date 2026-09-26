@@ -13,8 +13,10 @@ export default function Sidebar({ children, className = '', open = false, onClos
 
       {/* Sidebar */}
       <aside
+        id="admin-sidebar"
+        aria-label="Navegación de administración"
         className={`
-          fixed inset-y-0 left-0 z-40 flex flex-col w-64 min-h-screen
+          fixed inset-y-0 left-0 z-40 flex min-h-screen w-72 max-w-[calc(100vw-2rem)] flex-col overflow-y-auto overscroll-contain
           bg-ink border-r border-gray-700
           transform transition-transform duration-200 ease-in-out
           lg:sticky lg:top-0 lg:transform-none lg:transition-none

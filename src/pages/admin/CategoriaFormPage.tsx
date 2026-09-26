@@ -199,10 +199,10 @@ export default function CategoriaFormPage() {
   // ==============================
 
   return (
-    <div className="min-h-screen p-3 sm:p-6">
-      <Card variant="admin" padding={false} className="max-w-2xl p-4 sm:p-6 mx-auto">
+    <div className="mx-auto w-full max-w-2xl">
+      <Card variant="admin" padding={false} className="p-4 sm:p-6">
 
-        <h1 className="mb-6 text-2xl font-bold text-white">
+        <h1 className="mb-5 text-2xl font-bold text-white">
           {esEdicion ? 'Editar categoría' : 'Nueva categoría'}
         </h1>
 
@@ -299,14 +299,15 @@ export default function CategoriaFormPage() {
           </div>
 
           {/* BOTONES */}
-          <div className="flex gap-3 mt-2">
-            <Button type="submit" disabled={isPending}>
+          <div className="mt-2 flex flex-col-reverse gap-3 sm:flex-row">
+            <Button className="w-full sm:w-auto" type="submit" disabled={isPending}>
               {isPending
                 ? 'Guardando...'
                 : esEdicion ? 'Guardar cambios' : 'Crear categoría'}
             </Button>
             <Button
               variant="gray"
+              className="w-full sm:w-auto"
               type="button"
               onClick={() => navigate('/admin/categorias')}
               disabled={isPending}

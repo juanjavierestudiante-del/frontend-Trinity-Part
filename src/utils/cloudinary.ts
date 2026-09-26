@@ -7,5 +7,10 @@ export function cloudinaryUrl(url: string, transform: string): string {
   const idx = url.indexOf(marker);
   if (idx === -1) return url;
   const insertAt = idx + marker.length;
+  const pathAfterUpload = url.slice(insertAt).split("?")[0];
+  const hasTransformSegment = pathAfterUpload.split("/").slice(0, 3).some((segment) =>
+    segment.split(",").some((part) => /^(?:w|h|c|q|f|fit|ar|dpr)_/.test(part))
+  );
+  if (hasTransformSegment) return url;
   return `${url.slice(0, insertAt)}${transform}/${url.slice(insertAt)}`;
 }

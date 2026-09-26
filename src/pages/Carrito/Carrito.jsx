@@ -94,7 +94,7 @@ export default function Carrito() {
             </Link>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+          <div className="grid min-w-0 grid-cols-1 gap-8 lg:grid-cols-3">
             <div className="space-y-3 lg:col-span-2">
               {!esDesktop ? <div className="space-y-3">
                 {itemsCarrito.map((item) => (

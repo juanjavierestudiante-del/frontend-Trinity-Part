@@ -1,9 +1,11 @@
 import { Navigate, Link } from 'react-router-dom';
-import { Check, LogOut, Mail, Pencil, Phone, ShieldCheck, User, X } from 'lucide-react';
+import { Check, ChevronDown, ChevronRight, LogOut, Mail, Pencil, Phone, ShieldCheck, User, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useAuthStore } from '../../store/auth.store';
 import { obtenerPedidos } from '../../services/public/carrito.api';
+import ItemPedidoRow from '../../components/pedidos/ItemPedidoRow';
 import Alert from '../../components/ui/Alert/Alert';
+import Badge from '../../components/ui/Badge/Badge';
 import Button from '../../components/ui/Button/Button';
 import Card from '../../components/ui/Card/Card';
 import Input from '../../components/ui/Input/Input';
@@ -22,6 +24,12 @@ const valoresFormulario = (user) => ({
   apellido: user?.apellido || '',
   telefono: user?.telefono || '',
 });
+
+const colorEstado = {
+  PENDIENTE: 'warning',
+  CONFIRMADO: 'success',
+  CANCELADO: 'danger',
+};
 
 function Dato({ icon, label, value, detail }) {
   return (
@@ -49,7 +57,17 @@ export default function Perfil() {
   const [submitError, setSubmitError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
+  const [expandidos, setExpandidos] = useState(() => new Set());
   const fullName = useMemo(() => nombreCompleto(user), [user]);
+
+  const toggleExpandir = (id) => {
+    setExpandidos((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   useEffect(() => {
     setForm(valoresFormulario(user));
@@ -121,7 +139,7 @@ export default function Perfil() {
   };
 
   return (
-    <main className="min-h-screen">
+    <div className="min-h-screen">
       <div className="mx-auto max-w-5xl px-4 py-10 sm:py-14">
         <div className="mb-7 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -190,7 +208,7 @@ export default function Perfil() {
             <Card variant="default" padding="lg" className="sm:p-8">
               <h2 className="font-display text-2xl font-bold text-ink">Mis compras</h2>
               <div className="py-5">
-                {loadingOrders ? <p className="text-center text-muted">Cargando compras...</p> : orders.length === 0 ? <div className="py-7 text-center text-muted"><p className="mb-4">No hay compras realizadas</p><Link to="/catalogo" className="font-bold text-primary hover:underline">Ir a la tienda</Link></div> : <div className="space-y-4">{orders.map((pedido) => <Card key={pedido.idPedido} variant="subtle" padding="md"><div className="flex justify-between gap-4"><div><p className="font-bold text-ink">Pedido #{pedido.idPedido}</p><p className="text-sm text-muted">Estado: {pedido.estado}</p></div><div className="text-right"><p className="font-bold text-ink">Bs. {Number(pedido.total).toFixed(2)}</p><p className="text-sm text-muted">{new Date(pedido.fechaCreacion).toLocaleDateString('es-BO')}</p></div></div>{pedido.items?.length > 0 ? <div className="mt-2 space-y-1 border-t border-white/50 pt-2">{pedido.items.map((detalle) => <div key={detalle.idDetalle} className="flex justify-between gap-3 text-sm"><span className="text-muted">{detalle.variante?.producto?.nombre || detalle.variante?.sku} x{detalle.cantidad}</span><span className="font-medium text-ink">Bs. {(Number(detalle.precioUnitario) * detalle.cantidad).toFixed(2)}</span></div>)}</div> : null}</Card>)}</div>}
+                {loadingOrders ? <p className="text-center text-muted">Cargando compras...</p> : orders.length === 0 ? <div className="py-7 text-center text-muted"><p className="mb-4">No hay compras realizadas</p><Link to="/catalogo" className="font-bold text-primary hover:underline">Ir a la tienda</Link></div> : <div className="space-y-4">{orders.map((pedido) => <Card key={pedido.idPedido} variant="subtle" padding="md"><div className="flex justify-between gap-4"><div><p className="font-bold text-ink">Pedido #{pedido.idPedido}</p><div className="mt-1"><Badge variant={colorEstado[pedido.estado] || 'gray'}>{pedido.estado}</Badge></div></div><div className="text-right"><p className="font-bold text-ink">Bs. {Number(pedido.total).toFixed(2)}</p><p className="text-sm text-muted">{new Date(pedido.fechaCreacion).toLocaleDateString('es-BO')}</p></div></div><button type="button" onClick={() => toggleExpandir(pedido.idPedido)} className="mt-2 flex items-center gap-1 text-sm font-medium text-primary hover:underline">{expandidos.has(pedido.idPedido) ? <ChevronDown size={16} aria-hidden="true" /> : <ChevronRight size={16} aria-hidden="true" />}{expandidos.has(pedido.idPedido) ? 'Ocultar detalles' : 'Ver detalles'}</button>{expandidos.has(pedido.idPedido) && pedido.items?.length > 0 ? <div className="mt-2 space-y-1 border-t border-white/50 pt-2">{pedido.items.map((detalle) => <ItemPedidoRow key={detalle.idDetalle} detalle={detalle} />)}</div> : null}</Card>)}</div>}
               </div>
             </Card>
           </div>
@@ -201,6 +219,6 @@ export default function Perfil() {
           </aside>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

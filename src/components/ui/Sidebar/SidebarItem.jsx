@@ -14,13 +14,13 @@ export default function SidebarItem(props) {
       {...(Component === 'button' ? { type: 'button' } : {})}
       onClick={onClick}
       {...rest}
-      className={`flex w-full min-w-0 items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm font-medium leading-5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+      className={`flex w-full min-w-0 items-center gap-3 rounded-md px-3 py-3 touch-manipulation text-left text-sm font-medium leading-5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
         active
           ? 'bg-primary/20 text-primary-light'
           : 'text-gray-400 hover:bg-gray-700/50 hover:text-gray-200'
       } ${className}`}
     >
-      {Icon && <Icon className="h-5 w-5 shrink-0" />}
+      {Icon && <Icon aria-hidden="true" className="h-5 w-5 shrink-0" />}
       <span className="min-w-0 truncate">{children}</span>
     </Component>
   )

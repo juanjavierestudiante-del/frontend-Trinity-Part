@@ -50,7 +50,8 @@ export default function Alert(props) {
 
   return (
     <div
-      role="alert"
+      role={type === 'danger' || type === 'warning' ? 'alert' : 'status'}
+      aria-live={type === 'danger' || type === 'warning' ? 'assertive' : 'polite'}
       className={`flex items-start gap-3 rounded-card border p-4 shadow-sm ${config.bg} ${config.text} ${config.border} ${className}`}
     >
       {CustomIcon ? (
@@ -61,7 +62,7 @@ export default function Alert(props) {
         <button
           type="button"
           onClick={onDismiss}
-          className={`ml-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-lg leading-none opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-current ${config.text}`}
+          className={`ml-auto flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-md text-lg leading-none opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-current ${config.text}`}
           aria-label="Cerrar"
         >
           ✕

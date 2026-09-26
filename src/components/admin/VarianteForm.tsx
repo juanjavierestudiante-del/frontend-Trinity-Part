@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useMarcas, useUnidades } from '../../hooks/admin/useAuxiliares'
 import type { VarianteBody } from '../../services/admin/variante.api'
 import Button from '../ui/Button/Button'
@@ -32,11 +32,7 @@ export default function VarianteForm({
     inicial ? { ...formVacio(idProducto), ...inicial } : formVacio(idProducto)
   )
 
-  useEffect(() => {
-    if (inicial) setForm({ ...formVacio(idProducto), ...inicial })
-  }, [inicial])
-
-  const set = (campo: keyof VarianteBody, valor: any) =>
+  const set = <K extends keyof VarianteBody>(campo: K, valor: VarianteBody[K]) =>
     setForm((prev) => ({ ...prev, [campo]: valor }))
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -45,7 +41,7 @@ export default function VarianteForm({
   }
 
   return (
-    <Card as="form" onSubmit={handleSubmit} variant="admin" padding="md" className="grid grid-cols-2 gap-3">
+    <Card as="form" onSubmit={handleSubmit} variant="admin" padding="md" className="grid grid-cols-1 gap-3 sm:grid-cols-2">
       <div>
         <Label className="block mb-1 text-base !text-primary-light" dark>SKU</Label>
         <Input
@@ -130,11 +126,11 @@ export default function VarianteForm({
         </Select>
       </div>
 
-      <div className="flex justify-end col-span-2 gap-2">
-        <Button size="sm" variant="light" type="button" onClick={onCancelar}>
+      <div className="flex flex-col-reverse gap-2 sm:col-span-2 sm:flex-row sm:justify-end">
+        <Button className="w-full sm:w-auto" size="sm" variant="light" type="button" onClick={onCancelar}>
           Cancelar
         </Button>
-        <Button size="sm" type="submit" disabled={guardando}>
+        <Button className="w-full sm:w-auto" size="sm" type="submit" disabled={guardando}>
           {guardando ? 'Guardando...' : 'Guardar variante'}
         </Button>
       </div>

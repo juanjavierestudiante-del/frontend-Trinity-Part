@@ -92,7 +92,8 @@ export default function AtributoSelector({ idVariante, idProducto, atributosAsig
             <button
               type="button"
               onClick={() => quitar({ idVariante, idValor: a.idValor })}
-              className="ml-1 hover:text-red-400"
+              aria-label={`Quitar ${a.valorAtributo.atributo.nombre}: ${a.valorAtributo.valor}`}
+              className="ml-1 flex h-8 w-8 items-center justify-center rounded hover:bg-white/10 hover:text-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               <HiX className="w-3 h-3" />
             </button>

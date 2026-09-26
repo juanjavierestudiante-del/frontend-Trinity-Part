@@ -45,21 +45,23 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return body
 }
 
-export const getMarketplaceHealth = () => request<{ status: string; service: string }>('/health')
+export const getMarketplaceHealth = (signal?: AbortSignal) => request<{ status: string; service: string }>('/health', { signal })
 
-export const getMarketplaceStatus = () => request<MarketplaceAgentStatus>('/marketplace/status')
+export const getMarketplaceStatus = (signal?: AbortSignal) => request<MarketplaceAgentStatus>('/marketplace/status', { signal })
 
-export const getMarketplaceCategories = () => request<{ categories: string[] }>('/marketplace/categories')
+export const getMarketplaceCategories = (signal?: AbortSignal) => request<{ categories: string[] }>('/marketplace/categories', { signal })
 
-export const getMarketplacePreview = async (product: Producto, marketplaceCategory: string) => {
+export const getMarketplacePreview = async (product: Producto, marketplaceCategory: string, signal?: AbortSignal) => {
   const response = await request<{ product: MarketplacePreview }>('/marketplace/preview', {
     method: 'POST',
     body: JSON.stringify({ product, marketplaceCategory }),
+    signal,
   })
   return response.product
 }
 
-export const prepareMarketplace = (product: Producto, marketplaceCategory: string) => request<MarketplaceAgentStatus>('/marketplace/prepare', {
+export const prepareMarketplace = (product: Producto, marketplaceCategory: string, signal?: AbortSignal) => request<MarketplaceAgentStatus>('/marketplace/prepare', {
   method: 'POST',
   body: JSON.stringify({ product, marketplaceCategory }),
+  signal,
 })

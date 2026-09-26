@@ -94,9 +94,9 @@ export default function ProductoFormPage() {
     )
 
   return (
-    <div className="min-h-screen p-3 sm:p-6 bg-gray-900">
-      <Card variant="admin" padding={false} className="max-w-2xl p-4 sm:p-6 mx-auto">
-        <h1 className="mb-6 text-2xl font-bold text-white">
+    <div className="mx-auto w-full max-w-2xl">
+      <Card variant="admin" padding={false} className="p-4 sm:p-6">
+        <h1 className="mb-5 text-2xl font-bold text-white">
           {esEdicion ? "Editar producto" : "Nuevo producto"}
         </h1>
 
@@ -197,7 +197,7 @@ export default function ProductoFormPage() {
               onChange={(e : React.ChangeEvent<HTMLSelectElement>) =>
                 setForm({ ...form, rating: Number(e.target.value) })
               }
-              className="rounded-md border border-gray-600 bg-gray-700 p-2.5 text-white focus:border-primary focus:ring-primary"
+              className="block w-full rounded-md border border-gray-600 bg-gray-700 p-2.5 text-white focus:border-primary focus:ring-primary"
             >
               <option value={0}>0</option>
               <option value={1}>1</option>
@@ -209,8 +209,8 @@ export default function ProductoFormPage() {
           </div>
 
           {/* Botones */}
-          <div className="flex gap-3 mt-2">
-            <Button type="submit" disabled={creando || actualizando}>
+          <div className="mt-2 flex flex-col-reverse gap-3 sm:flex-row">
+            <Button className="w-full sm:w-auto" type="submit" disabled={creando || actualizando}>
               {creando || actualizando
                 ? "Guardando..."
                 : esEdicion
@@ -219,6 +219,7 @@ export default function ProductoFormPage() {
             </Button>
             <Button
               variant="gray"
+              className="w-full sm:w-auto"
               type="button"
               onClick={() => navigate("/admin/productos")}
             >

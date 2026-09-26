@@ -17,7 +17,7 @@ const TEXT_SIZE_MAP = {
 export default function Loader(props) {
   const {
     size = 'lg',
-    text = 'Cargando...',
+    text = 'Cargando…',
     className = '',
     showText = true,
   } = props

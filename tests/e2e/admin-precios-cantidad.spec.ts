@@ -16,7 +16,7 @@ async function preparar(page: Page) {
     if (request.method() === 'POST' || request.method() === 'PUT') { guardados.push(request.postDataJSON()); return route.fulfill({ status: request.method() === 'POST' ? 201 : 204, json: {} }) }
     return route.fulfill({ status: 404, json: { error: 'No encontrado' } })
   })
-  await page.goto('/admin/productos/3'); await page.getByRole('button', { name: 'Precios por cantidad' }).click(); await expect(page.getByRole('heading', { name: 'Listas de precios' })).toBeVisible(); return guardados
+  await page.goto('/admin/productos/3'); await page.getByRole('tab', { name: 'Precios por cantidad' }).click(); await expect(page.getByRole('heading', { name: 'Listas de precios' })).toBeVisible(); return guardados
 }
 
 test('admin edita una lista compartida y asigna variantes en bloque', async ({ page }) => {

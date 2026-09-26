@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Sidebar from '../ui/Sidebar/Sidebar'
 import SidebarItem from '../ui/Sidebar/SidebarItem'
 import SidebarItems from '../ui/Sidebar/SidebarItems'
@@ -30,13 +30,22 @@ export default function AdminLayout({ children }: Props) {
 
   const isActive = (path: string) => location.pathname.startsWith(path)
 
+  useEffect(() => {
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setSidebarOpen(false)
+    }
+    document.addEventListener('keydown', closeOnEscape)
+    return () => document.removeEventListener('keydown', closeOnEscape)
+  }, [])
+
   const handleLogout = () => {
     void logout()
     navigate('/admin/login')
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-900">
+    <div className="flex min-h-screen min-w-0 bg-gray-900">
+      <a href="#admin-main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-md focus:bg-gray-800 focus:px-4 focus:py-3 focus:text-white focus:shadow-lg">Saltar al contenido principal</a>
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)}>
         <SidebarLogo
           as={Link}
@@ -128,19 +137,21 @@ export default function AdminLayout({ children }: Props) {
 
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top bar mobile */}
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-700 lg:hidden">
+        <div className="flex min-w-0 items-center gap-3 border-b border-gray-700 px-3 py-2.5 sm:px-4 lg:hidden">
           <button
             type="button"
             aria-label="Abrir menú de administración"
+            aria-expanded={sidebarOpen}
+            aria-controls="admin-sidebar"
             onClick={() => setSidebarOpen(true)}
-            className="flex h-10 w-10 items-center justify-center rounded-md text-gray-400 hover:bg-gray-700/50 hover:text-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="flex h-11 w-11 shrink-0 touch-manipulation items-center justify-center rounded-md text-gray-400 hover:bg-gray-700/50 hover:text-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <HiMenu className="w-5 h-5" />
           </button>
-          <span className="text-sm font-medium text-gray-200">Trinity Party</span>
+          <span className="min-w-0 truncate text-sm font-medium text-gray-200">Administración</span>
         </div>
 
-        <main className="min-w-0 flex-1 overflow-auto p-3 sm:p-6">
+        <main id="admin-main" className="min-w-0 flex-1 overflow-x-hidden overflow-y-auto p-3 sm:p-6" tabIndex={-1}>
           {children ?? <Outlet />}
         </main>
       </div>

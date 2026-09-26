@@ -155,7 +155,7 @@ test('la PDP mantiene el precio normal y revela el precio por cantidad sin alter
   });
 
   await page.goto('/productos/cortina-e2e-pdp');
-  const buyBox = page.locator('main > div > div > aside');
+  const buyBox = page.locator('main > div > div > div.grid > aside');
   await expect(buyBox.getByText('Bs. 10.00', { exact: true })).toBeVisible();
   await expect(buyBox.getByText('Precio por cantidad · desde 6')).toHaveCount(0);
   await expect(buyBox.locator('details')).not.toHaveAttribute('open', '');
