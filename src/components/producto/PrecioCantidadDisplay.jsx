@@ -10,15 +10,16 @@ export default function PrecioCantidadDisplay({ cantidad, precioPorPresentacion,
   const reglas = [...reglasPrecio].sort((a, b) => a.cantidadMinima - b.cantidadMinima || a.orden - b.orden)
   const normal = reglas.find((regla) => regla.cantidadMinima === 1)
   const aplicaPrecioCantidad = cantidadMinimaAplicada > 1
+  const mostrarPrecioAnterior = aplicaPrecioCantidad && normal && Number(normal.precioPorPresentacion) > Number(precioPorPresentacion)
   const siguiente = reglas.find((regla) => regla.cantidadMinima > cantidad)
 
-  // Cambios móviles: el precio queda directo y sin subtítulos extra.
+  // Cambio móvil: al cruzar un umbral, el precio normal vuelve a quedar tachado junto al nuevo.
   if (compacto) {
     return (
-      <section aria-label="Precio del producto">
-        <p aria-live="polite" className={`font-display text-3xl font-black leading-none ${aplicaPrecioCantidad ? 'text-rose-600' : 'text-primary-dark'}`}>
-          {dinero(precioPorPresentacion)}
-        </p>
+      <section aria-label="Precio del producto" aria-live="polite" className="space-y-1">
+        {mostrarPrecioAnterior && <p className="text-sm font-semibold text-muted line-through decoration-muted">{dinero(normal.precioPorPresentacion)}</p>}
+        <p className={`font-display text-3xl font-black leading-none ${aplicaPrecioCantidad ? 'text-rose-700' : 'text-primary-dark'}`}>{dinero(precioPorPresentacion)}</p>
+        {aplicaPrecioCantidad && <p className="text-xs font-semibold text-rose-700">Precio por cantidad · desde {cantidadMinimaAplicada}</p>}
       </section>
     )
   }

@@ -142,10 +142,11 @@ export default function ProductoGaleria({ imagenes = [], nombre }) {
               </div>
             );
           })}
+          {/* Cambio móvil: miniaturas visibles para anticipar el contenido del carrusel. */}
           {imagenesValidas.length > 1 && (
             <div
-              className="absolute inset-x-0 bottom-3 z-10 flex justify-center gap-2"
-              aria-label="Imágenes del producto"
+              className="absolute inset-x-3 bottom-3 z-10 flex gap-2 overflow-x-auto rounded-xl bg-white/85 p-2 shadow-brand backdrop-blur-sm"
+              aria-label="Miniaturas de producto"
             >
               {imagenesValidas.map((miniatura, indice) => (
                 <button
@@ -154,8 +155,10 @@ export default function ProductoGaleria({ imagenes = [], nombre }) {
                   onClick={() => irAImagen(indice)}
                   aria-label={`Ver imagen ${indice + 1}`}
                   aria-current={indice === imagenActiva ? "true" : undefined}
-                  className={`h-2.5 w-2.5 rounded-full border border-primary-dark/40 ${indice === imagenActiva ? "bg-primary-dark" : "bg-white/80"}`}
-                />
+                  className={`h-11 w-11 shrink-0 overflow-hidden rounded-lg border-2 bg-white p-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${indice === imagenActiva ? "border-primary" : "border-white/70"}`}
+                >
+                  <img src={cloudinaryUrl(miniatura.url, "w_160,q_auto,f_auto")} alt="" className="h-full w-full object-contain" loading="lazy" />
+                </button>
               ))}
             </div>
           )}

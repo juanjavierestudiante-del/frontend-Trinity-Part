@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Check } from 'lucide-react';
+import type { ReactNode } from 'react';
+import { Check, ChevronDown } from 'lucide-react';
 import type { TipoVisualizacionAtributo, Variante } from '../../types/catalogo.types';
 import { cloudinaryUrl } from '../../utils/cloudinary';
 
@@ -22,6 +23,9 @@ interface Props {
   varianteInicial: Variante | null;
   onResolverVariante: (variante: Variante | null) => void;
   onSeleccionIncompleta?: (atributo: { idAtributo: number; nombre: string } | null) => void;
+  compactoMovil?: boolean;
+  accion?: ReactNode;
+  children?: ReactNode;
 }
 
 const contieneValor = (variante: Variante, idValor: number) =>
@@ -92,7 +96,7 @@ function OpcionAtributo({
   return <button type="button" onClick={onClick} disabled={disabled} aria-pressed={seleccionada} className={`${base} ${estado} ${esFallbackColor ? 'px-2 text-xs' : ''}`}>{valor.valor}</button>;
 }
 
-export default function SelectorAtributos({ variantes, idAtributoPrincipal, varianteInicial, onResolverVariante, onSeleccionIncompleta }: Props) {
+export default function SelectorAtributos({ variantes, idAtributoPrincipal, varianteInicial, onResolverVariante, onSeleccionIncompleta, compactoMovil = false, accion, children }: Props) {
   const variantesActivas = useMemo(() => variantes.filter((variante) => variante.estado === 'Activo'), [variantes]);
   const claveVariantes = variantesActivas.map((variante) => `${variante.idVariante}:${variante.varianteAtributo.map(({ valorAtributo }) => valorAtributo.idValor).join(',')}`).join('|');
   const [selecciones, setSelecciones] = useState<Record<number, number>>(() => obtenerSeleccionesDeVariante(varianteInicial ?? variantesActivas[0] ?? null));
@@ -163,9 +167,7 @@ export default function SelectorAtributos({ variantes, idAtributoPrincipal, vari
     });
   };
 
-  return (
-    <div id="selector-atributos" className="space-y-4">
-      {grupos.map((atributo) => {
+  const controles = grupos.map((atributo) => {
         const seleccionesSinAtributo = { ...selecciones };
         delete seleccionesSinAtributo[atributo.idAtributo];
         const candidatasBase = variantesActivas.filter((variante) => coincideConSelecciones(variante, seleccionesSinAtributo));
@@ -181,8 +183,8 @@ export default function SelectorAtributos({ variantes, idAtributoPrincipal, vari
 
         return (
           <fieldset id={`atributo-${atributo.idAtributo}`} tabIndex={-1} key={atributo.idAtributo} className="scroll-mt-28 focus:outline-none">
-            <legend className={`text-sm font-bold ${atributo.idAtributo === idAtributoPrincipal ? 'text-primary-dark' : 'text-ink'}`}>{atributo.nombre}</legend>
-            {atributo.tipoVisualizacion === 'color' && selecciones[atributo.idAtributo] && <p className="mt-1 text-sm text-muted">{atributo.nombre}: {atributo.valores.find((valor) => valor.idValor === selecciones[atributo.idAtributo])?.valor}</p>}
+            <legend className={`text-sm font-bold ${atributo.idAtributo === idAtributoPrincipal ? 'text-primary-dark' : 'text-ink'}`}>{atributo.nombre}{compactoMovil && selecciones[atributo.idAtributo] ? `: ${atributo.valores.find((valor) => valor.idValor === selecciones[atributo.idAtributo])?.valor}` : ''}</legend>
+            {atributo.tipoVisualizacion === 'color' && selecciones[atributo.idAtributo] && !compactoMovil && <p className="mt-1 text-sm text-muted">{atributo.nombre}: {atributo.valores.find((valor) => valor.idValor === selecciones[atributo.idAtributo])?.valor}</p>}
             <div className={`mt-2 flex flex-wrap gap-2 ${atributo.tipoVisualizacion === 'color' ? 'items-center' : ''}`}>
               {(atributo.tipoVisualizacion === 'color' ? valoresRelevantes.filter((valor) => valor.visualValue) : valoresRelevantes).map((valor) => {
                 const siguientes = { ...seleccionesSinAtributo, [atributo.idAtributo]: valor.idValor };
@@ -198,7 +200,24 @@ export default function SelectorAtributos({ variantes, idAtributoPrincipal, vari
             })}</div>}
           </fieldset>
         );
-      })}
+      });
+
+  return (
+    <div id="selector-atributos" className="space-y-4">
+      {compactoMovil ? (
+        <>
+          {/* Cambio móvil: el atributo principal queda visible; lo secundario se pliega. */}
+          {controles[0]}
+          {accion}
+          <details className="group border-y border-white/55" data-mobile-options>
+            <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 py-3 text-sm font-bold text-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset">
+              <span>Ver más opciones</span>
+              <ChevronDown className="h-4 w-4 shrink-0 transition-transform group-open:rotate-180" aria-hidden="true" />
+            </summary>
+            <div className="space-y-4 pb-4">{controles.slice(1)}{children}</div>
+          </details>
+        </>
+      ) : controles}
     </div>
   );
 }

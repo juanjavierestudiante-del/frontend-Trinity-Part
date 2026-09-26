@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { CheckCircle2, ChevronDown, ShoppingCart } from "lucide-react";
 import Button from "../ui/Button/Button";
 import Card from "../ui/Card/Card";
@@ -22,6 +23,7 @@ export function ResumenProducto({
   className = "",
   mostrarDescripcion = true,
   modoMovil = false,
+  ocultarAtributoTelefono = false,
 }) {
   const mostrarResumen =
     producto.descripcionCorta &&
@@ -31,7 +33,7 @@ export function ResumenProducto({
   ) ?? variante?.varianteAtributo?.[0];
 
   return (
-    <div className={`space-y-3 ${className}`}>
+    <div className={`${modoMovil ? "flex flex-col gap-3" : "space-y-3"} ${className}`}>
       <div>
         <p className={`mb-2 text-xs font-bold uppercase tracking-[0.22em] text-primary-dark ${modoMovil ? "hidden" : ""}`}>
           Producto
@@ -51,13 +53,8 @@ export function ResumenProducto({
             {stock > 0 ? `${stock} disponibles` : "Agotado"}
           </p>
         )}
-        {modoMovil && atributoPrincipal && (
-          <p className="flex items-center gap-2 text-sm font-medium text-ink">
-            {atributoPrincipal.valorAtributo.visualValue && <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-full border border-black/15" style={{ backgroundColor: atributoPrincipal.valorAtributo.visualValue }} />}
-            <span>{atributoPrincipal.valorAtributo.atributo.nombre}: {atributoPrincipal.valorAtributo.valor}</span>
-          </p>
-        )}
       </div>
+      <div className={modoMovil ? "order-1 md:order-2" : ""}>
       {variante ? (
         <PrecioCantidadDisplay
           cantidad={cantidad}
@@ -71,6 +68,14 @@ export function ResumenProducto({
       ) : (
         <p className="text-sm text-muted">
           Elige las opciones para consultar disponibilidad y precio.
+        </p>
+      )}
+      </div>
+      {/* Cambio móvil: nombre, precio y variante elegida en ese orden de lectura. */}
+      {modoMovil && atributoPrincipal && (
+        <p className={`order-2 items-center gap-2 text-sm font-medium text-ink md:order-1 ${ocultarAtributoTelefono ? 'hidden md:flex' : 'flex'}`}>
+          {atributoPrincipal.valorAtributo.visualValue && <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-full border border-black/15" style={{ backgroundColor: atributoPrincipal.valorAtributo.visualValue }} />}
+          <span>{atributoPrincipal.valorAtributo.atributo.nombre}: {atributoPrincipal.valorAtributo.valor}</span>
         </p>
       )}
     </div>
@@ -94,10 +99,50 @@ export default function BuyBox({
   onAgregarAlCarrito,
   agregado,
   usuario,
+  ctaMovilRef,
 }) {
   const puedeComprar = Boolean(variante && stock > 0);
   const incompleta = !variante && Boolean(atributoPendiente);
   const tieneSelectorAtributos = puedeUsarSelectorAtributos(producto.variantes);
+  const [esTelefono, setEsTelefono] = useState(() => window.matchMedia("(max-width: 767px)").matches);
+
+  useEffect(() => {
+    const consulta = window.matchMedia("(max-width: 767px)");
+    const actualizar = () => setEsTelefono(consulta.matches);
+    consulta.addEventListener("change", actualizar);
+    return () => consulta.removeEventListener("change", actualizar);
+  }, []);
+
+  // Cambio móvil: el CTA se coloca antes de las opciones plegadas solo en teléfonos.
+  const botonCompraMovil = (
+    <div ref={ctaMovilRef}>
+      {usuario ? (
+        <Button
+          onClick={incompleta ? onSolicitarAtributo : onAgregarAlCarrito}
+          disabled={Boolean(variante && (stock === 0 || !precioPorPresentacion))}
+          variant="primary"
+          size="lg"
+          className="min-h-12 w-full shadow-brand-lg"
+          icon={incompleta ? undefined : agregado ? CheckCircle2 : ShoppingCart}
+          aria-label={agregado ? "Producto agregado al carrito" : undefined}
+        >
+          {incompleta
+            ? `Elegir ${atributoPendiente.nombre}`
+            : stock === 0 && variante
+              ? "Agotado"
+              : agregado
+                ? "Agregado"
+                : subtotal != null
+                  ? esTelefono ? "Agregar al carrito" : `Agregar al carrito · Bs. ${Number(subtotal).toFixed(2)}`
+                  : "Agregar al carrito"}
+        </Button>
+      ) : variante && stock === 0 ? (
+        <Button variant="primary" size="lg" className="min-h-12 w-full" disabled>Agotado</Button>
+      ) : (
+        <Button as={Link} to="/login" variant="primary" size="lg" className="min-h-12 w-full">Iniciar sesión para comprar</Button>
+      )}
+    </div>
+  );
 
   return (
     <Card
@@ -205,7 +250,22 @@ export default function BuyBox({
       </div>
       {/* Cambios móviles: opciones plegables y CTA en el flujo de la página. */}
       <div className="space-y-3 lg:hidden">
-        <details className="group border-y border-white/55">
+        {esTelefono && tieneSelectorAtributos ? (
+          <SelectorAtributos
+            variantes={producto.variantes}
+            idAtributoPrincipal={producto.idAtributoPrincipal}
+            varianteInicial={variante}
+            onResolverVariante={onSeleccionarVariante}
+            onSeleccionIncompleta={onSeleccionIncompleta}
+            compactoMovil
+            accion={botonCompraMovil}
+          >
+            <SelectorCantidad cantidad={cantidad} maximo={stock} onChange={onCantidadChange} disabled={!puedeComprar} />
+          </SelectorAtributos>
+        ) : (
+        <>
+        {esTelefono && botonCompraMovil}
+        <details className="group border-y border-white/55" data-mobile-options>
           <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 py-3 text-sm font-bold text-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset">
             <span>Ver más opciones{variante?.varianteAtributo?.length ? ` · ${variante.varianteAtributo.map(({ valorAtributo }) => valorAtributo.valor).join(' · ')}` : ''}</span>
             <ChevronDown className="h-4 w-4 shrink-0 transition-transform group-open:rotate-180" aria-hidden="true" />
@@ -225,30 +285,8 @@ export default function BuyBox({
             <SelectorCantidad cantidad={cantidad} maximo={stock} onChange={onCantidadChange} disabled={!puedeComprar} />
           </div>
         </details>
-        {usuario ? (
-          <Button
-            onClick={incompleta ? onSolicitarAtributo : onAgregarAlCarrito}
-            disabled={Boolean(variante && (stock === 0 || !precioPorPresentacion))}
-            variant="primary"
-            size="lg"
-            className="min-h-12 w-full shadow-brand-lg"
-            icon={incompleta ? undefined : agregado ? CheckCircle2 : ShoppingCart}
-            aria-label={agregado ? "Producto agregado al carrito" : undefined}
-          >
-            {incompleta
-              ? `Elegir ${atributoPendiente.nombre}`
-              : stock === 0 && variante
-                ? "Agotado"
-                : agregado
-                  ? "Agregado"
-                  : subtotal != null
-                    ? `Agregar al carrito · Bs. ${Number(subtotal).toFixed(2)}`
-                    : "Agregar al carrito"}
-          </Button>
-        ) : variante && stock === 0 ? (
-          <Button variant="primary" size="lg" className="min-h-12 w-full" disabled>Agotado</Button>
-        ) : (
-          <Button as={Link} to="/login" variant="primary" size="lg" className="min-h-12 w-full">Iniciar sesión para comprar</Button>
+        {!esTelefono && botonCompraMovil}
+        </>
         )}
       </div>
     </Card>

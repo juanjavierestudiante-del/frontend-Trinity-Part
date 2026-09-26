@@ -8,6 +8,8 @@ import Card from '../../components/ui/Card/Card';
 import Seo from '../../components/seo/Seo';
 import ProductoGaleria from '../../components/producto/ProductoGaleria';
 import BuyBox, { ResumenProducto } from '../../components/producto/BuyBox';
+import { puedeUsarSelectorAtributos } from '../../components/producto/SelectorAtributos';
+import BarraCompraMovil from '../../components/producto/BarraCompraMovil';
 import { useAuthStore } from '../../store/auth.store';
 import { useAgregarAlCarrito } from '../../hooks/useCarrito';
 import Alert from '../../components/ui/Alert/Alert';
@@ -46,6 +48,8 @@ export default function PaginaProducto() {
   const [error, setError] = useState('');
   const [agregado, setAgregado] = useState(false);
   const ultimoClickAgregar = useRef(0);
+  const [ctaMovilElemento, setCtaMovilElemento] = useState<HTMLDivElement | null>(null);
+  const [mostrarBarraMovil, setMostrarBarraMovil] = useState(false);
   const { mutate: agregarAlCarrito } = useAgregarAlCarrito();
   const user = useAuthStore((state) => state.user);
   const productoSeguro = useMemo(() => producto ? normalizarProducto(producto) : null, [producto]);
@@ -55,10 +59,42 @@ export default function PaginaProducto() {
   }, []);
 
   const solicitarAtributo = useCallback(() => {
-    const destino = atributoPendiente ? document.getElementById(`atributo-${atributoPendiente.idAtributo}`) : document.getElementById('selector-atributos');
-    destino?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    window.setTimeout(() => destino?.focus(), 350);
+    // Cambio móvil: abre las opciones antes de enfocar un atributo que estaba plegado.
+    if (window.matchMedia('(max-width: 767px)').matches) {
+      const opciones = document.querySelector<HTMLDetailsElement>('[data-mobile-options]');
+      if (opciones) opciones.open = true;
+    }
+    window.requestAnimationFrame(() => {
+      const id = atributoPendiente ? `atributo-${atributoPendiente.idAtributo}` : 'selector-atributos';
+      const destino = Array.from(document.querySelectorAll<HTMLElement>(`[id="${id}"]`)).find((elemento) => elemento.getClientRects().length > 0);
+      destino?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      window.setTimeout(() => destino?.focus(), 350);
+    });
   }, [atributoPendiente]);
+
+  useEffect(() => {
+    // Cambio móvil: la compra fija aparece si el CTA aún no entra o ya salió de la pantalla.
+    const elemento = ctaMovilElemento;
+    if (!elemento || !('IntersectionObserver' in window)) return undefined;
+    const consultaMovil = window.matchMedia('(max-width: 767px)');
+    const actualizar = () => {
+      const posicion = elemento.getBoundingClientRect();
+      setMostrarBarraMovil(consultaMovil.matches && (posicion.top > window.innerHeight - 24 || posicion.bottom < 24));
+    };
+    const observador = new IntersectionObserver(actualizar);
+    observador.observe(elemento);
+    window.addEventListener('scroll', actualizar, { passive: true });
+    window.addEventListener('resize', actualizar);
+    consultaMovil.addEventListener('change', actualizar);
+    const primerChequeo = window.requestAnimationFrame(actualizar);
+    return () => {
+      observador.disconnect();
+      window.removeEventListener('scroll', actualizar);
+      window.removeEventListener('resize', actualizar);
+      consultaMovil.removeEventListener('change', actualizar);
+      window.cancelAnimationFrame(primerChequeo);
+    };
+  }, [ctaMovilElemento]);
 
   useEffect(() => {
     const inicial = productoSeguro?.variantes.find((variante) => variante.estado === 'Activo') ?? null;
@@ -166,18 +202,18 @@ export default function PaginaProducto() {
   };
 
   return (
-    <div className="min-h-screen px-4 py-4 sm:py-10">
+    <div className={`min-h-screen px-4 py-4 sm:py-10 ${mostrarBarraMovil ? 'pb-28 md:pb-10' : ''}`}>
       <Seo title={`${productoSeguro.nombre} | Trinity Party & Events`} description={productoSeguro.descripcionCorta ?? productoSeguro.descripcion ?? undefined} jsonLd={jsonLdProduct} />
       <div className="mx-auto max-w-7xl">
         {error ? <Alert type="danger" className="mb-5" onDismiss={() => setError('')}>{error}</Alert> : null}
         {/* Cambios móviles: imagen, resumen, compra y contenido progresivo en una columna. */}
-        <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(22rem,0.98fr)] lg:gap-x-10 lg:gap-y-10">
+        <div className="grid items-start gap-2.5 md:gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(22rem,0.98fr)] lg:gap-x-10 lg:gap-y-10">
           <ProductoGaleria key={imagenes.map((imagen) => `${imagen.idImagen}:${imagen.url}`).join('|')} imagenes={imagenes} nombre={productoSeguro.nombre} />
           <div className="lg:hidden">
-            <ResumenProducto producto={productoSeguro} variante={varianteSeleccionada} cantidad={cantidad} precioPorPresentacion={precioLinea?.precioPorPresentacion} subtotal={precioLinea?.subtotal} cantidadMinimaAplicada={precioLinea?.cantidadMinimaAplicada} reglasPrecio={listaEfectiva?.reglas} stock={stock} modoMovil />
+            <ResumenProducto producto={productoSeguro} variante={varianteSeleccionada} cantidad={cantidad} precioPorPresentacion={precioLinea?.precioPorPresentacion} subtotal={precioLinea?.subtotal} cantidadMinimaAplicada={precioLinea?.cantidadMinimaAplicada} reglasPrecio={listaEfectiva?.reglas} stock={stock} modoMovil ocultarAtributoTelefono={puedeUsarSelectorAtributos(productoSeguro.variantes)} />
           </div>
           <aside className="lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:sticky lg:top-24 lg:self-start">
-            <BuyBox producto={productoSeguro} variante={varianteSeleccionada} stock={stock} cantidad={cantidad} precioPorPresentacion={precioLinea?.precioPorPresentacion} subtotal={precioLinea?.subtotal} cantidadMinimaAplicada={precioLinea?.cantidadMinimaAplicada} reglasPrecio={listaEfectiva?.reglas} onCantidadChange={handleCantidad} onSeleccionarVariante={seleccionarVariante} onSeleccionIncompleta={setAtributoPendiente} atributoPendiente={atributoPendiente} onSolicitarAtributo={solicitarAtributo} onAgregarAlCarrito={handleAgregarAlCarrito} agregado={agregado} usuario={user} />
+            <BuyBox producto={productoSeguro} variante={varianteSeleccionada} stock={stock} cantidad={cantidad} precioPorPresentacion={precioLinea?.precioPorPresentacion} subtotal={precioLinea?.subtotal} cantidadMinimaAplicada={precioLinea?.cantidadMinimaAplicada} reglasPrecio={listaEfectiva?.reglas} onCantidadChange={handleCantidad} onSeleccionarVariante={seleccionarVariante} onSeleccionIncompleta={setAtributoPendiente} atributoPendiente={atributoPendiente} onSolicitarAtributo={solicitarAtributo} onAgregarAlCarrito={handleAgregarAlCarrito} agregado={agregado} usuario={user} ctaMovilRef={setCtaMovilElemento} />
           </aside>
           <div className="hidden space-y-6 lg:col-start-1 lg:row-start-2 lg:block">
             <Card variant="subtle" padding="lg">
@@ -234,6 +270,7 @@ export default function PaginaProducto() {
           </div>
         </div>
       </div>
+      {mostrarBarraMovil && <BarraCompraMovil variante={varianteSeleccionada} stock={stock} subtotal={precioLinea?.subtotal} precioPorPresentacion={precioLinea?.precioPorPresentacion} usuario={user} atributoPendiente={atributoPendiente} onAgregarAlCarrito={handleAgregarAlCarrito} onElegirAtributo={solicitarAtributo} agregado={agregado} />}
     </div>
   );
 }

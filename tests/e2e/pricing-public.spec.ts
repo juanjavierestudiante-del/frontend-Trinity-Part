@@ -114,6 +114,7 @@ test('checkout conserva el precio aplicado por grupo en la confirmación', async
 });
 
 test('la PDP mantiene el precio normal y revela el precio por cantidad sin alterar colores', async ({ page }) => {
+  test.setTimeout(60_000);
   const reglas = [
     { idReglaPrecio: 1, nombre: 'Normal', cantidadMinima: 1, precioPorPresentacion: '10.00', principal: true, orden: 0 },
     { idReglaPrecio: 2, nombre: 'Media docena', cantidadMinima: 6, precioPorPresentacion: '7.92', principal: false, orden: 1 },
@@ -154,19 +155,26 @@ test('la PDP mantiene el precio normal y revela el precio por cantidad sin alter
     return route.fulfill({ status: 404, json: { error: 'Fixture PDP sin ruta' } });
   });
 
-  await page.goto('/productos/cortina-e2e-pdp');
+  await page.goto('/productos/cortina-e2e-pdp', { waitUntil: 'domcontentloaded' });
   const buyBox = page.locator('main > div > div > div.grid > aside');
   await expect(buyBox.getByText('Bs. 10.00', { exact: true })).toBeVisible();
   await expect(buyBox.getByText('Precio por cantidad · desde 6')).toHaveCount(0);
-  await expect(buyBox.locator('details')).not.toHaveAttribute('open', '');
+  await expect(buyBox.locator('details').first()).not.toHaveAttribute('open', '');
   await expect(buyBox.getByRole('button', { name: 'Color: Verde' })).toBeVisible();
 
-  for (let indice = 0; indice < 6; indice += 1) await buyBox.getByLabel('Aumentar cantidad').click();
+  await buyBox.getByRole('textbox', { name: 'Cantidad de presentaciones' }).fill('7');
+  await buyBox.getByRole('textbox', { name: 'Cantidad de presentaciones' }).press('Enter');
   await expect(buyBox.getByText('Precio por cantidad · desde 6')).toBeVisible();
   await expect(buyBox.getByText('Bs. 10.00', { exact: true })).toHaveClass(/line-through/);
   await expect(buyBox.getByText('Bs. 7.92', { exact: true })).toBeVisible();
   await expect(buyBox.getByText('Total: Bs. 55.44')).toBeVisible();
   await expect(buyBox.getByRole('button', { name: 'Agregar 7 · Bs. 55.44' })).toBeVisible();
+
+  await buyBox.getByRole('textbox', { name: 'Cantidad de presentaciones' }).fill('60');
+  await buyBox.getByRole('textbox', { name: 'Cantidad de presentaciones' }).press('Enter');
+  await expect(buyBox.getByText('Bs. 6.83', { exact: true })).toBeVisible();
+  await buyBox.getByRole('textbox', { name: 'Cantidad de presentaciones' }).fill('7');
+  await buyBox.getByRole('textbox', { name: 'Cantidad de presentaciones' }).press('Enter');
 
   await buyBox.getByText('Ver precios por cantidad').click();
   await expect(buyBox.getByText('1+ · Bs. 10.00')).toBeVisible();
@@ -175,7 +183,30 @@ test('la PDP mantiene el precio normal y revela el precio por cantidad sin alter
   await buyBox.getByRole('button', { name: 'Color: Verde' }).click();
   await expect(buyBox.getByText('Color: Verde')).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.getByRole('region', { name: 'Precio del producto' }).getByText('Bs. 10.00')).toHaveClass(/line-through/);
+  await expect(page.getByLabel('Compra rápida')).toHaveCount(0);
+  await page.screenshot({ path: test.info().outputPath('producto-movil-390.png'), fullPage: true });
+  await buyBox.locator('[data-mobile-options] summary').click();
+  const cantidadMovil = buyBox.getByRole('textbox', { name: 'Cantidad de presentaciones' });
+  await cantidadMovil.fill('5');
+  await cantidadMovil.press('Enter');
+  await expect(page.getByRole('region', { name: 'Precio del producto' }).getByText('Bs. 10.00')).not.toHaveClass(/line-through/);
+  await cantidadMovil.fill('6');
+  await cantidadMovil.press('Enter');
+  await expect(page.getByRole('region', { name: 'Precio del producto' }).getByText('Bs. 10.00')).toHaveClass(/line-through/);
+  await buyBox.locator('[data-mobile-options] summary').click();
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
   await expect(page.getByLabel('Compra rápida')).toBeVisible();
-  await expect(page.getByLabel('Compra rápida').getByText('Agregar 7 · Bs. 55.44')).toBeVisible();
+  await expect(page.getByLabel('Compra rápida').getByRole('button', { name: 'Agregar' })).toBeVisible();
+  expect(await page.locator('body').evaluate((element) => element.scrollWidth <= element.clientWidth)).toBeTruthy();
+  await page.setViewportSize({ width: 320, height: 700 });
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await expect(page.getByLabel('Compra rápida')).toBeVisible();
+  await page.screenshot({ path: test.info().outputPath('producto-movil-320.png'), fullPage: true });
+  expect(await page.locator('body').evaluate((element) => element.scrollWidth <= element.clientWidth)).toBeTruthy();
+  await page.setViewportSize({ width: 768, height: 900 });
+  await expect(page.getByLabel('Compra rápida')).toHaveCount(0);
+  expect(await page.locator('body').evaluate((element) => element.scrollWidth <= element.clientWidth)).toBeTruthy();
+  await page.setViewportSize({ width: 1280, height: 900 });
   expect(await page.locator('body').evaluate((element) => element.scrollWidth <= element.clientWidth)).toBeTruthy();
 });
