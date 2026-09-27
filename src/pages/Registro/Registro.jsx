@@ -92,8 +92,9 @@ export default function Registro() {
 
   return (
     <AuthShell
-      badge="Nuevo cliente"
+      compact
       title="Crea tu cuenta"
+      badge="Nuevo cliente"
       description="Registrarte te permite guardar tus datos, seguir pedidos y volver a comprar sin repetir pasos."
       highlights={[
         "Guarda tu información de envío y acelera el checkout futuro.",
@@ -109,20 +110,36 @@ export default function Registro() {
         </p>
       }
     >
-      <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-        <div className="grid gap-5 sm:grid-cols-2">
-        <Input
-          label="Nombre"
-          type="text"
-          name="nombre"
-          value={formData.nombre}
-          onChange={handleChange}
-          placeholder="Tu nombre"
-          icon={<User size={18} />}
-          tone="glass"
-          id="register-nombre" required autoComplete="given-name" error={fieldErrors.nombre}
-        />
-        <Input label="Apellido" type="text" name="apellido" value={formData.apellido} onChange={handleChange} placeholder="Tu apellido" icon={<User size={18} />} tone="glass" id="register-apellido" required autoComplete="family-name" error={fieldErrors.apellido} />
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4 lg:gap-5" noValidate>
+        <div className="grid grid-cols-2 gap-3 sm:gap-5">
+          <Input
+            label="Nombre"
+            type="text"
+            name="nombre"
+            value={formData.nombre}
+            onChange={handleChange}
+            placeholder="Tu nombre"
+            icon={<User size={18} />}
+            tone="glass"
+            id="register-nombre"
+            required
+            autoComplete="given-name"
+            error={fieldErrors.nombre}
+          />
+          <Input
+            label="Apellido"
+            type="text"
+            name="apellido"
+            value={formData.apellido}
+            onChange={handleChange}
+            placeholder="Tu apellido"
+            icon={<User size={18} />}
+            tone="glass"
+            id="register-apellido"
+            required
+            autoComplete="family-name"
+            error={fieldErrors.apellido}
+          />
         </div>
 
         <Input
@@ -149,18 +166,17 @@ export default function Registro() {
             icon={<Lock size={18} />}
             tone="glass"
             id="register-password" required autoComplete="new-password" error={fieldErrors.password}
-            endAdornment={<button type="button" onClick={() => setVisible((state) => ({ ...state, password: !state.password }))} aria-label={visible.password ? "Ocultar contraseña" : "Mostrar contraseña"} title={visible.password ? "Ocultar contraseña" : "Mostrar contraseña"} className="flex h-10 w-10 items-center justify-center rounded-md text-primary-dark hover:bg-white/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">{visible.password ? <EyeOff size={18} /> : <Eye size={18} />}</button>}
+            helperText="Mínimo 8 caracteres."
+            helperTextClassName="lg:hidden"
+            endAdornment={<button type="button" onClick={() => setVisible((state) => ({ ...state, password: !state.password }))} aria-label={visible.password ? "Ocultar contraseña" : "Mostrar contraseña"} title={visible.password ? "Ocultar contraseña" : "Mostrar contraseña"} className="flex h-11 w-11 items-center justify-center rounded-md text-primary-dark hover:bg-white/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary lg:h-10 lg:w-10">{visible.password ? <EyeOff size={18} /> : <Eye size={18} />}</button>}
           />
           {formData.password && (
-            <div className="mt-3 rounded-2xl border border-white/35 bg-white/15 p-4 shadow-sm backdrop-blur-md">
+            <div className="mt-3 hidden rounded-2xl border border-white/35 bg-white/15 p-4 shadow-sm backdrop-blur-md lg:block">
               <p className={`text-sm font-semibold ${seguridadPassword.colorTexto}`}>
                 Seguridad: {seguridadPassword.texto}. Mínimo 8 caracteres.
               </p>
               <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-white/35">
-                <div
-                  className={`h-full transition-all duration-300 ${seguridadPassword.colorBarra}`}
-                  style={{ width: seguridadPassword.ancho }}
-                />
+                <div className={`h-full transition-all duration-300 ${seguridadPassword.colorBarra}`} style={{ width: seguridadPassword.ancho }} />
               </div>
             </div>
           )}
@@ -176,7 +192,7 @@ export default function Registro() {
           icon={<Lock size={18} />}
           tone="glass"
           id="register-confirmPassword" required autoComplete="new-password" error={fieldErrors.confirmPassword}
-          endAdornment={<button type="button" onClick={() => setVisible((state) => ({ ...state, confirm: !state.confirm }))} aria-label={visible.confirm ? "Ocultar confirmación" : "Mostrar confirmación"} title={visible.confirm ? "Ocultar confirmación" : "Mostrar confirmación"} className="flex h-10 w-10 items-center justify-center rounded-md text-primary-dark hover:bg-white/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">{visible.confirm ? <EyeOff size={18} /> : <Eye size={18} />}</button>}
+          endAdornment={<button type="button" onClick={() => setVisible((state) => ({ ...state, confirm: !state.confirm }))} aria-label={visible.confirm ? "Ocultar confirmación" : "Mostrar confirmación"} title={visible.confirm ? "Ocultar confirmación" : "Mostrar confirmación"} className="flex h-11 w-11 items-center justify-center rounded-md text-primary-dark hover:bg-white/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary lg:h-10 lg:w-10">{visible.confirm ? <EyeOff size={18} /> : <Eye size={18} />}</button>}
         />
 
         {error && (
@@ -188,12 +204,12 @@ export default function Registro() {
           </Alert>
         )}
 
-        <div className="space-y-3"><div className="flex items-center gap-3 text-xs text-muted before:h-px before:flex-1 before:bg-white/40 after:h-px after:flex-1 after:bg-white/40">o</div><GoogleButton onCredential={handleGoogle} disabled={isSubmitting} /></div>
-
-        <Button type="submit" loading={isSubmitting} disabled={isSubmitting} variant="primary" size="lg" className="flex w-full items-center justify-center gap-2 shadow-brand-lg">
-          <UserPlus size={20} />
+        <Button type="submit" loading={isSubmitting} disabled={isSubmitting} variant="primary" size="lg" className="order-2 flex w-full items-center justify-center gap-2 shadow-brand-lg lg:order-3">
+          <UserPlus className="hidden lg:block" size={20} />
           Registrarse
         </Button>
+
+        <div className="order-3 space-y-3 pt-1 lg:order-2"><div className="flex items-center gap-3 text-xs text-muted before:h-px before:flex-1 before:bg-white/40 after:h-px after:flex-1 after:bg-white/40">o</div><GoogleButton onCredential={handleGoogle} disabled={isSubmitting} /></div>
       </form>
     </AuthShell>
   );

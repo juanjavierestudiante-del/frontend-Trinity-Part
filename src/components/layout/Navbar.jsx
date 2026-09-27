@@ -138,10 +138,10 @@ export default function Nav() {
     <nav
       ref={navRef}
       onFocusCapture={handleNavbarFocus}
-      className={["sticky top-0 z-50 border-b border-white/10 bg-gradient-to-r from-primary/90 via-primary to-secondary/90 text-white shadow-lg backdrop-blur-md transition-transform duration-200 motion-reduce:transition-none", navVisible ? "translate-y-0" : "-translate-y-[calc(100%+2rem)]", "md:translate-y-0"].join(" ")}
+      className={["sticky top-0 z-50 border-b border-white/10 bg-gradient-to-r from-primary/90 via-primary to-secondary/90 text-white shadow-lg backdrop-blur-md transition-transform duration-200 motion-reduce:transition-none", navVisible ? "translate-y-0" : "-translate-y-[calc(100%+3rem)]", "md:translate-y-0"].join(" ")}
     >
       <div className="w-full px-4 mx-auto max-w-7xl">
-        <div className="grid h-[5.3rem] grid-cols-2 items-center lg:grid-cols-3">
+        <div className="grid h-[4.5rem] grid-cols-2 items-center md:h-[5.3rem] lg:grid-cols-3">
 
           {/* Logo */}
           <div className="relative z-10 flex justify-start">

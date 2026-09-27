@@ -42,8 +42,9 @@ export default function Login() {
 
   return (
     <AuthShell
-      badge="Acceso de clientes"
+      compact
       title="Inicia sesión"
+      badge="Acceso de clientes"
       description="Entra a tu cuenta para revisar pedidos, retomar carritos y comprar más rápido."
       highlights={[
         "Consulta tus pedidos y direcciones guardadas sin perder el contexto.",
@@ -59,7 +60,7 @@ export default function Login() {
         </p>
       }
     >
-      <form className="space-y-5" onSubmit={handleSubmit} noValidate>
+      <form className="flex flex-col gap-4 lg:gap-5" onSubmit={handleSubmit} noValidate>
         <Input
           label="Email"
           type="email"
@@ -86,7 +87,7 @@ export default function Login() {
           name="password"
           required
           autoComplete="current-password"
-          endAdornment={<button type="button" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"} title={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"} className="flex h-10 w-10 items-center justify-center rounded-md text-primary-dark hover:bg-white/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button>}
+          endAdornment={<button type="button" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"} title={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"} className="flex h-11 w-11 items-center justify-center rounded-md text-primary-dark hover:bg-white/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary lg:h-10 lg:w-10">{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button>}
         />
 
         {error && (
@@ -98,14 +99,14 @@ export default function Login() {
           </Alert>
         )}
 
-        <div className="space-y-3"><div className="flex items-center gap-3 text-xs text-muted before:h-px before:flex-1 before:bg-white/40 after:h-px after:flex-1 after:bg-white/40">o</div><GoogleButton onCredential={handleGoogle} disabled={loading} /></div>
-
-        <Button type="submit" loading={loading} disabled={loading} className="w-full shadow-brand-lg" variant="primary" size="lg">
+        <Button type="submit" loading={loading} disabled={loading} className="order-2 w-full shadow-brand-lg lg:order-3" variant="primary" size="lg">
           <span className="inline-flex items-center gap-2">
-            <LogIn size={20} />
+            <LogIn className="hidden lg:block" size={20} />
             {loading ? "Ingresando..." : "Iniciar sesión"}
           </span>
         </Button>
+
+        <div className="order-3 space-y-3 pt-1 lg:order-2"><div className="flex items-center gap-3 text-xs text-muted before:h-px before:flex-1 before:bg-white/40 after:h-px after:flex-1 after:bg-white/40">o</div><GoogleButton onCredential={handleGoogle} disabled={loading} /></div>
       </form>
     </AuthShell>
   );

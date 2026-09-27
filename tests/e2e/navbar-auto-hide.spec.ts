@@ -17,13 +17,23 @@ test('Navbar público se oculta sólo en móvil y reaparece al subir, abrir el m
   await page.goto('/', { waitUntil: 'domcontentloaded' });
 
   const nav = page.locator('nav').filter({ has: page.locator('img[alt="Trinity Party & Events"]') });
+  for (const width of [320, 375, 414, 767, 768, 1024, 1280, 1440]) {
+    await page.setViewportSize({ width, height: 844 });
+    const navHeight = await nav.evaluate((element) => element.getBoundingClientRect().height);
+    const expectedHeight = width < 768 ? 73 : 86;
+    expect(navHeight).toBeGreaterThan(expectedHeight - 1);
+    expect(navHeight).toBeLessThan(expectedHeight + 1);
+    await expect(page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).resolves.toBe(true);
+  }
+  await page.setViewportSize({ width: 390, height: 844 });
+
   const menu = page.getByRole('button', { name: 'Abrir menú' });
   const closeMenu = page.getByRole('button', { name: 'Cerrar menú' });
   await expect(nav).toHaveClass(/translate-y-0/);
 
   await page.evaluate(() => window.scrollTo(0, 160));
   await expect.poll(() => nav.getByRole("img", { name: "Trinity Party & Events" }).evaluate((image) => image.getBoundingClientRect().bottom)).toBeLessThanOrEqual(0);
-  await expect(nav).toHaveClass(/-translate-y-\[calc\(100%\+2rem\)\]/);
+  await expect(nav).toHaveClass(/-translate-y-\[calc\(100%\+3rem\)\]/);
 
   await page.evaluate(() => window.scrollTo(0, 80));
   await expect(nav).toHaveClass(/translate-y-0/);
@@ -39,7 +49,7 @@ test('Navbar público se oculta sólo en móvil y reaparece al subir, abrir el m
   await expect(menu).toHaveAttribute('aria-expanded', 'false');
 
   await page.evaluate(() => window.scrollTo(0, 220));
-  await expect(nav).toHaveClass(/-translate-y-\[calc\(100%\+2rem\)\]/);
+  await expect(nav).toHaveClass(/-translate-y-\[calc\(100%\+3rem\)\]/);
   await page.evaluate(() => window.scrollTo(0, 0));
   await menu.click();
   await page.locator('#menu-movil').getByRole('link', { name: 'Tienda', exact: true }).click();
@@ -53,7 +63,7 @@ test('Navbar público se oculta sólo en móvil y reaparece al subir, abrir el m
 
   await page.setViewportSize({ width: 1366, height: 768 });
   await page.evaluate(() => window.scrollTo(0, 480));
-  await expect(nav).not.toHaveClass(/-translate-y-\[calc\(100%\+2rem\)\]/);
+  await expect(nav).not.toHaveClass(/-translate-y-\[calc\(100%\+3rem\)\]/);
 
   await expect(page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).resolves.toBe(true);
 });

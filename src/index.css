@@ -3,6 +3,11 @@
 @tailwind utilities;
 
 @layer base {
+  html,
+  body {
+    background-color: #faf8ff;
+  }
+
   body {
     @apply min-h-screen bg-fixed font-body text-ink antialiased;
     background-image: url("https://res.cloudinary.com/dslh6rwix/image/upload/q_auto/f_auto/v1781310826/fondo_erliih.eps");

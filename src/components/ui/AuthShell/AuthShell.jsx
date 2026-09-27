@@ -13,21 +13,22 @@ export default function AuthShell({
   highlights = DEFAULT_HIGHLIGHTS,
   children,
   footer,
+  compact = false,
 }) {
   return (
-    <section className="relative isolate min-h-[calc(100vh-5rem)] overflow-hidden px-4 py-10 sm:py-14">
-      <div className="absolute inset-0 -z-10 overflow-hidden">
+    <section className={`relative isolate min-h-[calc(100vh-5rem)] overflow-hidden px-4 ${compact ? "flex items-center justify-center py-6 sm:py-10 lg:block lg:py-14" : "py-10 sm:py-14"}`}>
+      <div className={`absolute inset-0 -z-10 overflow-hidden ${compact ? "hidden lg:block" : ""}`}>
         <div className="absolute -left-20 top-12 h-72 w-72 rounded-full bg-primary/20 blur-3xl animate-float-soft" />
         <div className="absolute right-0 top-20 h-80 w-80 rounded-full bg-secondary/15 blur-3xl animate-float-soft" style={{ animationDelay: "1.5s" }} />
         <div className="absolute bottom-0 left-1/3 h-56 w-56 rounded-full bg-white/20 blur-3xl" />
       </div>
 
-      <div className="mx-auto grid w-full max-w-6xl items-stretch gap-6 lg:grid-cols-[0.95fr_1.05fr]">
+      <div className={`mx-auto grid w-full items-stretch gap-6 ${compact ? "max-w-md lg:max-w-6xl lg:grid-cols-[0.95fr_1.05fr]" : "max-w-6xl lg:grid-cols-[0.95fr_1.05fr]"}`}>
         <Card
           variant="glass"
           hover={false}
           padding={false}
-          className="relative overflow-hidden border-white/35 p-6 sm:p-8 lg:p-10"
+          className={`relative overflow-hidden border-white/35 p-6 sm:p-8 lg:p-10 ${compact ? "hidden lg:block" : ""}`}
         >
           <div className="absolute inset-0 bg-gradient-to-br from-primary/15 via-white/10 to-secondary/15" />
           <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary via-secondary to-primary-light" />
@@ -70,8 +71,9 @@ export default function AuthShell({
         >
           <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-white/5 to-transparent" />
           <div className="relative h-full">
+            {compact && <h1 className="mb-6 text-3xl font-black leading-tight text-ink lg:hidden">{title}</h1>}
             {children}
-            {footer ? <div className="pt-6">{footer}</div> : null}
+            {footer ? <div className={compact ? "pt-5 lg:pt-6" : "pt-6"}>{footer}</div> : null}
           </div>
         </Card>
       </div>

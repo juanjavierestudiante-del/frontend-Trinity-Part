@@ -24,6 +24,7 @@ export default function Input(props) {
     tone = 'default',
     endAdornment,
     helperText,
+    helperTextClassName = '',
     ...rest
   } = props
 
@@ -83,7 +84,7 @@ export default function Input(props) {
         {endAdornment ? <div className="absolute right-1 top-1/2 -translate-y-1/2">{endAdornment}</div> : null}
       </div>
 
-      {helperText ? <p id={helperId} className="mt-1 text-sm text-muted">{helperText}</p> : null}
+      {helperText ? <p id={helperId} className={`mt-1 text-sm text-muted ${helperTextClassName}`}>{helperText}</p> : null}
       {error ? <p id={errorId} role="alert" className="mt-1 text-sm text-red-700">{error}</p> : null}
     </div>
   )
